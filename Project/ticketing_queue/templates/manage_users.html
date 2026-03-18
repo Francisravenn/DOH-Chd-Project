@@ -1,0 +1,299 @@
+{% extends "super_admin_base.html" %}
+
+{% block title %}Superadmin Dashboard{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid py-4">
+        <h2 class="mb-4">Superadmin Panel</h2>
+        <p class="lead text-muted mb-4">Manage admin/staff accounts</p>
+
+        <!-- Messages (success/error) -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message|safe }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Button to open Add New Admin Modal -->
+        <div class="mb-5">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                + Add New Admin User
+            </button>
+        </div>
+
+        <!-- Add New Admin Modal (ONLY ONE – outside loop) -->
+        <div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="addAdminModalLabel">Add New Admin User</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="addAdminForm" method="post">
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="add_admin">
+
+                            <!-- Error display -->
+                            <div id="formErrors" class="alert alert-danger d-none mb-3"></div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" required>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <input type="email" name="email" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Contact Number</label>
+                                    <input type="text" name="contact_number" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Designation</label>
+                                    <input type="text" name="designation" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Password</label>
+                                    <input type="password" name="password1" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Confirm Password</label>
+                                    <input type="password" name="password2" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success" id="submitBtn">Create Admin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Success</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center py-5">
+                        <i class="bi bi-check-circle-fill text-white" style="font-size: 5rem;"></i>
+                        <h4 class="mt-4 mb-3">Account Created</h4>
+                        <p class="text-muted mb-0">New admin user has been added successfully.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pb-4">
+                        <button type="button" class="btn btn-outline-success px-5" data-bs-dismiss="modal">Got it</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Users Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Current Admin / Staff Users</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Contact Number</th>
+                                <th>Designation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in staff_users %}
+                            <tr>
+                                <td>{{ user.first_name }} {{ user.last_name|default:"" }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email|default:"—" }}</td>
+                                <td>{{ user.profile.contact_number|default:"—" }}</td>
+                                <td>{{ user.profile.designation|default:"—" }}</td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-primary me-2"
+                                            data-bs-toggle="modal" data-bs-target="#updateModal{{ user.id }}">
+                                        Update
+                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                                        Delete
+                                    </button>
+
+                                    <!-- Update Modal -->
+                                    <div class="modal fade" id="updateModal{{ user.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ user.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-primary text-white">
+                                                    <h5 class="modal-title" id="updateModalLabel{{ user.id }}">Update {{ user.username }}</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="post">
+                                                    <div class="modal-body">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="update_user">
+                                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">First Name</label>
+                                                            <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Last Name</label>
+                                                            <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Email</label>
+                                                            <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Contact Number</label>
+                                                            <input type="text" name="contact_number" class="form-control" value="{{ user.profile.contact_number|default:'' }}">
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Designation</label>
+                                                            <input type="text" name="designation" class="form-control" value="{{ user.profile.designation|default:'' }}">
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Username</label>
+                                                            <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">New Password (leave blank to keep current)</label>
+                                                            <input type="password" name="password" class="form-control" placeholder="••••••••">
+                                                        </div>
+
+                                                        <div class="form-check mb-3">
+                                                            <input type="checkbox" name="is_active" class="form-check-input" id="active{{ user.id }}" {% if user.is_active %}checked{% endif %}>
+                                                            <label class="form-check-label" for="active{{ user.id }}">Account is active</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to delete <strong>{{ user.username }}</strong> ({{ user.first_name }} {{ user.last_name }})?<br>
+                                                    <small class="text-danger">This action cannot be undone.</small>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="post" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="action" value="delete_user">
+                                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    No admin/staff accounts yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const addForm = document.getElementById('addAdminForm');
+if (addForm) {
+    addForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const errorDiv = document.getElementById('formErrors');
+        const submitBtn = document.getElementById('submitBtn');
+
+        errorDiv.classList.add('d-none');
+        errorDiv.innerHTML = '';
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Creating...';
+
+        try {
+            const response = await fetch('', {
+                method: 'POST',
+                body: new FormData(addForm),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                bootstrap.Modal.getInstance(addForm.closest('.modal')).hide();
+
+                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+
+                successModal._element.addEventListener('hidden.bs.modal', () => location.reload(), { once: true });
+            } else {
+                errorDiv.innerHTML = data.errors.map(e => `• ${e}`).join('<br>');
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (err) {
+            console.error(err);
+            errorDiv.innerHTML = '• Server connection issue. Please try again.';
+            errorDiv.classList.remove('d-none');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Create Admin';
+        }
+    });
+}
+</script>
+{% endblock %}

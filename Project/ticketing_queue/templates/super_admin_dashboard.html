@@ -1,0 +1,973 @@
+{% extends "super_admin_base.html" %}
+
+{% block title %}Superadmin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --navbar-height: 56px;
+        --sidebar-width: 250px;
+    }
+    body {
+        margin: 0;
+        padding-top: var(--navbar-height);
+        background-color: #f8f9fa;
+        transition: padding-left 0.3s ease;
+    }
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--navbar-height);
+        z-index: 1030;
+        background-color: #0d6efd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .sidebar {
+        position: fixed;
+        top: var(--navbar-height);
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background-color: #343a40;
+        color: white;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 1020;
+    }
+    .sidebar .nav-link {
+        color: rgba(255,255,255,.85);
+        padding: 0.75rem 1.25rem;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+        color: white;
+        background-color: rgba(255,255,255,.15);
+    }
+    .sidebar-hidden .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar-hidden .main-content {
+        padding-left: 1.5rem;
+    }
+    .main-content {
+        padding: 1.5rem;
+        padding-left: calc(var(--sidebar-width) + 1.5rem);
+        transition: padding-left 0.3s ease;
+        min-height: 100vh;
+        margin: 0 auto;
+        max-width: 1400px;
+    }
+    .right-panel {
+        display: none;
+    }
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .table thead {
+        background-color: #212529;
+        color: white;
+    }
+    .modal-content {
+        border-radius: 10px;
+    }
+    .modal-header {
+        background-color: #0d6efd;
+        color: white;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 160px;
+    }
+    .complaint-box {
+        min-height: 120px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .scrollable-ticket-table {
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+    .scrollable-ticket-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #212529;
+        color: white;
+    }
+    @media (max-width: 991.98px) {
+        .sidebar { transform: translateX(-100%); }
+        .sidebar-visible .sidebar { transform: translateX(0); }
+        .main-content { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="container-fluid py-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Staff Dashboard</h2>
+        </div>
+
+        <div class="row mb-5 g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted mb-3">New Requests</h5>
+                        <h2 class="display-5 fw-bold text-primary">{{ new_count }}</h2>
+                        <p class="text-muted small">Pending for review</p>
+                    </div>
+                    <div class="card-footer bg-light text-center border-0">
+                        <a href="#new-content" class="text-primary text-decoration-none">View Details →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted mb-3">Assigned / Assisting</h5>
+                        <h2 class="display-5 fw-bold text-warning">{{ accepted_count }}</h2>
+                        <p class="text-muted small">In progress / Assigned</p>
+                    </div>
+                    <div class="card-footer bg-light text-center border-0">
+                        <a href="#accepted-content" class="text-warning text-decoration-none">View Details →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted mb-3">Completed</h5>
+                        <h2 class="display-5 fw-bold text-success">{{ completed_count }}</h2>
+                        <p class="text-muted small">Resolved requests</p>
+                    </div>
+                    <div class="card-footer bg-light text-center border-0">
+                        <a href="#completed-content" class="text-success text-decoration-none">View Details →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100 hover-lift">
+                    <div class="card-body text-center p-4">
+                        <h6 class="card-title text-muted mb-3 fw-semibold">Missing Tasks</h6>
+                        <h2 class="display-5 fw-bold text-danger mb-1">{{ missing_tasks_count|default:0 }}</h2>
+                        <p class="text-muted small">Overdue tickets</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 text-center pt-0">
+                        <a href="{% url 'super_admin_dashboard' %}?tab=missing" class="text-danger text-decoration-none">View Details →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="statusTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if request.GET.tab == 'new' or not request.GET.tab %}active{% endif %}" 
+                                id="new-tab" data-bs-toggle="tab" data-bs-target="#new-content" type="button" role="tab" aria-controls="new-content" aria-selected="true">
+                            New Request
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if request.GET.tab == 'accepted' %}active{% endif %}" 
+                                id="accepted-tab" data-bs-toggle="tab" data-bs-target="#accepted-content" type="button" role="tab" aria-controls="accepted-content">
+                            Accepted
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if request.GET.tab == 'completed' %}active{% endif %}" 
+                                id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-content" type="button" role="tab" aria-controls="completed-content">
+                            Completed / Resolved
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if tab == 'missing' %}active{% endif %}" 
+                                id="missing-tab" data-bs-toggle="tab" data-bs-target="#missing-content" type="button" role="tab">
+                            Missing Tasks <span class="badge bg-danger ms-1">{{ missing_tasks_count }}</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-4" id="statusTabsContent">
+                    <!-- Scrollable wrapper style for all tabs -->
+                    <style>
+                        .scrollable-ticket-table {
+                            max-height: 500px;
+                            overflow-y: auto;
+                            border: 1px solid #dee2e6;
+                            border-radius: 0.375rem;
+                        }
+                        .scrollable-ticket-table thead th {
+                            position: sticky;
+                            top: 0;
+                            z-index: 1;
+                            background-color: #212529;
+                            color: white;
+                        }
+                    </style>
+
+                    <!-- New Request Tab – scrollable -->
+                    <div class="tab-pane fade {% if request.GET.tab == 'new' or not request.GET.tab %}show active{% endif %}" id="new-content" role="tabpanel" aria-labelledby="new-tab">
+                        {% if pending_tickets %}
+                            <div class="scrollable-ticket-table">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Control No</th>
+                                            <th>Division</th>
+                                            <th>Issue</th>
+                                            <th>Urgency</th>
+                                            <th>Elapsed Time</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ticket in pending_tickets %}
+                                        <tr class="{% if ticket.status == 'accepted' %}table-info fw-bold{% elif ticket.is_urgent %}table-danger{% endif %}">
+                                            <td>{{ ticket.control_no }}</td>
+                                            <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
+                                            <td>{{ ticket.request_complaint|truncatewords:8 }}</td>
+                                            <td>
+                                                {% if ticket.is_urgent %}
+                                                    <span class="badge bg-danger">URGENT</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Normal</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ ticket.created_at|timesince }} ago</td>
+                                            <td>
+                                                <button type="button" class="btn btn-info btn-sm" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#ticketModal{{ ticket.pk }}">
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Updated View Details Modal - Form-like layout -->
+                                        <div class="modal fade" id="ticketModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="ticketModalLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="ticketModalLabel{{ ticket.pk }}">
+                                                            Ticket Details - {{ ticket.control_no }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <!-- Requester & Timing Section -->
+                                                        <div class="card mb-3 border-0 shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-subtitle mb-3 text-muted">Requester & Timing Information</h6>
+                                                                <dl class="row g-2 mb-0">
+                                                                    <dt class="col-sm-4 detail-label">Requested By:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.requested_by }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Date of Request:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.date_request }} {{ ticket.time_request }} {{ ticket.am_pm }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Elapsed Time:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.created_at|timesince }} ago</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Department / Division:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.department_division|default:"N/A" }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Section / Unit:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.section_unit|default:"N/A" }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Urgency:</dt>
+                                                                    <dd class="col-sm-8">
+                                                                        {% if ticket.is_urgent %}
+                                                                            <span class="badge bg-danger">URGENT</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-secondary">Normal</span>
+                                                                        {% endif %}
+                                                                    </dd>
+                                                                </dl>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Equipment Section -->
+                                                        <div class="card mb-3 border-0 shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-subtitle mb-3 text-muted">Equipment Information</h6>
+                                                                <dl class="row g-2 mb-0">
+                                                                    <dt class="col-sm-4 detail-label">Equipment:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.equipment|default:"N/A" }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Brand:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.brand|default:"N/A" }}</dd>
+
+                                                                    <dt class="col-sm-4 detail-label">Model:</dt>
+                                                                    <dd class="col-sm-8">{{ ticket.model|default:"N/A" }}</dd>
+                                                                </dl>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Complaint / Request Section -->
+                                                        <div class="card border-0 shadow-sm">
+                                                            <div class="card-body">
+                                                                <h6 class="card-subtitle mb-3 text-muted">Nature of Request / Complaint</h6>
+                                                                <div class="border p-3 bg-light rounded complaint-box">
+                                                                    {{ ticket.request_complaint|linebreaksbr }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                                                        {% if ticket.status == 'pending' %}
+                                                            <form method="post" action="{% url 'accept_ticket' ticket.pk %}" id="acceptForm{{ ticket.pk }}" class="d-inline">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="tab" value="new">
+                                                                <button type="submit" class="btn btn-success">Accept</button>
+                                                            </form>
+                                                        {% endif %}
+
+                                                        {% if ticket.status == 'accepted' %}
+                                                            <button type="button" class="btn btn-warning" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#assistModal{{ ticket.pk }}"
+                                                                    data-bs-dismiss="modal">
+                                                                Assign
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Assign Modal -->
+                                        <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="assistLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="assistLabel{{ ticket.pk }}">Assign Assistance - {{ ticket.control_no }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Select who will assist this ticket:</p>
+                                                        <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="tab" value="new">
+                                                            <select name="assisted_by" class="form-select mb-3" required>
+                                                                <option value="">-- Choose Staff --</option>
+                                                                {% for user in staff_users %}
+                                                                    <option value="{{ user.id }}">{{ user.username|title }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </form>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" form="assistForm{{ ticket.pk }}" class="btn btn-warning">Assign</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">
+                                                No pending requests at the moment.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                No pending requests at the moment.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Accepted Tab – scrollable -->
+                    <div class="tab-pane fade {% if request.GET.tab == 'accepted' %}show active{% endif %}" id="accepted-content" role="tabpanel" aria-labelledby="accepted-tab">
+                        {% if accepted_tickets %}
+                            <div class="scrollable-ticket-table">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Control No</th>
+                                            <th>Division</th>
+                                            <th>Issue</th>
+                                            <th>Urgency</th>
+                                            <th>Elapsed Time</th>
+                                            <th>Modified</th> 
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ticket in accepted_tickets %}
+                                        <tr class="{% if ticket.status == 'assisting' %}table-warning fw-bold{% endif %}">
+                                            <td>{{ ticket.control_no }}</td>
+                                            <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
+                                            <td>{{ ticket.request_complaint|truncatewords:8 }}</td>
+                                            <td>
+                                                {% if ticket.is_urgent %}
+                                                    <span class="badge bg-danger">URGENT</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Normal</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ ticket.created_at|timesince }} ago</td>
+                                            <td>
+                                                {% if ticket.is_manually_modified %}
+                                                    <span class="badge bg-info">Yes ({{ ticket.updated_at|timesince }} ago)</span>
+                                                {% else %}
+                                                    <span class="text-muted">No</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-info btn-sm" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#viewModal{{ ticket.pk }}">
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Update Modal -->
+                                        <div class="modal fade" id="updateModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="updateModalLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ ticket.pk }}">
+                                                            Update Ticket - {{ ticket.control_no }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+
+                                                    <form method="post" action="{% url 'update_ticket' ticket.pk %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="tab" value="accepted">
+                                                        <div class="modal-body">
+                                                            <div class="row g-3">
+                                                                <div class="col-12">
+                                                                    <label class="form-label fw-bold">Nature of Request / Complaint</label>
+                                                                    <textarea name="request_complaint" class="form-control" rows="4" required>{{ ticket.request_complaint }}</textarea>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label fw-bold">Equipment / Item Involved</label>
+                                                                    <input type="text" name="equipment" class="form-control" value="{{ ticket.equipment|default:'' }}">
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label fw-bold">Brand</label>
+                                                                    <input type="text" name="brand" class="form-control" value="{{ ticket.brand|default:'' }}">
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label fw-bold">Model</label>
+                                                                    <input type="text" name="model" class="form-control" value="{{ ticket.model|default:'' }}">
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label fw-bold">Department / Division</label>
+                                                                    <input type="text" name="department_division" class="form-control" value="{{ ticket.department_division }}" required>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label fw-bold">Section / Unit</label>
+                                                                    <input type="text" name="section_unit" class="form-control" value="{{ ticket.section_unit|default:'' }}">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- View Details Modal -->
+                                        <div class="modal fade" id="viewModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="viewLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="viewLabel{{ ticket.pk }}">
+                                                            Ticket Details - {{ ticket.control_no }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <p><strong>Control No:</strong> {{ ticket.control_no }}</p>
+                                                                <p><strong>Requested By:</strong> {{ ticket.requested_by }}</p>
+                                                                <p><strong>Department / Division:</strong> {{ ticket.department_division|default:"N/A" }}</p>
+                                                                <p><strong>Section / Unit:</strong> {{ ticket.section_unit|default:"N/A" }}</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p><strong>Elapsed Time:</strong> {{ ticket.created_at|timesince }} ago</p>
+                                                                <p><strong>Urgency:</strong> 
+                                                                    {% if ticket.is_urgent %}
+                                                                        <span class="badge bg-danger">URGENT</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-secondary">Normal</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                                {% if ticket.assisted_by %}
+                                                                    <p class="mt-2 text-warning fw-bold">
+                                                                        Assisted by: {{ ticket.assisted_by.username }}
+                                                                    </p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <hr>
+                                                        <p><strong>Issue:</strong> {{ ticket.request_complaint }}</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                                                        {% if ticket.status == 'accepted' or ticket.status == 'assisting' %}
+                                                            <button type="button" class="btn btn-primary"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#updateModal{{ ticket.pk }}"
+                                                                    data-bs-dismiss="modal">
+                                                                Update
+                                                            </button>
+                                                        {% endif %}
+
+                                                        {% if ticket.status == 'accepted' %}
+                                                            <button type="button" class="btn btn-warning" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#assistConfirmModal{{ ticket.pk }}"
+                                                                    data-bs-dismiss="modal">
+                                                                Assist
+                                                            </button>
+                                                        {% endif %}
+
+                                                        {% if ticket.status == 'assisting' %}
+                                                            <button type="button" class="btn btn-success"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#completeConfirmModal{{ ticket.pk }}">
+                                                                Complete
+                                                            </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {% if ticket.status == 'accepted' or ticket.status == 'assisting' %}
+                                        <div class="modal fade" id="completeConfirmModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="completeConfirmLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-warning text-dark">
+                                                        <h5 class="modal-title" id="completeConfirmLabel{{ ticket.pk }}">
+                                                            Confirm Completion
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to mark ticket <strong>{{ ticket.control_no }}</strong> as completed?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                                        <button type="button" class="btn btn-success" id="confirmCompleteBtn{{ ticket.pk }}">Yes, Complete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if ticket.status == 'accepted' %}
+                                        <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="assistConfirmLabel{{ ticket.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="assistConfirmLabel{{ ticket.pk }}">
+                                                            Assign Assistance - {{ ticket.control_no }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Select who will assist this ticket:</p>
+                                                        <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="tab" value="accepted">
+                                                            <select name="assisted_by" class="form-select mb-3" required>
+                                                                <option value="">-- Choose Staff --</option>
+                                                                {% for user in staff_users %}
+                                                                    <option value="{{ user.id }}">{{ user.username|title }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </form>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" form="assistForm{{ ticket.pk }}" class="btn btn-warning">Assign</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Hidden complete form -->
+                                        <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="completeForm{{ ticket.pk }}" class="d-none">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="tab" value="accepted">
+                                        </form>
+
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-muted">No accepted requests.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">No accepted requests at the moment.</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Completed Tab – scrollable -->
+                    <div class="tab-pane fade {% if request.GET.tab == 'completed' %}show active{% endif %}" id="completed-content" role="tabpanel" aria-labelledby="completed-tab">
+                        {% if completed_tickets %}
+                            <div class="scrollable-ticket-table">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Control No</th>
+                                            <th>Division</th>
+                                            <th>Issue</th>
+                                            <th>Urgency</th>
+                                            <th>Elapsed Time</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ticket in completed_tickets %}
+                                        <tr>
+                                            <td>{{ ticket.control_no }}</td>
+                                            <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
+                                            <td>{{ ticket.request_complaint|truncatewords:8 }}</td>
+                                            <td>
+                                                {% if ticket.is_urgent %}
+                                                    <span class="badge bg-danger">URGENT</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Normal</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ ticket.created_at|timesince }} ago</td>
+                                            <td>
+                                                <button class="btn btn-success btn-sm" disabled>Completed</button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4 text-muted">
+                                                No completed requests at the moment.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                No completed requests at the moment.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Missing Tab -->
+                    <div class="tab-pane fade {% if tab == 'missing' %}show active{% endif %}" id="missing-content" role="tabpanel">
+                        {% if missing_tickets %}
+                            <div class="scrollable-ticket-table">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>Control No</th>
+                                            <th>Division</th>
+                                            <th>Requested By</th>
+                                            <th>Created</th>
+                                            <th>Overdue</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ticket in missing_tickets %}
+                                        <tr class="table-danger">
+                                            <td>{{ ticket.control_no }}</td>
+                                            <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
+                                            <td>{{ ticket.requested_by }}</td>
+                                            <td>{{ ticket.created_at|date:"m/d/Y H:i" }}</td>
+                                            <td>{{ ticket.created_at|timesince }} ago</td>
+                                            <td>
+                                                <button type="button" class="btn btn-info btn-sm" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#ticketModal{{ ticket.pk }}">
+                                                    View
+                                                </button>
+
+                                                {% if ticket.status == 'pending' and ticket.accepted_at is null %}
+                                                    <form method="post" action="{% url 'accept_ticket' ticket.pk %}" id="reopenForm{{ ticket.pk }}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="tab" value="new">
+                                                        <button type="button" class="btn btn-warning btn-sm reopen-btn"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#reopenConfirmModal"
+                                                                data-ticket-no="{{ ticket.control_no }}"
+                                                                data-form-id="reopenForm{{ ticket.pk }}">
+                                                            Re-open to Accepted
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success text-center py-4">
+                                No overdue tasks.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity – scrollable table -->
+        <div class="row mb-5">
+            <div class="col-lg-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Admin Activity</h5>
+                        <a href="{% url 'audit_logs' %}" class="btn btn-sm btn-outline-primary">View All →</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 30px;">#</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Details</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in recent_activity %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <strong>{{ log.user.username|default:"System" }}</strong>
+                                        </td>
+                                        <td>{{ log.action|title }}</td>
+                                        <td>
+                                            <small class="text-muted">{{ log.details|truncatewords:20 }}</small>
+                                            {% if log.ticket %}
+                                                <br><small class="text-primary">Ticket: {{ log.ticket.control_no }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ log.timestamp|timesince }} ago</small>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            No recent admin activity yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050; max-width: 350px;">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'new_ticket' in message.tags %}
+                        <div class="toast show bg-info text-white" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header bg-info text-white">
+                                <strong class="me-auto">New Request Alert</strong>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                {{ message }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Logout Modal -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to logout?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <a href="{% url 'admin_logout' %}" class="btn btn-danger">Yes, Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Confirmation Modal (right panel version) -->
+        <div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmCompleteLabel">Confirm Completion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Do you complete the task?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-success" id="confirmCompleteBtn">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Re-open Confirmation Modal -->
+        <div class="modal fade" id="reopenConfirmModal" tabindex="-1" aria-labelledby="reopenConfirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title" id="reopenConfirmLabel">Confirm Re-open</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to <strong>re-open</strong> ticket <span id="reopenTicketNo" class="fw-bold"></span>?<br>
+                        <small class="text-muted">This will reset it to New Requests status.</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="confirmReopenBtn">Yes, Re-open</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+// Sidebar toggle + other scripts
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Complete confirmation from right panel
+    let currentFormId = null;
+    document.querySelectorAll('.complete-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            currentFormId = 'completeForm' + this.getAttribute('data-ticket-id');
+        });
+    });
+
+    document.getElementById('confirmCompleteBtn').addEventListener('click', function () {
+        if (currentFormId) {
+            document.getElementById(currentFormId).submit();
+        }
+        bootstrap.Modal.getInstance(document.getElementById('confirmCompleteModal')).hide();
+    });
+
+    // JS handler for Yes click in complete confirmation modal (View Details)
+    document.querySelectorAll('[id^="confirmCompleteBtn"]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const ticketPk = this.id.replace('confirmCompleteBtn', '');
+            const form = document.getElementById('completeForm' + ticketPk);
+            if (form) form.submit();
+            bootstrap.Modal.getInstance(document.getElementById('completeConfirmModal' + ticketPk)).hide();
+        });
+    });
+
+    // Toast
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+    toastElList.forEach(function (toastEl) {
+        var toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 15000 });
+        toast.show();
+    });
+
+    // When Re-open button is clicked, fill modal with ticket number
+    document.querySelectorAll('.reopen-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const ticketNo = this.getAttribute('data-ticket-no');
+            const formId = this.getAttribute('data-form-id');
+            document.getElementById('reopenTicketNo').textContent = ticketNo;
+            document.getElementById('confirmReopenBtn').setAttribute('data-form-id', formId);
+        });
+    });
+
+    // When "Yes, Re-open" is clicked in modal, submit the hidden form
+    document.getElementById('confirmReopenBtn').addEventListener('click', function () {
+        const formId = this.getAttribute('data-form-id');
+        const form = document.getElementById(formId);
+        if (form) {
+            form.submit();
+        }
+        const modal = bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'));
+        modal.hide();
+    });
+});
+
+// Validate and submit Assist form
+function validateAndSubmitAssist(ticketPk) {
+    console.log('validateAndSubmitAssist called for ticket:', ticketPk);
+
+    const select = document.getElementById('assistedBy' + ticketPk);
+    if (!select) {
+        console.error('Select not found for ticket:', ticketPk);
+        alert('Internal error: dropdown not found.');
+        return;
+    }
+
+    if (!select.value) {
+        select.classList.add('is-invalid');
+        const error = document.getElementById('assistError' + ticketPk);
+        if (error) error.classList.remove('d-none');
+        return;
+    }
+
+    select.classList.remove('is-invalid');
+    const error = document.getElementById('assistError' + ticketPk);
+    if (error) error.classList.add('d-none');
+
+    document.getElementById('assistForm' + ticketPk).submit();
+}
+</script>
+{% endblock %}
+
+
+

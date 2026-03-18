@@ -1,0 +1,179 @@
+{% extends "super_admin_base.html" %}
+{% load tz %}
+
+{% block title %}Audit & Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Audit & Logs</h2>
+        <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+    </div>
+
+    <p class="text-muted mb-4">Complete system log – continuous record of all admin activity.</p>
+
+    <!-- Filter Tabs -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary {% if filter_type == 'all' %}active{% endif %}" onclick="window.location.href='?filter=all'">All Logs ({{ total_logs }})</button>
+            <button type="button" class="btn btn-outline-primary {% if filter_type == 'audit_trail' %}active{% endif %}" onclick="window.location.href='?filter=audit_trail'">Audit Trail</button>
+            <button type="button" class="btn btn-outline-primary {% if filter_type == 'deletion_logs' %}active{% endif %}" onclick="window.location.href='?filter=deletion_logs'">Deletion Logs</button>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <small class="text-muted">Legend:</small><br>
+        <span class="badge bg-primary me-1">Login / Logout</span>
+        <span class="badge bg-success me-1">Accepted / Assigned Ticket</span>
+        <span class="badge bg-warning text-dark me-1">Assisting Ticket</span>
+        <span class="badge bg-info me-1">Completed Ticket</span>
+        <span class="badge bg-danger me-1">Deleted Ticket</span>
+        <span class="badge bg-secondary me-1">Created Ticket</span>
+    </div>
+
+    <!-- Search & Advanced Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Control no. or description..." value="{{ search }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="action_type" class="form-select">
+                        <option value="all">All Actions</option>
+                        {% for action in action_types %}
+                            <option value="{{ action|lower }}" {% if selected_action == action|lower %}selected{% endif %}>{{ action }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="admin" class="form-select">
+                        <option value="all">All Admins</option>
+                        {% for admin in admins %}
+                            <option value="{{ admin }}" {% if selected_admin == admin %}selected{% endif %}>{{ admin }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'audit_logs' %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>TIMESTAMP</th>
+                            <th>ADMIN</th>
+                            <th>ACTION</th>
+                            <th>TICKET</th>
+                            <th>DESCRIPTION</th>
+                            <th>IP ADDRESS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.timestamp|localtime|date:"m/d/Y h:i A" }}</td>
+
+                            <td>
+                                {% if log.action == 'created ticket' %}
+                                    <span class="text-muted">—</span>  <!-- completely empty / dash only -->
+                                {% elif log.user %}
+                                    <strong>{{ log.user.username }}</strong>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- ACTION column: colored badges -->
+                            <td>
+                                <span class="badge rounded-pill px-3 py-2 fw-bold text-uppercase
+                                    {% if 'login' in log.action|lower or 'logout' in log.action|lower %}bg-primary{% endif %}
+                                    {% if 'accepted' in log.action|lower or 'assigned' in log.action|lower %}bg-success{% endif %}
+                                    {% if 'assisting' in log.action|lower %}bg-warning text-dark{% endif %}
+                                    {% if 'completed' in log.action|lower %}bg-info{% endif %}
+                                    {% if 'deleted' in log.action|lower %}bg-danger{% endif %}
+                                    {% if 'created' in log.action|lower %}bg-secondary{% endif %}
+                                    ">
+                                    {{ log.action|title }}
+                                </span>
+                            </td>
+
+                            <!-- TICKET column -->
+                            <td>
+                                {% if log.ticket %}
+                                    <strong>{{ log.ticket.control_no }}</strong>
+                                {% elif log.action == 'created ticket' %}
+                                    <strong>—</strong> 
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- DESCRIPTION column - short summary -->
+                            <td>
+                                {% if 'login' in log.action|lower %}
+                                    {{ log.user.username }} logged in
+                                {% elif 'logout' in log.action|lower %}
+                                    {{ log.user.username }} logged out
+                                {% elif 'accepted' in log.action|lower %}
+                                    {{ log.user.username }} accepted ticket {{ log.ticket.control_no|default:"—" }}
+                                {% elif 'assigned' in log.action|lower %}
+                                    {{ log.user.username }} assigned ticket {{ log.ticket.control_no|default:"—" }}
+                                {% elif 'assisting' in log.action|lower %}
+                                    {{ log.user.username }} is assisting ticket {{ log.ticket.control_no|default:"—" }}
+                                {% elif 'completed' in log.action|lower %}
+                                    {{ log.user.username }} completed ticket {{ log.ticket.control_no|default:"—" }}
+                                {% elif 'deleted' in log.action|lower %}
+                                    {{ log.user.username }} deleted ticket {{ log.ticket.control_no|default:"—" }}
+                                {% else %}
+                                    {{ log.details|truncatewords:15 }}
+                                {% endif %}
+                            </td>
+
+                            <!-- IP ADDRESS -->
+                            <td>{{ log.ip_address|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">No logs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Simple JS for CSV export -->
+<script>
+function exportCSV() {
+    let csv = "Timestamp,Admin,Action,Ticket,Description,IP Address\n";
+    document.querySelectorAll("table tbody tr").forEach(row => {
+        let rowData = Array.from(row.cells).map(cell => cell.innerText.trim().replace(/"/g, '""'));
+        csv += '"' + rowData.join('","') + '"\n';
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'audit_logs.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

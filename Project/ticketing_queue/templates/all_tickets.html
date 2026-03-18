@@ -1,0 +1,76 @@
+{% extends "super_admin_base.html" %}
+
+{% block title %}All Tickets - Super Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">All Tickets Overview</h2>
+
+    <ul class="nav nav-tabs mb-4" id="ticketTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'pending' %}active{% endif %}" href="?tab=pending">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'accepted' %}active{% endif %}" href="?tab=accepted">Accepted</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'assisting' %}active{% endif %}" href="?tab=assisting">Assisting</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'completed' %}active{% endif %}" href="?tab=completed">Completed</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if tab == 'all' or tab is None %}active{% endif %}" href="?tab=all">All</a>
+        </li>
+    </ul>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Control No</th>
+                    <th>Requested By</th>
+                    <th>Division / Section</th>
+                    <th>Issue (short)</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Urgent</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.control_no }}</td>
+                    <td>{{ ticket.requested_by }}</td>
+                    <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
+                    <td>{{ ticket.request_complaint|truncatewords:10 }}</td>
+                    <td>
+                        <span class="badge bg-{% if ticket.status == 'pending' %}warning{% elif ticket.status == 'accepted' %}info{% elif ticket.status == 'assisting' %}warning{% else %}success{% endif %}">
+                            {{ ticket.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ ticket.created_at|date:"m/d/Y h:i A" }}</td>
+                    <td>
+                        {% if ticket.is_urgent %}
+                            <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'ticket_detail' ticket.pk %}" class="btn btn-sm btn-info">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No tickets found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="text-muted mt-3">Total tickets: {{ total_tickets }}</p>
+</div>
+{% endblock %}

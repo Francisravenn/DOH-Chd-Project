@@ -1,0 +1,1496 @@
+{% extends "header_footer_base.html" %}
+{% load static %}
+
+{% block title %}DOH CHD CALABARZON – IT Helpdesk | Home{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #ddeeff 0%, #eaf2ff 50%, #d6e8fb 100%);
+        min-height: 100vh;
+    }
+
+    .hero-wrapper {
+        padding: 60px 16px 40px;
+        text-align: center;
+    }
+    .hero-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #1a3a6b;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .hero-sub {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.9rem;
+        color: #5a7a9a;
+        margin-bottom: 48px;
+    }
+
+    .choices-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 16px 60px;
+    }
+
+    .choice-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 40px 32px 36px;
+        width: 260px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(21, 101, 192, 0.12);
+        text-decoration: none;
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+        position: relative;
+        overflow: hidden;
+        animation: fadeUp 0.5s ease both;
+    }
+    .choice-card:nth-child(1) { animation-delay: 0.1s; }
+    .choice-card:nth-child(2) { animation-delay: 0.2s; }
+    .choice-card:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .choice-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        border-radius: 16px 16px 0 0;
+    }
+    .choice-card.submit::before { background: linear-gradient(90deg, #1565c0, #1e88e5); }
+    .choice-card.view::before   { background: linear-gradient(90deg, #2e7d32, #43a047); }
+    .choice-card.search::before { background: linear-gradient(90deg, #e65100, #fb8c00); }
+
+    .choice-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 48px rgba(21, 101, 192, 0.18);
+    }
+
+    .choice-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.6rem;
+    }
+    .choice-card.submit .choice-icon { background: #e3f0ff; color: #1565c0; }
+    .choice-card.view .choice-icon   { background: #e8f5e9; color: #2e7d32; }
+    .choice-card.search .choice-icon { background: #fff3e0; color: #e65100; }
+
+    .choice-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+    }
+    .choice-desc {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.78rem;
+        color: #7a8fa8;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
+    .choice-btn {
+        display: inline-block;
+        padding: 9px 28px;
+        border-radius: 8px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+    }
+    .choice-btn:hover { opacity: 0.88; }
+    .choice-card.submit .choice-btn { background: linear-gradient(90deg, #1565c0, #1e88e5); color: #fff; }
+    .choice-card.view .choice-btn   { background: linear-gradient(90deg, #2e7d32, #43a047); color: #fff; }
+    .choice-card.search .choice-btn { background: linear-gradient(90deg, #e65100, #fb8c00); color: #fff; }
+
+    /* Search form */
+    .search-form { display: flex; flex-direction: column; gap: 8px; }
+    .search-input {
+        width: 100%;
+        border: 1.5px solid #dde3ed;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.82rem;
+        color: #1a1a2e;
+        background: #f7f9fc;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        text-align: center;
+    }
+    .search-input:focus {
+        border-color: #e65100;
+        box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.1);
+        background: #fff;
+    }
+    .search-input::placeholder { color: #b0bac8; font-size: 0.78rem; }
+    .search-error {
+        background: #fff0f0;
+        border: 1px solid #ffcccc;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        color: #c0392b;
+        margin-top: 6px;
+        display: none;
+    }
+    .search-error.show { display: block; }
+
+    @media (max-width: 640px) {
+        .choice-card { width: 100%; max-width: 360px; }
+        .hero-title { font-size: 1.2rem; }
+    }
+
+    /* ── FORM MODAL ── */
+    .form-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 30, 60, 0.6);
+        z-index: 9100;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(3px);
+        overflow-y: auto;
+    }
+    .form-modal-overlay.show { display: flex; }
+    .form-modal {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 780px;
+        box-shadow: 0 24px 80px rgba(21,101,192,0.25);
+        overflow: hidden;
+        animation: modalIn 0.25s ease both;
+        margin: auto;
+    }
+    .form-modal-header {
+        background: linear-gradient(90deg, #1a3a6b, #1565c0);
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 3px solid #f9c900;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .form-modal-header h5 {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #fff;
+        margin: 0;
+        letter-spacing: 0.04em;
+    }
+    .form-modal-body {
+        padding: 0;
+        background: #fff;
+        overflow-y: auto;
+    }
+    /* Override doh-container inside modal */
+    .form-modal .doh-container {
+        width: 100% !important;
+        min-height: unset !important;
+        margin: 0 !important;
+        padding: 24px 32px !important;
+        border: none !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+    }
+    .form-modal .doh-header {
+        text-align: center !important;
+        margin-bottom: 20px !important;
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+    .form-modal .doh-republic,
+    .form-modal .doh-department {
+        background: transparent !important;
+        color: #1a3a6b !important;
+        font-size: 13pt !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        display: block !important;
+    }
+    .form-modal .doh-form-title {
+        font-size: 14pt !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 6px !important;
+        text-align: center !important;
+        margin: 16px 0 20px !important;
+        background: transparent !important;
+        color: #000 !important;
+    }
+    .form-modal .field-row {
+        display: flex !important;
+        align-items: baseline !important;
+        margin-bottom: 16px !important;
+        flex-wrap: nowrap !important;
+        background: transparent !important;
+    }
+    .form-modal .field-label {
+        font-weight: bold !important;
+        min-width: 220px !important;
+        max-width: 220px !important;
+        padding-right: 10px !important;
+        font-size: 10pt !important;
+        white-space: normal !important;
+        flex-shrink: 0 !important;
+        background: transparent !important;
+        color: #000 !important;
+    }
+    .form-modal .field-underline {
+        flex: 1 !important;
+        border-bottom: 1px solid #000 !important;
+        min-height: 22px !important;
+        padding: 2px 6px !important;
+        font-size: 10pt !important;
+        background: transparent !important;
+    }
+    .form-modal .field-underline input,
+    .form-modal .field-underline textarea,
+    .form-modal .field-underline select {
+        width: 100% !important;
+        border: none !important;
+        background: transparent !important;
+        font-size: 10pt !important;
+        padding: 0 !important;
+    }
+    .form-modal .readonly-field {
+        background: #f8f9fa !important;
+        color: #495057 !important;
+    }
+    .form-modal .control-no {
+        text-align: right !important;
+        font-weight: bold !important;
+        margin-bottom: 12px !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+    .form-modal .submit-area {
+        text-align: center !important;
+        padding: 16px 0 !important;
+    }
+    /* Fix textarea height */
+    .form-modal textarea {
+        min-height: 80px !important;
+        resize: vertical !important;
+    }
+    /* Fix field-row spacing */
+    .form-modal .field-row {
+        margin-bottom: 10px !important;
+    }
+    /* Fix label wrapping */
+    .form-modal .field-label {
+        min-width: 200px !important;
+        max-width: 200px !important;
+        font-size: 9.5pt !important;
+        line-height: 1.4 !important;
+    }
+    /* Fix select styling */
+    .form-modal select {
+        padding: 2px 4px !important;
+        font-size: 10pt !important;
+    }
+    /* Fix checkbox row */
+    .form-modal .field-underline label {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    /* Submit button */
+    .form-modal .btn-primary {
+        background: linear-gradient(90deg, #1565c0, #1e88e5) !important;
+        border: none !important;
+        padding: 10px 40px !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
+    }
+
+    /* ── TICKET MODAL ── */
+    .ticket-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 30, 60, 0.55);
+        z-index: 9000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(3px);
+    }
+    .ticket-modal-overlay.show { display: flex; }
+    .ticket-modal {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 24px 80px rgba(21,101,192,0.22);
+        overflow: hidden;
+        animation: modalIn 0.25s ease both;
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal-top-bar {
+        background: linear-gradient(90deg, #1a3a6b, #1565c0);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .modal-top-bar h5 {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #fff;
+        margin: 0;
+        letter-spacing: 0.04em;
+    }
+    .modal-close-btn {
+        background: rgba(255,255,255,0.15);
+        border: none;
+        color: #fff;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .modal-close-btn:hover { background: rgba(255,255,255,0.3); }
+    .modal-control-bar {
+        background: #f0f4f8;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e0e7ef;
+    }
+    .modal-control-no {
+        font-family: 'Courier New', monospace;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1a3a6b;
+    }
+    .modal-status-badge {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    .status-pending  { background: #fff3cd; color: #856404; }
+    .status-accepted { background: #d1ecf1; color: #0c5460; }
+    .status-assisting{ background: #fff0f0; color: #c0392b; }
+    .status-completed{ background: #d4edda; color: #155724; }
+
+    /* Progress tracker */
+    .modal-tracker {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e0e7ef;
+    }
+    .tracker-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #8a9ab5;
+        margin-bottom: 14px;
+    }
+    .tracker-steps {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+    .tracker-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+    .step-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #dde3ed;
+        background: #f7f9fc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: #b0bac8;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+    .step-circle.done  { background: #1565c0; border-color: #1565c0; color: #fff; }
+    .step-circle.active{ background: #fff; border-color: #1565c0; color: #1565c0; box-shadow: 0 0 0 4px rgba(21,101,192,0.15); }
+    .step-label {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.62rem;
+        color: #8a9ab5;
+        margin-top: 6px;
+        text-align: center;
+        font-weight: 600;
+    }
+    .step-label.active-label { color: #1565c0; font-weight: 700; }
+    .step-label.done-label   { color: #1565c0; }
+    .step-line {
+        flex: 1;
+        height: 2px;
+        background: #dde3ed;
+        margin-bottom: 22px;
+        transition: background 0.3s;
+    }
+    .step-line.done { background: #1565c0; }
+
+    /* Ticket details */
+    .modal-details {
+        padding: 16px 24px 20px;
+    }
+    .detail-row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f4f8;
+        font-size: 0.82rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        color: #5a7a9a;
+        min-width: 130px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding-top: 1px;
+    }
+    .detail-val {
+        font-family: 'Open Sans', sans-serif;
+        color: #1a1a2e;
+        flex: 1;
+        line-height: 1.5;
+    }
+    .urgent-badge {
+        display: inline-block;
+        background: #c0392b;
+        color: #fff;
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+    .modal-footer-note {
+        background: #f7f9fc;
+        padding: 12px 24px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.72rem;
+        color: #8a9ab5;
+        text-align: center;
+        border-top: 1px solid #e0e7ef;
+    }
+
+    /* Collapsible ticket headers */
+    .ticket-collapse-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        cursor: pointer;
+        background: #f7f9fc;
+        border-bottom: 1px solid #e0e7ef;
+        transition: background 0.15s;
+    }
+    .ticket-collapse-header:hover { background: #edf2fa; }
+    .collapse-arrow {
+        font-size: 0.8rem;
+        color: #8a9ab5;
+        transition: transform 0.2s;
+    }
+    .ticket-collapse-body { background: #fff; }
+
+    /* Loading & error states */
+    .modal-loading {
+        padding: 40px 24px;
+        text-align: center;
+        color: #8a9ab5;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.85rem;
+    }
+    .modal-not-found {
+        padding: 36px 24px;
+        text-align: center;
+    }
+    .modal-not-found i {
+        font-size: 2.5rem;
+        color: #dde3ed;
+        display: block;
+        margin-bottom: 12px;
+    }
+    .modal-not-found p {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.85rem;
+        color: #8a9ab5;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-wrapper">
+    <h1 class="hero-title">DOH CHD CALABARZON IT Helpdesk</h1>
+    <p class="hero-sub">What would you like to do today?</p>
+</div>
+
+<div class="choices-wrapper">
+
+    <!-- Submit Ticket -->
+    <div class="choice-card submit" onclick="openFormModal()" style="cursor:pointer;">
+        <div class="choice-icon">
+            <i class="bi bi-plus-circle-fill"></i>
+        </div>
+        <div class="choice-title">Submit a Request</div>
+        <div class="choice-desc">File a new IT helpdesk request or report an issue with your equipment.</div>
+        <span class="choice-btn">Submit Request</span>
+    </div>
+
+    <!-- Search by Ticket ID -->
+    <div class="choice-card search">
+        <div class="choice-icon">
+            <i class="bi bi-search"></i>
+        </div>
+        <div class="choice-title">Search Ticket</div>
+        <div class="choice-desc">Enter your Control Number to find a specific ticket.</div>
+        <form class="search-form" id="searchForm">
+            <input type="text" class="search-input" id="searchInput"
+                   placeholder="e.g. DOH4A-ICT-2026-0001"
+                   autocomplete="off">
+            <button type="submit" class="choice-btn">Search</button>
+        </form>
+        <div class="search-error" id="searchError">Please enter a Control Number.</div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<!-- Form Modal -->
+<div class="form-modal-overlay" id="formModalOverlay">
+    <div class="form-modal" id="formModal">
+        <div class="form-modal-header">
+            <h5><i class="bi bi-plus-circle-fill me-2"></i>IT Job / Service Request Form</h5>
+            <button class="modal-close-btn" onclick="closeFormModal()"><i class="bi bi-x"></i></button>
+        </div>
+        <div class="form-modal-body" id="formModalBody">
+            <div style="padding:40px; text-align:center; color:#8a9ab5; font-family:'Open Sans',sans-serif;">
+                <i class="bi bi-arrow-repeat" style="font-size:2rem; display:block; margin-bottom:12px; animation:spin 1s linear infinite;"></i>
+                Loading form...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="ticket-modal-overlay" id="ticketModalOverlay">
+    <div class="ticket-modal" id="ticketModal">
+        <div id="modalBody">
+            <div class="modal-loading">
+                <i class="bi bi-arrow-repeat" style="font-size:1.8rem; display:block; margin-bottom:10px; animation: spin 1s linear infinite;"></i>
+                Searching...
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+<script>
+// Status map
+const statusLabels = {
+    'pending':   'Submitted',
+    'accepted':  'Accepted',
+    'assisting': 'In Progress',
+    'completed': 'Completed',
+};
+const statusClass = {
+    'pending':   'status-pending',
+    'accepted':  'status-accepted',
+    'assisting': 'status-assisting',
+    'completed': 'status-completed',
+};
+const steps = ['pending', 'accepted', 'assisting', 'completed'];
+const stepNames = ['Submitted', 'Accepted', 'In Progress', 'Completed'];
+
+function getStepIndex(status) {
+    return steps.indexOf(status);
+}
+
+function buildTrackerHTML(status) {
+    const current = getStepIndex(status);
+    let html = '<div class="tracker-steps">';
+    steps.forEach((s, i) => {
+        let circleClass = '', labelClass = '', icon = i + 1;
+        if (i < current)      { circleClass = 'done';   labelClass = 'done-label';   icon = '✓'; }
+        else if (i === current){ circleClass = 'active'; labelClass = 'active-label'; }
+        html += `<div class="tracker-step">
+            <div class="step-circle ${circleClass}">${icon}</div>
+            <div class="step-label ${labelClass}">${stepNames[i]}</div>
+        </div>`;
+        if (i < steps.length - 1)
+            html += `<div class="step-line ${i < current ? 'done' : ''}"></div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+function buildSingleTicket(t, collapsible = false, index = 0) {
+    const statusLabel = statusLabels[t.status] || t.status;
+    const badgeClass  = statusClass[t.status] || '';
+    const colId = 'ticketCollapse' + index;
+    const header = collapsible ? `
+        <div class="ticket-collapse-header" onclick="toggleCollapse('${colId}', this)">
+            <span class="modal-control-no" style="font-size:0.82rem;">${t.control_no}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="modal-status-badge ${badgeClass}" style="font-size:0.6rem;">${statusLabel}</span>
+                <i class="bi bi-chevron-down collapse-arrow"></i>
+            </div>
+        </div>
+        <div class="ticket-collapse-body" id="${colId}" style="display:${index===0?'block':'none'};">
+    ` : `
+        <div class="modal-control-bar">
+            <span class="modal-control-no">${t.control_no}</span>
+            <span class="modal-status-badge ${badgeClass}">${statusLabel}</span>
+        </div>
+    `;
+    const footer = collapsible ? '</div>' : '';
+
+    return header + `
+        <div class="modal-tracker" style="${collapsible?'padding:14px 24px;':''}">
+            <div class="tracker-label">Ticket Progress</div>
+            ${buildTrackerHTML(t.status)}
+        </div>
+        <div class="modal-details">
+            <div class="detail-row">
+                <span class="detail-key">Requested By</span>
+                <span class="detail-val">${t.requested_by}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Date Filed</span>
+                <span class="detail-val">${t.date_request} ${t.time_request} ${t.am_pm}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Division</span>
+                <span class="detail-val">${t.department_division || 'N/A'}${t.section_unit ? ' — ' + t.section_unit : ''}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-key">Issue</span>
+                <span class="detail-val">${t.request_complaint}${t.is_urgent ? '<span class="urgent-badge">URGENT</span>' : ''}</span>
+            </div>
+            ${t.equipment ? `<div class="detail-row">
+                <span class="detail-key">Equipment</span>
+                <span class="detail-val">${t.equipment}${t.brand?' · '+t.brand:''}${t.model?' · '+t.model:''}</span>
+            </div>` : ''}
+            ${t.assisted_by ? `<div class="detail-row">
+                <span class="detail-key">Assigned To</span>
+                <span class="detail-val">${t.assisted_by}</span>
+            </div>` : ''}
+            ${t.completed_at ? `<div class="detail-row">
+                <span class="detail-key">Completed</span>
+                <span class="detail-val">${t.completed_at}</span>
+            </div>` : ''}
+        </div>
+        ${collapsible ? `
+        <div style="padding:10px 24px; background:#f7f9fc; border-top:1px solid #e0e7ef; text-align:right;">
+            <button onclick="printSearchTicketByIndex(${index})"
+                    style="padding:6px 16px; border-radius:7px; border:none;
+                           background:linear-gradient(90deg,#1a7a4a,#2ecc71);
+                           color:#fff; font-family:'Montserrat',sans-serif; font-weight:700;
+                           font-size:0.72rem; cursor:pointer;">
+                <i class="bi bi-printer-fill" style="margin-right:5px;"></i> Print Ticket
+            </button>
+        </div>` : ''}
+    ` + footer;
+}
+
+// Global store for search results so print buttons can access ticket data by index
+let searchResultTickets = [];
+let searchResultSingle  = null;
+
+function buildModalContent(data) {
+    // Reset globals
+    searchResultTickets = [];
+    searchResultSingle  = null;
+
+    // Not found
+    if (!data.found) {
+        return `<div class="modal-top-bar">
+                    <h5>No Results Found</h5>
+                    <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="modal-not-found">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <p>No ticket found for <strong>"${data.query}"</strong>.<br>Try your name or Control Number.</p>
+                </div>`;
+    }
+
+    // Multiple tickets (name search)
+    if (data.tickets) {
+        const count = data.tickets.length;
+        const name  = data.tickets[0].requested_by;
+        searchResultTickets = data.tickets;
+        let ticketsHTML = data.tickets.map((t, i) => `
+            <div class="ticket-item" style="border-bottom: 1px solid #e0e7ef;">
+                ${buildSingleTicket(t, true, i)}
+            </div>`).join('');
+
+        return `<div class="modal-top-bar">
+                    <h5>Tickets for ${name}</h5>
+                    <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+                </div>
+                <div style="padding:10px 24px 6px; background:#f0f4f8; border-bottom:1px solid #e0e7ef;">
+                    <span style="font-family:'Open Sans',sans-serif; font-size:0.75rem; color:#5a7a9a;">
+                        <i class="bi bi-ticket-perforated me-1"></i>${count} ticket${count>1?'s':''} found
+                        ${data.has_active ? ' · <span style="color:#1565c0;font-weight:700;">'+data.active_count+' active</span>' : ''}
+                    </span>
+                </div>
+                <div style="max-height:420px; overflow-y:auto;">
+                    ${ticketsHTML}
+                </div>
+                <div class="modal-footer-note">
+                    <i class="bi bi-info-circle me-1"></i>
+                    For follow-ups, contact the ICT Division directly.
+                </div>`;
+    }
+
+    // Single ticket (control no. search)
+    searchResultSingle = data.ticket;
+    // Use setTimeout so the DOM is ready and searchResultSingle is set before button click
+    return `<div class="modal-top-bar">
+                <h5>IT Helpdesk Job Ticket</h5>
+                <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+            </div>
+            ${buildSingleTicket(data.ticket)}
+            <div class="modal-footer-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <span><i class="bi bi-info-circle me-1"></i>For follow-ups, contact the ICT Division directly.</span>
+                <button id="singleTicketPrintBtn"
+                        style="padding:7px 18px; border-radius:7px; border:none;
+                               background:linear-gradient(90deg,#1a7a4a,#2ecc71);
+                               color:#fff; font-family:'Montserrat',sans-serif; font-weight:700;
+                               font-size:0.75rem; cursor:pointer; flex-shrink:0;">
+                    <i class="bi bi-printer-fill me-1"></i> Print Ticket
+                </button>
+            </div>`;
+}
+
+// Attach the print button event after modal content is rendered
+function attachSinglePrintBtn() {
+    const btn = document.getElementById('singleTicketPrintBtn');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            if (searchResultSingle) printSearchTicket(searchResultSingle);
+        });
+    }
+}
+
+function toggleCollapse(id, header) {
+    const body  = document.getElementById(id);
+    const arrow = header.querySelector('.collapse-arrow');
+    const open  = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function openModal() {
+    document.getElementById('ticketModalOverlay').classList.add('show');
+}
+function closeModal() {
+    document.getElementById('ticketModalOverlay').classList.remove('show');
+}
+
+function printSearchTicket(t) {
+    lastTicketData = {
+        control_no:          t.control_no || '',
+        date_request:        t.date_request || '',
+        time_request:        t.time_request || '',
+        am_pm:               t.am_pm || '',
+        request_complaint:   t.request_complaint || '',
+        equipment:           t.equipment || '',
+        brand:               t.brand || '',
+        model:               t.model || '',
+        department_division: t.department_division || '',
+        section_unit:        t.section_unit || '',
+        is_urgent:           t.is_urgent || false,
+        requested_by:        t.requested_by || '',
+    };
+    printTicket(t.control_no);
+}
+
+function printSearchTicketByIndex(index) {
+    let t;
+    if (index === -1) {
+        // Single ticket search result
+        t = searchResultSingle;
+    } else {
+        // Multiple tickets — get by index
+        t = searchResultTickets[index];
+    }
+    if (t) printSearchTicket(t);
+}
+
+// Prevent modal from closing when clicking outside
+document.getElementById('ticketModal').addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+// ── FORM MODAL ──
+function openFormModal() {
+    const overlay = document.getElementById('formModalOverlay');
+    const body    = document.getElementById('formModalBody');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // Load form via AJAX
+    fetch("{% url 'user_form' %}")
+        .then(r => r.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc    = parser.parseFromString(html, 'text/html');
+            const container = doc.querySelector('.doh-container');
+            if (container) {
+                body.innerHTML = container.outerHTML;
+                initFormScripts();
+                // Intercept form submission
+                attachFormSubmit();
+            } else {
+                body.innerHTML = '<div style="padding:24px;">Could not load form. <a href="{% url 'user_form' %}">Click here</a> to open it.</div>';
+            }
+        })
+        .catch(() => {
+            body.innerHTML = '<div style="padding:24px;">Error loading form. <a href="{% url 'user_form' %}">Click here</a> to open it.</div>';
+        });
+}
+
+function attachFormSubmit() {
+    const form = document.getElementById('requestForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        // Get CSRF token from the form's hidden input
+        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const submitBtn = form.querySelector('[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        }
+
+        fetch("{% url 'user_form' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessModal(data.control_no, data.ticket_data);
+            } else {
+                // Re-load the form and show errors
+                fetch("{% url 'user_form' %}")
+                    .then(r => r.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc    = parser.parseFromString(html, 'text/html');
+                        const container = doc.querySelector('.doh-container');
+                        if (container) {
+                            document.getElementById('formModalBody').innerHTML = container.outerHTML;
+                            initFormScripts();
+                            attachFormSubmit();
+                            // Show error message
+                            const errDiv = document.createElement('div');
+                            errDiv.style.cssText = 'color:red;text-align:center;padding:8px;font-size:0.85rem;';
+                            errDiv.textContent = 'Please fill in all required fields.';
+                            document.querySelector('#requestForm').prepend(errDiv);
+                        }
+                    });
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Request';
+                }
+            }
+        })
+        .catch(() => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Request';
+            }
+            alert('Submission failed. Please try again.');
+        });
+    });
+}
+
+// Store last submitted ticket data for printing
+let lastTicketData = {};
+
+function showSuccessModal(controlNo, ticketData) {
+    if (ticketData) lastTicketData = ticketData;
+
+    document.getElementById('formModalBody').innerHTML = `
+        <div style="padding: 40px 32px; text-align: center;">
+            <div style="width:72px; height:72px; background:linear-gradient(135deg,#1a7a4a,#2ecc71);
+                        border-radius:50%; display:flex; align-items:center; justify-content:center;
+                        margin: 0 auto 20px; font-size:2rem; color:#fff;">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h4 style="font-family:'Montserrat',sans-serif; font-weight:800; color:#1a3a6b; margin-bottom:8px;">
+                Request Submitted!
+            </h4>
+            <p style="font-family:'Open Sans',sans-serif; font-size:0.9rem; color:#5a7a9a; margin-bottom:20px;">
+                Your IT request has been successfully submitted.<br>Our team will review it shortly.
+            </p>
+            ${controlNo ? `
+            <div style="background:#f0f4f8; border-radius:10px; padding:14px 24px; display:inline-block; margin-bottom:28px;">
+                <div style="font-family:'Open Sans',sans-serif; font-size:0.72rem; color:#8a9ab5; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">Your Control Number</div>
+                <div style="font-family:'Courier New',monospace; font-size:1.2rem; font-weight:700; color:#1a3a6b;">${controlNo}</div>
+                <div style="font-family:'Open Sans',sans-serif; font-size:0.72rem; color:#8a9ab5; margin-top:4px;">Save this number to track your ticket</div>
+            </div>` : ''}
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                <button onclick="closeFormModal()" 
+                        style="padding:10px 24px; border-radius:8px; border:none; background:#e0e7ef;
+                               color:#1a3a6b; font-family:'Montserrat',sans-serif; font-weight:700;
+                               font-size:0.82rem; cursor:pointer;">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+                <button onclick="printTicket('${controlNo}')" 
+                        style="padding:10px 24px; border-radius:8px; border:none;
+                               background:linear-gradient(90deg,#1a7a4a,#2ecc71);
+                               color:#fff; font-family:'Montserrat',sans-serif; font-weight:700;
+                               font-size:0.82rem; cursor:pointer;">
+                    <i class="bi bi-printer-fill me-1"></i> Print Ticket
+                </button>
+                <button onclick="openFormModal()" 
+                        style="padding:10px 24px; border-radius:8px; border:none;
+                               background:linear-gradient(90deg,#1565c0,#1e88e5);
+                               color:#fff; font-family:'Montserrat',sans-serif; font-weight:700;
+                               font-size:0.82rem; cursor:pointer;">
+                    <i class="bi bi-plus-circle me-1"></i> Submit Another
+                </button>
+            </div>
+        </div>`;
+}
+
+function printTicket(controlNo) {
+    const d = lastTicketData;
+    const printWindow = window.open('', '_blank', 'width=860,height=1100');
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>IT Job Request - ${controlNo}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Arial', sans-serif; background: #f0f4f8; color: #000; }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 12mm auto;
+            background: #fff;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* ── TOP HEADER BAR ── */
+        .top-bar {
+            background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 100%);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 4px solid #f9c900;
+        }
+        .top-bar-divider {
+            width: 1.5px;
+            height: 44px;
+            background: rgba(255,255,255,0.35);
+            flex-shrink: 0;
+        }
+        .top-bar-text { flex: 1; }
+        .top-bar-text .line1 {
+            font-size: 8.5pt;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 0.04em;
+        }
+        .top-bar-text .line2 {
+            font-size: 11.5pt;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .top-bar-ctrl {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .top-bar-ctrl .ctrl-label {
+            font-size: 7.5pt;
+            color: rgba(255,255,255,0.65);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .top-bar-ctrl .ctrl-val {
+            font-family: 'Courier New', monospace;
+            font-size: 11pt;
+            font-weight: 700;
+            color: #f9c900;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── FORM TITLE BAND ── */
+        .form-title-band {
+            background: #f4f7fb;
+            border-bottom: 1px solid #dde6f0;
+            padding: 10px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .form-title-band .ftitle {
+            font-size: 12pt;
+            font-weight: 800;
+            color: #1a3a6b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .form-title-band .fdate {
+            font-size: 8.5pt;
+            color: #7a8fa8;
+        }
+        ${d.is_urgent ? `
+        .urgent-banner {
+            background: #fff0f0;
+            border-left: 4px solid #c0392b;
+            padding: 7px 28px;
+            font-size: 9pt;
+            font-weight: 700;
+            color: #c0392b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }` : ''}
+
+        /* ── BODY ── */
+        .form-body { padding: 0 28px 20px; }
+
+        /* ── SECTION HEADER ── */
+        .section-head {
+            font-size: 7.5pt;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            color: #8a9ab5;
+            text-transform: uppercase;
+            padding: 14px 0 6px;
+            border-bottom: 1.5px solid #e0e7ef;
+            margin-bottom: 0;
+        }
+
+        /* ── FIELD ROWS ── */
+        .field-row {
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 1px solid #f0f4f8;
+            padding: 9px 0;
+        }
+        .field-row:last-child { border-bottom: none; }
+        .field-key {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #4a6080;
+            min-width: 180px;
+            max-width: 180px;
+            padding-right: 12px;
+            padding-top: 1px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            line-height: 1.5;
+        }
+        .field-val {
+            flex: 1;
+            font-size: 10pt;
+            color: #1a1a2e;
+            line-height: 1.6;
+            padding-top: 0;
+        }
+        .field-val.tall { min-height: 36px; }
+        .field-val.mono { font-family: 'Courier New', monospace; }
+
+        /* ── CHECKBOX ── */
+        .cb-row { display: flex; align-items: center; gap: 14px; }
+        .cb-item { display: flex; align-items: center; gap: 5px; font-size: 9.5pt; }
+        .cb-box {
+            width: 12px; height: 12px;
+            border: 1.5px solid #4a6080;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 9pt; font-weight: 700; color: #1565c0; flex-shrink: 0;
+        }
+
+        /* ── FOOTER ── */
+        .page-footer {
+            background: #1a3a6b;
+            padding: 10px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .page-footer .fl {
+            font-size: 7.5pt;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 0.06em;
+        }
+        .page-footer .fr {
+            font-size: 7.5pt;
+            color: rgba(255,255,255,0.4);
+        }
+
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; width: 100%; min-height: unset; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <div class="top-bar-text">
+            <div class="line1">Republic of the Philippines · Department of Health</div>
+            <div class="line2">CHD CALABARZON IT Helpdesk</div>
+        </div>
+        <div class="top-bar-divider"></div>
+        <div class="top-bar-ctrl">
+            <div class="ctrl-label">Control No.</div>
+            <div class="ctrl-val">${d.control_no || controlNo || '—'}</div>
+        </div>
+    </div>
+
+    <!-- Title band -->
+    <div class="form-title-band">
+        <span class="ftitle">IT Job / Service Request Form</span>
+        <span class="fdate">Filed: ${d.date_request || ''} ${d.time_request || ''} ${d.am_pm || ''}</span>
+    </div>
+
+    ${d.is_urgent ? '<div class="urgent-banner">⚠ Urgent Request — Requires Immediate Attention</div>' : ''}
+
+    <!-- Body -->
+    <div class="form-body">
+
+        <!-- REQUEST INFO -->
+        <div class="section-head">Request Information</div>
+
+        <div class="field-row">
+            <div class="field-key">Date of Request</div>
+            <div class="field-val mono">${d.date_request || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Time of Request</div>
+            <div class="field-val">
+                <div class="cb-row">
+                    <span class="mono">${d.time_request || '—'}</span>
+                    <div class="cb-item"><span class="cb-box">${d.am_pm === 'AM' ? '✓' : ''}</span> AM</div>
+                    <div class="cb-item"><span class="cb-box">${d.am_pm === 'PM' ? '✓' : ''}</span> PM</div>
+                </div>
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Requested / Reported By</div>
+            <div class="field-val">${d.requested_by || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Department / Division</div>
+            <div class="field-val">${d.department_division || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Section / Unit</div>
+            <div class="field-val">${d.section_unit || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Priority</div>
+            <div class="field-val">
+                <div class="cb-row">
+                    <div class="cb-item"><span class="cb-box">${d.is_urgent ? '✓' : ''}</span> Urgent</div>
+                    <div class="cb-item"><span class="cb-box">${!d.is_urgent ? '✓' : ''}</span> Normal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ISSUE DETAILS -->
+        <div class="section-head" style="margin-top:6px;">Issue Details</div>
+
+        <div class="field-row">
+            <div class="field-key">Nature of Request / Complaint</div>
+            <div class="field-val tall">${(d.request_complaint || '—').replace(/\n/g, '<br>')}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Equipment / Item Involved</div>
+            <div class="field-val">${d.equipment || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Brand</div>
+            <div class="field-val">${d.brand || '—'}</div>
+        </div>
+        <div class="field-row">
+            <div class="field-key">Model</div>
+            <div class="field-val">${d.model || '—'}</div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="page-footer">
+        <span class="fl">DOH CHD CALABARZON · ICT Helpdesk System</span>
+        <span class="fr">Generated automatically upon submission</span>
+    </div>
+
+</div>
+<script>
+    window.onload = function() { window.print(); };
+<\/script>
+</body>
+</html>`);
+    printWindow.document.close();
+}
+
+function closeFormModal() {
+    document.getElementById('formModalOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// Prevent form modal from closing on inside click
+document.getElementById('formModal').addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+function initFormScripts() {
+    // Auto-fill date/time
+    const now = new Date();
+    const mmEl   = document.getElementById('date_mm');
+    const ddEl   = document.getElementById('date_dd');
+    const yyyyEl = document.getElementById('date_yyyy');
+    const timeEl = document.getElementById('time');
+    const ampmEl = document.getElementById('ampm');
+    if (!mmEl) return;
+
+    // Hide model and section containers on load
+    const modelCont = document.getElementById('model_container');
+    const sectionCont = document.getElementById('section_container');
+    if (modelCont) modelCont.style.display = 'none';
+    if (sectionCont) sectionCont.style.display = 'none';
+
+    mmEl.value   = String(now.getMonth() + 1).padStart(2, '0');
+    ddEl.value   = String(now.getDate()).padStart(2, '0');
+    yyyyEl.value = now.getFullYear();
+
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm    = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    timeEl.value = `${String(hours).padStart(2, '0')}:${minutes}`;
+    ampmEl.value = ampm;
+
+    document.getElementById('display_mm').textContent   = mmEl.value;
+    document.getElementById('display_dd').textContent   = ddEl.value;
+    document.getElementById('display_yyyy').textContent = yyyyEl.value;
+    document.getElementById('display_time').textContent = timeEl.value;
+    document.getElementById('display_ampm').textContent = ampmEl.value;
+
+    // Brand → Others
+    const brandSelect = document.getElementById('brand_select');
+    const brandOther  = document.getElementById('brand_other');
+    if (brandSelect) {
+        brandSelect.addEventListener('change', function() {
+            brandOther.style.display = this.value === 'Others' ? 'block' : 'none';
+            if (this.value !== 'Others') brandOther.value = '';
+        });
+    }
+
+    // Department → Section
+    const sectionsByDept = {
+        "ASD - Administrative Services Division": ["Information Communication Technology","Admin Office","Birds and Awards Committee","Human Resource Development","Human Resource Management","Records"],
+        "RLED - Regulation, Licensing and Enforcement Division": ["Licensing"],
+        "FSD - Finance Services Division": ["Accounting","Budget","Cashier"],
+        "ARD - Assistant Regional Director's Office": ["Disaster Risk Reduction and Management for Health","Regional Epidemiology Surveillance Unit","Assistant Regional Director's Office"],
+        "HSPD - Health Program Support Division": ["Family Health Unit","Non-Communicable Disease","Infectious Disease Unit"],
+        "PHTO - BATANGAS": ["PHTO - BATANGAS"],
+        "PHTO - CAVITE": ["PHTO - CAVITE"],
+        "PHTO - QUEZON": ["PHTO - QUEZON"],
+        "PHTO - LAGUNA": ["PHTO - LAGUNA"],
+        "Others": ["Custom – specify in complaint"]
+    };
+    const deptSel = document.getElementById('department_division');
+    if (deptSel) {
+        deptSel.addEventListener('change', function() {
+            const sectionSel  = document.getElementById('section_unit');
+            const sectionCont = document.getElementById('section_container');
+            sectionSel.innerHTML = '<option value="">-- Select Section / Unit --</option>';
+            if (this.value && sectionsByDept[this.value]) {
+                sectionCont.style.display = 'flex';
+                sectionsByDept[this.value].forEach(s => {
+                    const o = document.createElement('option');
+                    o.value = o.textContent = s;
+                    sectionSel.appendChild(o);
+                });
+            } else {
+                sectionCont.style.display = 'none';
+            }
+        });
+    }
+
+    // Brand → Model cascading
+    const modelsByBrand = {
+        "Dell":["OptiPlex 3080","OptiPlex 7090","Latitude 5420","Inspiron 15","Vostro"],
+        "HP":["ProDesk 400 G7","EliteDesk 800 G6","Pavilion","LaserJet Pro M404","LaserJet MFP M428"],
+        "Lenovo":["ThinkCentre M70","ThinkPad T14","IdeaPad","Legion"],
+        "Acer":["Veriton","Aspire","TravelMate"],
+        "Asus":["ExpertCenter","VivoBook","ZenBook"],
+        "Epson":["L3250","L4260","WorkForce"],
+        "Canon":["imageCLASS","PIXMA"],
+        "Brother":["HL-L2350DW","MFC-L2710DW"],
+        "Samsung":['24" Monitor',"Galaxy Book"],
+        "LG":["24MP400","UltraGear"],
+        "Others":[]
+    };
+    if (brandSelect) {
+        brandSelect.addEventListener('change', function() {
+            const brand = this.value;
+            const modelSel  = document.getElementById('model_select');
+            const modelCont = document.getElementById('model_container');
+            const modelOther= document.getElementById('model_other');
+            if (!brand) { modelCont.style.display='none'; return; }
+            modelCont.style.display = 'flex';
+            if (brand === 'Others') {
+                modelSel.style.display='none'; modelOther.style.display='block';
+            } else {
+                modelSel.style.display='block'; modelOther.style.display='none';
+                modelSel.innerHTML = '<option value="">-- Select Model (optional) --</option>';
+                (modelsByBrand[brand]||[]).forEach(m => {
+                    const o=document.createElement('option'); o.value=o.textContent=m; modelSel.appendChild(o);
+                });
+                const oo=document.createElement('option'); oo.value='Others'; oo.textContent='Others (specify)'; modelSel.appendChild(oo);
+            }
+        });
+        const modelSel = document.getElementById('model_select');
+        if (modelSel) {
+            modelSel.addEventListener('change', function() {
+                const mo = document.getElementById('model_other');
+                mo.style.display = this.value==='Others' ? 'block' : 'none';
+                if (this.value!=='Others') mo.value='';
+            });
+        }
+    }
+}
+
+// ── SEARCH FORM ──
+// Search form submit
+document.getElementById('searchForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const val = document.getElementById('searchInput').value.trim();
+    const err = document.getElementById('searchError');
+    if (!val) {
+        err.classList.add('show');
+        return;
+    }
+    err.classList.remove('show');
+
+    // Show loading modal
+    document.getElementById('modalBody').innerHTML = `
+        <div class="modal-top-bar">
+            <h5>Searching...</h5>
+            <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+        </div>
+        <div class="modal-loading">
+            <i class="bi bi-arrow-repeat" style="font-size:1.8rem; display:block; margin-bottom:10px; animation: spin 1s linear infinite;"></i>
+            Looking up ticket...
+        </div>`;
+    openModal();
+
+    // Fetch ticket data
+    fetch(`{% url 'search_ticket_api' %}?control_no=` + encodeURIComponent(val))
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('modalBody').innerHTML = buildModalContent(data);
+            attachSinglePrintBtn();
+        })
+        .catch(() => {
+            document.getElementById('modalBody').innerHTML = `
+                <div class="modal-top-bar">
+                    <h5>Error</h5>
+                    <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="modal-not-found">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <p>Something went wrong. Please try again.</p>
+                </div>`;
+        });
+});
+
+document.getElementById('searchInput').addEventListener('input', function () {
+    document.getElementById('searchError').classList.remove('show');
+});
+</script>
+{% endblock %}

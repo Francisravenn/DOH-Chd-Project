@@ -1,0 +1,456 @@
+{% extends "header_footer_base.html" %}
+
+{% block title %}DOH IT Job Request Form{% endblock %}
+
+{% block content %}
+
+<style>
+  body {
+    background-color: #ffffff;
+    color: #000000;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+  .doh-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 15mm auto;
+    padding: 20mm 25mm;
+    background: #ffffff;
+    border: 1px solid #000000;
+    box-sizing: border-box;
+  }
+  .doh-header {
+    text-align: center;
+    margin-bottom: 18mm;
+  }
+  .doh-republic {
+    font-size: 14pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .doh-department {
+    font-size: 13pt;
+    font-weight: bold;
+    margin: 4px 0 12px 0;
+  }
+  .doh-form-title {
+    font-size: 15pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 2px solid #000;
+    padding-bottom: 6px;
+    margin: 0 0 20mm 0;
+  }
+  .control-no {
+    text-align: right;
+    font-size: 11pt;
+    margin-bottom: 12mm;
+    font-weight: bold;
+    color: #000;
+  }
+  .field-row {
+    margin-bottom: 14mm;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+  }
+  .field-label {
+    font-weight: bold;
+    min-width: 260px;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-size: 11pt;
+  }
+  .field-underline {
+    flex: 1;
+    border-bottom: 1px solid #000000;
+    min-height: 22px;
+    padding: 2px 6px;
+    font-size: 11pt;
+  }
+  .field-underline input,
+  .field-underline textarea,
+  .field-underline select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    padding: 0;
+    margin: 0;
+  }
+  .readonly-field {
+    background: #f8f9fa;
+    color: #495057;
+    pointer-events: none;
+    user-select: none;
+  }
+  .others-input {
+    display: none;
+    margin-top: 8px;
+    width: 100%;
+  }
+  .section-hidden, .model-hidden {
+    display: none;
+  }
+  .submit-area {
+    text-align: center;
+    margin-top: 40px;
+  }
+  @media print {
+    body { background: white; margin: 0; padding: 0; }
+    .doh-container { border: none; margin: 0; padding: 15mm 20mm; width: 100%; box-shadow: none; }
+    .submit-area { display: none; }
+  }
+</style>
+
+<div class="doh-container">
+
+  <form id="requestForm" method="post" action="">
+    {% csrf_token %}
+
+    <!-- Hidden fields for date/time submission -->
+    <input type="hidden" name="date_mm"   id="date_mm">
+    <input type="hidden" name="date_dd"   id="date_dd">
+    <input type="hidden" name="date_yyyy" id="date_yyyy">
+    <input type="hidden" name="time"      id="time">
+    <input type="hidden" name="ampm"      id="ampm">
+
+    <div class="doh-header">
+      <div class="doh-republic">Republic of the Philippines</div>
+      <div class="doh-department">Department of Health</div>
+      <div class="doh-department">Department of Health: Center for Health Development (DOH-CHD) CALABARZON – IT Helpdesk System</div>
+    </div>
+
+    <div class="control-no">
+      CONTROL NO.: <span style="font-style: italic; color: #000;">(To be assigned after submission)</span>
+    </div>
+
+    <div class="doh-form-title">IT JOB / SERVICE REQUEST FORM</div>
+
+    <!-- 1) Date – visible & auto -->
+    <div class="field-row">
+      <div class="field-label">1) Date of Request (mm/dd/yyyy):</div>
+      <div class="field-underline date-group readonly-field">
+        <span id="display_mm">--</span> /
+        <span id="display_dd">--</span> /
+        <span id="display_yyyy">----</span>
+      </div>
+    </div>
+
+    <!-- 2) Time – visible & auto -->
+    <div class="field-row">
+      <div class="field-label">2) Time of Request (hh:mm):</div>
+      <div class="field-underline readonly-field" style="display:flex; align-items:center; gap:25px;">
+        <span id="display_time">--:--</span>
+        <span id="display_ampm">--</span>
+      </div>
+    </div>
+
+    <!-- 3) Nature of Request / Complaint -->
+    <div class="field-row">
+      <div class="field-label">3) Nature of Request / Complaint:</div>
+      <div class="field-underline textarea-field">
+        {{ form.request_complaint }}
+      </div>
+    </div>
+
+    <!-- 4) Equipment -->
+    <div class="field-row">
+      <div class="field-label">4) Equipment / Item Involved:</div>
+      <div class="field-underline">{{ form.equipment }}</div>
+    </div>
+
+    <!-- 5a) Brand – dropdown -->
+    <div class="field-row">
+      <div class="field-label">5) Brand (if applicable):</div>
+      <div class="field-underline">
+        <select name="brand" id="brand_select" style="width:100%; font-size:11pt;">
+          <option value="">-- Select Brand --</option>
+          <option value="Dell">Dell</option>
+          <option value="HP">HP</option>
+          <option value="Lenovo">Lenovo</option>
+          <option value="Acer">Acer</option>
+          <option value="Asus">Asus</option>
+          <option value="Epson">Epson</option>
+          <option value="Canon">Canon</option>
+          <option value="Brother">Brother</option>
+          <option value="Samsung">Samsung</option>
+          <option value="LG">LG</option>
+          <option value="Others">Others</option>
+        </select>
+        <input type="text" name="brand_other" id="brand_other" 
+               class="others-input" placeholder="Please specify brand">
+      </div>
+    </div>
+
+    <!-- 5b) Model – appears after brand selection -->
+    <div class="field-row model-hidden" id="model_container">
+      <div class="field-label">Model (optional):</div>
+      <div class="field-underline">
+        <select name="model" id="model_select" style="width:100%; font-size:11pt;">
+          <option value="">-- Select Model (optional) --</option>
+        </select>
+        <input type="text" name="model" id="model_other" 
+              class="others-input" placeholder="Please specify model (optional)">
+      </div>
+    </div>
+
+    <!-- 6) Department / Division -->
+    <div class="field-row">
+      <div class="field-label">6) Department / Division:</div>
+      <div class="field-underline">
+        <select name="department_division" id="department_division" required style="width:100%; font-size:11pt;">
+          <option value="">-- Select --</option>
+          <option value="ASD - Administrative Services Division">ASD - Administrative Services Division</option>
+          <option value="RLED - Regulation, Licensing and Enforcement Division">RLED - Regulation, Licensing and Enforcement Division</option>
+          <option value="FSD - Finance Services Division">FSD - Finance Services Division</option>
+          <option value="ARD - Assistant Regional Director's Office">ARD - Assistant Regional Director's Office</option>
+          <option value="HSPD - Health Program Support Division">HSPD - Health Program Support Division</option>
+          <option value="PHTO - BATANGAS">PHTO - BATANGAS</option>
+          <option value="PHTO - CAVITE">PHTO - CAVITE</option>
+          <option value="PHTO - QUEZON">PHTO - QUEZON</option>
+          <option value="PHTO - LAGUNA">PHTO - LAGUNA</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Section / Unit – hidden until department selected -->
+    <div class="field-row section-hidden" id="section_container">
+      <div class="field-label">Section / Unit:</div>
+      <div class="field-underline">
+        <select name="section_unit" id="section_unit" required style="width:100%; font-size:11pt;">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Urgent -->
+    <div class="field-row">
+      <div class="field-label">Urgent Request?</div>
+      <div class="field-underline" style="align-items: center; padding: 8px 6px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          {{ form.is_urgent }}
+          <span>Yes, this request requires immediate attention</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Requested by -->
+    <div class="field-row">
+      <div class="field-label">7) Requested / Reported by:</div>
+      <div class="field-underline">{{ form.requested_by }}</div>
+    </div>
+
+    {% if form.errors %}
+      <div style="color: red; margin: 20px 0; text-align: center;">
+        Please correct the following errors:<br>
+        {{ form.errors }}
+      </div>
+    {% endif %}
+
+    <div class="submit-area">
+      <button type="submit" class="btn btn-primary">Submit Request</button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-fill date/time – hidden + visible display
+document.addEventListener('DOMContentLoaded', function () {
+    const now = new Date();
+
+    // Hidden fields for form submission
+    document.getElementById('date_mm').value   = String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('date_dd').value   = String(now.getDate()).padStart(2, '0');
+    document.getElementById('date_yyyy').value = now.getFullYear();
+
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+
+    document.getElementById('time').value = `${String(hours).padStart(2, '0')}:${minutes}`;
+    document.getElementById('ampm').value = ampm;
+
+    // Visible (non-editable) display
+    document.getElementById('display_mm').textContent   = document.getElementById('date_mm').value;
+    document.getElementById('display_dd').textContent   = document.getElementById('date_dd').value;
+    document.getElementById('display_yyyy').textContent = document.getElementById('date_yyyy').value;
+    document.getElementById('display_time').textContent = document.getElementById('time').value;
+    document.getElementById('display_ampm').textContent = document.getElementById('ampm').value;
+
+    // ────────────────────────────────────────────────
+    // Brand → Others input (show/hide when "Others" selected)
+    const brandSelect = document.getElementById('brand_select');
+    const brandOtherInput = document.getElementById('brand_other');
+
+    if (brandSelect && brandOtherInput) {
+        brandSelect.addEventListener('change', function () {
+            if (this.value === 'Others') {
+                brandOtherInput.style.display = 'block';
+                brandOtherInput.required = false;
+                brandOtherInput.focus(); // auto-focus for better UX
+            } else {
+                brandOtherInput.style.display = 'none';
+                brandOtherInput.required = false;
+                brandOtherInput.value = ''; // clear if user changes mind
+            }
+        });
+    }
+
+    // ────────────────────────────────────────────────
+    // Brand → Model cascading + Others for model
+    const modelsByBrand = {
+        "Dell": ["OptiPlex 3080", "OptiPlex 7090", "Latitude 5420", "Inspiron 15", "Vostro"],
+        "HP": ["ProDesk 400 G7", "EliteDesk 800 G6", "Pavilion", "LaserJet Pro M404", "LaserJet MFP M428"],
+        "Lenovo": ["ThinkCentre M70", "ThinkPad T14", "IdeaPad", "Legion"],
+        "Acer": ["Veriton", "Aspire", "TravelMate"],
+        "Asus": ["ExpertCenter", "VivoBook", "ZenBook"],
+        "Epson": ["L3250", "L4260", "WorkForce"],
+        "Canon": ["imageCLASS", "PIXMA"],
+        "Brother": ["HL-L2350DW", "MFC-L2710DW"],
+        "Samsung": ["24\" Monitor", "Galaxy Book"],
+        "LG": ["24MP400", "UltraGear"],
+        "Others": []
+    };
+
+    document.getElementById('brand_select').addEventListener('change', function() {
+      const brand = this.value;
+      const modelSelect = document.getElementById('model_select');
+      const modelContainer = document.getElementById('model_container');
+      const modelOther = document.getElementById('model_other');
+
+      // Only hide/show container
+      if (!brand) {
+        modelContainer.classList.add('model-hidden');
+        modelContainer.style.display = 'none';
+        return;
+      }
+
+      modelContainer.classList.remove('model-hidden');
+      modelContainer.style.display = 'flex';
+
+      if (brand === 'Others') {
+        modelSelect.style.display = 'none';
+        modelOther.style.display = 'block';
+        modelOther.required = false;
+        modelOther.focus();
+      } else if (modelsByBrand[brand]) {
+        modelSelect.style.display = 'block';
+        modelOther.style.display = 'none';
+        modelOther.required = false;
+        modelOther.value = '';
+
+        // Repopulate ONLY if brand changed (keeps current selection)
+        if (modelSelect.dataset.lastBrand !== brand) {
+          const currentValue = modelSelect.value;  // save what was selected
+          modelSelect.innerHTML = '<option value="">-- Select Model (optional) --</option>';
+          modelsByBrand[brand].forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            modelSelect.appendChild(opt);
+          });
+          const othersOpt = document.createElement('option');
+          othersOpt.value = 'Others';
+          othersOpt.textContent = 'Others (specify)';
+          modelSelect.appendChild(othersOpt);
+
+          // Restore previous selection if it still exists in new list
+          if (currentValue && Array.from(modelSelect.options).some(opt => opt.value === currentValue)) {
+            modelSelect.value = currentValue;
+          } else {
+            modelSelect.value = '';  // reset only if previous value no longer valid
+          }
+
+          modelSelect.dataset.lastBrand = brand;
+        }
+      } else {
+        modelContainer.classList.add('model-hidden');
+        modelContainer.style.display = 'none';
+      }
+    });
+
+    // Show/hide model_other when "Others" selected in model dropdown
+    document.getElementById('model_select').addEventListener('change', function() {
+      const modelOther = document.getElementById('model_other');
+      if (this.value === 'Others') {
+          modelOther.style.display = 'block';
+          modelOther.required = false;
+          modelOther.disabled = false;  // ← add
+          modelOther.focus();
+      } else {
+          modelOther.style.display = 'none';
+          modelOther.required = false;
+          modelOther.disabled = true;  // ← add
+          modelOther.value = '';
+      }
+   });
+
+    // ────────────────────────────────────────────────
+    // Department → Section cascading (already correct – kept as-is)
+    const sectionsByDepartment = {
+        "ASD - Administrative Services Division": [
+            "Information Communication Technology",
+            "Admin Office",
+            "Birds and Awards Committee",
+            "Human Resource Development",
+            "Human Resource Management",
+            "Records"
+        ],
+        "RLED - Regulation, Licensing and Enforcement Division": ["Licensing"],
+        "FSD - Finance Services Division": ["Accounting", "Budget", "Cashier"],
+        "ARD - Assistant Regional Director's Office": [
+            "Disaster Risk Reduction and Management for Health",
+            "Regional Epidemiology Surveillance Unit",
+            "Assistant Regional Director's Office"
+        ],
+        "HSPD - Health Program Support Division": [
+            "Family Health Unit",
+            "Non-Communicable Disease",
+            "Infectious Disease Unit"
+        ],
+        "PHTO - BATANGAS": ["PHTO - BATANGAS"],
+        "PHTO - CAVITE": ["PHTO - CAVITE"],
+        "PHTO - QUEZON": ["PHTO - QUEZON"],
+        "PHTO - LAGUNA": ["PHTO - LAGUNA"],
+        "Others": ["Custom – specify in complaint"]
+    };
+
+    document.getElementById('department_division').addEventListener('change', function() {
+        const dept = this.value;
+        const sectionSelect = document.getElementById('section_unit');
+        const sectionContainer = document.getElementById('section_container');
+
+        sectionSelect.innerHTML = '<option value="">-- Select Section / Unit --</option>';
+
+        if (dept && sectionsByDepartment[dept]) {
+            sectionContainer.classList.remove('section-hidden');
+            sectionContainer.style.display = 'flex';
+
+            sectionsByDepartment[dept].forEach(sec => {
+                const opt = document.createElement('option');
+                opt.value = sec;
+                opt.textContent = sec;
+                sectionSelect.appendChild(opt);
+            });
+        } else {
+            sectionContainer.classList.add('section-hidden');
+            sectionContainer.style.display = 'none';
+            sectionSelect.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}
+

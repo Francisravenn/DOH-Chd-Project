@@ -1,0 +1,299 @@
+{% extends "super_admin_base.html" %}
+
+{% block title %}Super Admin - Full Archive Access{% endblock %}
+
+{% block extra_css %}
+<style>
+    .superadmin-banner {
+        background: #343a40;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-weight: 500;
+    }
+    .month-header {
+        background: #0d6efd;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 6px 6px 0 0;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .month-header .badge {
+        background: white;
+        color: #0d6efd;
+        font-size: 0.9rem;
+    }
+    .table th {
+        background: #0d6efd !important;
+        color: white !important;
+        font-weight: 600;
+    }
+    .urgent-row {
+        background: #dc354520 !important;
+    }
+    .filter-form .form-control, .filter-form .form-select {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <div class="superadmin-banner">
+        SUPER ADMIN FULL ARCHIVE ACCESS • All records • No restrictions
+    </div>
+
+    <h2 class="mb-4">Completed Requests Archive (Super Admin View)</h2>
+
+    <!-- Filters -->
+    <form method="get" class="filter-form mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Date From</label>
+                <input type="date" name="date_from" class="form-control" value="{{ selected_date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Date To</label>
+                <input type="date" name="date_to" class="form-control" value="{{ selected_date_to }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Completed By</label>
+                <select name="completed_by" class="form-select">
+                    <option value="all">All Staff</option>
+                    {% for user in all_staff %}
+                        <option value="{{ user.id }}" {% if selected_completed_by == user.id|stringformat:"s" %}selected{% endif %}>
+                            {{ user.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 text-end">
+                <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
+                <a href="{% url 'super_admin_archive' %}" class="btn btn-outline-secondary mt-4">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <p class="mb-4"><strong>Showing {{ archived_tickets.count }} archived tickets</strong></p>
+
+    {% if archived_tickets %}
+        <div class="accordion" id="archiveAccordion">
+            {% regroup archived_tickets by completed_at|date:"F Y" as month_list %}
+            {% for month_group in month_list %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ forloop.counter }}">
+                            {{ month_group.grouper }} ({{ month_group.list|length }} tickets)
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+                        <div class="accordion-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>CONTROL NO.</th>
+                                            <th>DIVISION / SECTION</th>
+                                            <th>REQUESTED BY</th>
+                                            <th>DATE REQUESTED</th>
+                                            <th>DATE COMPLETED</th>
+                                            <th>COMPLETED BY</th>
+                                            <th>ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ticket in month_group.list %}
+                                        <tr class="{% if ticket.is_urgent %}urgent-row{% endif %}">
+                                            <td>{{ ticket.control_no }}</td>
+                                            <td>{{ ticket.division|default:"N/A" }}</td>
+                                            <td>{{ ticket.requested_by|default:"N/A" }}</td>
+                                            <td>{{ ticket.created_at|date:"m/d/Y" }}</td>
+                                            <td>{{ ticket.completed_at|date:"m/d/Y H:i" }}</td>
+                                            <td>{{ ticket.completer_name }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-primary view-ticket-btn"
+                                                        data-bs-toggle="modal" data-bs-target="#ticketDetailModal"
+                                                        data-control-no="{{ ticket.control_no }}"
+                                                        data-requested-by="{{ ticket.requested_by }}"
+                                                        data-department="{{ ticket.original_department }}"    
+                                                        data-section="{{ ticket.original_section }}"          
+                                                        data-description="{{ ticket.original_description|escapejs }}"
+                                                        data-urgent="{% if ticket.is_urgent %}Yes{% else %}No{% endif %}"
+                                                        data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}"
+                                                        data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'Y-m-d H:i' }}{% else %}N/A{% endif %}"
+                                                        data-equipment="{{ ticket.original_equipment }}"
+                                                        data-brand="{{ ticket.original_brand }}"
+                                                        data-model="{{ ticket.original_model }}"
+                                                        data-completer="{{ ticket.completer_name }}"
+                                                        data-modified="{% if ticket.is_modified %}true{% else %}false{% endif %}">
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <h5>No archived tickets found</h5>
+            <p>Try adjusting the filters or complete some tickets first.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Redesigned Modal – Modern & Decent -->
+<div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-labelledby="ticketDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-gradient-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold d-flex align-items-center" id="ticketDetailLabel">
+                    <i class="bi bi-ticket-detailed me-2"></i> Ticket Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-4">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-info-circle me-2"></i> Basic Information
+                                </h6>
+                                <dl class="row mb-0 small">
+                                    <dt class="col-sm-5 fw-semibold text-muted">Control No.</dt>
+                                    <dd class="col-sm-7 fw-bold" id="modal-control-no">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Requested By</dt>
+                                    <dd class="col-sm-7" id="modal-requested-by">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Department / Division</dt>
+                                    <dd class="col-sm-7" id="modal-department">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Section / Unit</dt>
+                                    <dd class="col-sm-7" id="modal-section">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Date Requested</dt>
+                                    <dd class="col-sm-7" id="modal-created">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Date Completed</dt>
+                                    <dd class="col-sm-7" id="modal-completed">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Completed By</dt>
+                                    <dd class="col-sm-7 fw-medium text-dark" id="modal-completer">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Urgency</dt>
+                                    <dd class="col-sm-7" id="modal-urgent">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-laptop me-2"></i> Equipment Details
+                                </h6>
+                                <dl class="row mb-0 small">
+                                    <dt class="col-sm-5 fw-semibold text-muted">Equipment</dt>
+                                    <dd class="col-sm-7" id="modal-equipment">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Brand</dt>
+                                    <dd class="col-sm-7" id="modal-brand">-</dd>
+
+                                    <dt class="col-sm-5 fw-semibold text-muted">Model</dt>
+                                    <dd class="col-sm-7" id="modal-model">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-chat-left-text me-2"></i> Full Request / Complaint
+                                </h6>
+                                <div class="complaint-box p-3 bg-white border rounded shadow-sm" id="modal-description" style="min-height: 140px; white-space: pre-wrap; font-size: 0.95rem;">
+                                    -
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modified Notice -->
+                        <div id="modal-modified-badge" class="alert alert-warning mt-4 d-none shadow-sm" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Notice:</strong> This ticket was manually modified by an admin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Search
+document.getElementById('archiveSearch')?.addEventListener('input', function() {
+    const filter = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+
+// Modal population
+document.querySelectorAll('.view-ticket-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('modal-control-no').textContent = this.dataset.controlNo || 'N/A';
+        document.getElementById('modal-requested-by').textContent = this.dataset.requestedBy || 'N/A';
+        document.getElementById('modal-department').textContent = this.dataset.department || 'N/A';
+        document.getElementById('modal-section').textContent = this.dataset.section || 'N/A';
+        document.getElementById('modal-description').textContent = this.dataset.description || 'No description provided';
+        document.getElementById('modal-urgent').textContent = this.dataset.urgent || 'No';
+        document.getElementById('modal-created').textContent = this.dataset.created || 'N/A';
+        document.getElementById('modal-completed').textContent = this.dataset.completed || 'N/A';
+        document.getElementById('modal-equipment').textContent = this.dataset.equipment || 'N/A';
+        document.getElementById('modal-brand').textContent = this.dataset.brand || 'N/A';
+        document.getElementById('modal-model').textContent = this.dataset.model || 'N/A';
+        document.getElementById('modal-completer').textContent = this.dataset.completer || 'Unknown';
+
+        // Modified notice (simple)
+        const modifiedBadge = document.getElementById('modal-modified-badge');
+        if (this.dataset.modified === 'true') {
+            modifiedBadge.classList.remove('d-none');
+        } else {
+            modifiedBadge.classList.add('d-none');
+        }
+
+        document.querySelector('#ticketDetailModal .modal-title').textContent = 
+            `Ticket Details - ${this.dataset.controlNo || 'Unknown'}`;
+    });
+});
+</script>
+{% endblock %}

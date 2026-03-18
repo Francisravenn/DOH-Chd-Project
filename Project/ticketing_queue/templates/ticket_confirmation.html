@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket Confirmation{% endblock %}
+
+{% block content %}
+
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 40px 20px;
+  }
+
+  .confirmation-container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    border: 2px solid #003087;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  .official-header {
+    background: linear-gradient(to right, #003087, #0050c8);
+    color: white;
+    text-align: center;
+    padding: 25px 20px;
+  }
+
+  .official-header h2 {
+    margin: 0;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .official-header h3 {
+    margin: 8px 0 0 0;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .content {
+    padding: 50px 40px;
+    text-align: center;
+  }
+
+  .success-message {
+    font-size: 18px;
+    color: #155724;
+    background: #d4edda;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 40px;
+  }
+
+  .ticket-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .ticket-number {
+    font-size: 52px;
+    font-weight: bold;
+    color: #003087;
+    letter-spacing: 6px;
+    margin: 20px 0 40px 0;
+    padding: 20px;
+    border: 3px solid #003087;
+    display: inline-block;
+    min-width: 420px;
+    background: #f8f9fa;
+  }
+
+  .note {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  .print-btn {
+    background: #003087;
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    font-size: 17px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .print-btn:hover {
+    background: #002266;
+  }
+
+  /* ================== PRINT STYLES ================== */
+  @media print {
+    body {
+      background: white;
+      padding: 0;
+      margin: 0;
+    }
+    .confirmation-container {
+      box-shadow: none;
+      border: 2px solid #003087;
+      margin: 0;
+      max-width: 100%;
+    }
+    .print-btn, .success-message {
+      display: none !important;
+    }
+    .content {
+      padding: 60px 40px;
+    }
+    .ticket-number {
+      font-size: 65px;
+      letter-spacing: 8px;
+      border: 4px solid #003087;
+      padding: 30px;
+      margin: 40px 0;
+    }
+    .ticket-label {
+      font-size: 18px;
+    }
+  }
+</style>
+
+<div class="confirmation-container">
+
+  <!-- Official DOH Header -->
+  <div class="official-header">
+    <h2>Republic of the Philippines</h2>
+    <h3>Department of Health - Region 4A</h3>
+    <p style="margin: 8px 0 0; font-size: 15px;">Quezon City Health Office • IT Division</p>
+  </div>
+
+  <div class="content">
+    <div class="success-message">
+      Your IT Job Request has been successfully submitted.
+    </div>
+
+    <p class="ticket-label">Control / Ticket Number</p>
+    
+    <div class="ticket-number">
+      {{ ticket.control_no }}
+    </div>
+
+    <p class="note">
+      Please keep this ticket number for your reference.<br>
+      Your request has been forwarded to the IT Support Team.
+    </p>
+
+    <button class="print-btn" onclick="window.print()">
+      Print Confirmation
+    </button>
+  </div>
+
+</div>
+
+{% endblock %}

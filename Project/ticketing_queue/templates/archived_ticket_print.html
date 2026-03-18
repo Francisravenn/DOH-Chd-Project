@@ -1,0 +1,361 @@
+{% extends "header_footer_base.html" %}
+{% load static %}
+
+{% block title %}Completed Ticket Form - {{ ticket.control_no }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-wrapper {
+        max-width: 620px;
+        margin: 30px auto 40px auto;
+        padding: 0 16px;
+    }
+
+    /* ── TICKET CARD ── */
+    .ticket-card {
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .ticket-title-bar {
+        background: linear-gradient(90deg, #1565c0, #1e88e5);
+        color: #ffffff;
+        text-align: center;
+        padding: 18px 24px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .ticket-info-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        border-bottom: 1px solid #e0e7ef;
+        background: #f7f9fc;
+    }
+    .info-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #1565c0;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .control-no {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #333;
+    }
+    .control-no strong { color: #1a1a2e; }
+
+    .ticket-row {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid #e0e7ef;
+    }
+    .ticket-row:last-child { border-bottom: none; }
+
+    .row-label {
+        width: 120px;
+        min-width: 120px;
+        padding: 12px 16px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #333;
+        border-right: 1px solid #e0e7ef;
+        background: #f7f9fc;
+        display: flex;
+        align-items: center;
+    }
+    .row-value {
+        flex: 1;
+        padding: 12px 16px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.85rem;
+        color: #444;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-header {
+        background: #f0f4f8;
+        padding: 10px 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #333;
+        text-align: center;
+        border-bottom: 1px solid #e0e7ef;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .action-taken-area {
+        padding: 14px 16px;
+        border-bottom: 1px solid #e0e7ef;
+        background: #fff;
+    }
+    .action-taken-area select,
+    .action-taken-area input { font-size: 0.85rem; }
+
+    .signature-block {
+        padding: 24px 16px 16px 16px;
+        text-align: center;
+        border-bottom: 1px solid #e0e7ef;
+        background: #fff;
+    }
+    .sig-name {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #222;
+        text-align: center;
+        margin-bottom: 6px;
+    }
+    .sig-line {
+        width: 70%;
+        border-bottom: 1px solid #333;
+        margin: 0 auto 6px auto;
+        height: 1px;
+    }
+    .sig-sub {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.7rem;
+        color: #888;
+        text-align: center;
+        margin-top: 2px;
+    }
+
+    .cb-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+    }
+
+    .generated-note {
+        text-align: center;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.72rem;
+        font-style: italic;
+        color: #999;
+        padding: 14px 16px;
+        border-top: 1px solid #e0e7ef;
+        background: #fafbfc;
+    }
+
+    .action-buttons {
+        text-align: center;
+        margin-top: 24px;
+        margin-bottom: 10px;
+    }
+    .btn-print {
+        background: linear-gradient(90deg, #1565c0, #1e88e5);
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 10px 28px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-print:hover { opacity: 0.88; }
+    .btn-back {
+        background: #6c757d;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        padding: 10px 28px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin-left: 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: opacity 0.2s;
+    }
+    .btn-back:hover { opacity: 0.88; color: #fff; }
+
+    /* QR code section - hidden on screen, visible on print only */
+    .qr-section {
+        display: none;
+        text-align: center;
+        padding: 20px 16px;
+        border-top: 1px solid #e0e7ef;
+        background: #fafbfc;
+    }
+    .qr-img {
+        display: block;
+        margin: 0 auto;
+        width: 150px;
+        height: 150px;
+    }
+    .qr-label {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.72rem;
+        color: #666;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    @media print {
+        .no-print { display: none !important; }
+        .action-buttons { display: none !important; }
+        .doh-header { display: none !important; }
+        .doh-footer { display: none !important; }
+        body { background: white; }
+        .page-wrapper { margin: 0; padding: 0; max-width: 100%; }
+        .ticket-card { box-shadow: none; border: 1px solid #ccc; }
+        .ticket-title-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .qr-section { display: block !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="ticket-card">
+
+        <div class="ticket-title-bar">IT Helpdesk Job Ticket</div>
+
+        <div class="ticket-info-bar">
+            <span class="info-label">Information</span>
+            <span class="control-no"><strong>Control No:</strong> {{ ticket.control_no }}</span>
+        </div>
+
+        <div class="ticket-row">
+            <div class="row-label">Date:</div>
+            <div class="row-value">{{ ticket.assisted_at|date:"F d, Y"|default:"N/A" }}</div>
+        </div>
+
+        <div class="ticket-row">
+            <div class="row-label">Time:</div>
+            <div class="row-value">
+                {{ ticket.assisted_at|date:"h:i"|default:"N/A" }}
+                <span class="cb-group">
+                    {% if ticket.assisted_at and ticket.assisted_at.hour < 12 %}
+                        ☑ AM &nbsp; □ PM
+                    {% elif ticket.assisted_at %}
+                        □ AM &nbsp; ☑ PM
+                    {% else %}
+                        □ AM &nbsp; □ PM
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="section-header">Action Taken</div>
+        <div class="action-taken-area">
+            <select id="actionTakenSelect" class="form-select mb-2">
+                <option value="">-- Select Action Taken --</option>
+                {% for option in action_options %}
+                    <option value="{{ option.name }}">{{ option.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="input-group">
+                <input type="text" id="newActionInput" class="form-control" placeholder="Add item if not on the list">
+                <button id="addActionBtn" class="btn btn-primary" style="border-radius: 0 7px 7px 0; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem; padding: 0 18px; background: linear-gradient(90deg, #1565c0, #1e88e5); border: none;">Add</button>
+            </div>
+        </div>
+
+        <div class="section-header">Action Officer</div>
+        <div class="signature-block">
+            <div class="sig-name">{{ assisted_by_full_name|title }}</div>
+            <div class="sig-line"></div>
+            <div class="sig-sub">Signature over Printed Name</div>
+        </div>
+
+        <div class="ticket-row">
+            <div class="row-label">Date:</div>
+            <div class="row-value">{{ ticket.completed_at|date:"F d, Y"|default:"N/A" }}</div>
+        </div>
+
+        <div class="ticket-row">
+            <div class="row-label">Time:</div>
+            <div class="row-value">
+                {{ ticket.completed_at|date:"h:i"|default:"N/A" }}
+                <span class="cb-group">
+                    {% if ticket.completed_at and ticket.completed_at.hour < 12 %}
+                        ☑ AM &nbsp; □ PM
+                    {% elif ticket.completed_at %}
+                        □ AM &nbsp; ☑ PM
+                    {% else %}
+                        □ AM &nbsp; □ PM
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="section-header">Job Confirmation</div>
+        <div class="signature-block">
+            <div class="sig-name">{{ ticket.requested_by|default:"User" }}</div>
+            <div class="sig-line"></div>
+            <div class="sig-sub">Signature over Printed Name</div>
+        </div>
+
+        <!-- QR Code (print only) -->
+        <div class="qr-section">
+            <img src="{% static 'images/link-qrcode.png' %}" alt="QR Code" class="qr-img">
+            <div class="qr-label">Scan to verify ticket: {{ ticket.control_no }}</div>
+        </div>
+
+        <div class="generated-note">
+            Generated on {% now "F d, Y h:i A" %} by DOH IT Helpdesk System
+        </div>
+
+        <div class="action-buttons no-print">
+            <button onclick="window.print()" class="btn-print">Print Ticket</button>
+            <a href="{% url 'archive_reports' %}" class="btn-back">Back to Archive</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('actionTakenSelect');
+    const input  = document.getElementById('newActionInput');
+    const addBtn = document.getElementById('addActionBtn');
+
+    addBtn.addEventListener('click', function () {
+        let newName = input.value.trim();
+        if (!newName) return;
+
+        fetch("{% url 'add_action_taken_option' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name: newName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const option = document.createElement('option');
+                option.value = newName;
+                option.textContent = newName;
+                select.appendChild(option);
+                select.value = newName;
+                input.value = '';
+                alert('New option added to dropdown!');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket Details{% endblock %}
+
+{% block content %}
+
+    <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px 40px;
+      color: #000;
+      background: #fff;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 15px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 10px 0;
+    }
+    .agency {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .success-box {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 15px;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+    .ticket-number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #0d6efd;
+      text-align: center;
+      margin: 15px 0;
+      letter-spacing: 1px;
+    }
+    .detail-row {
+      display: flex;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+    .detail-label {
+      width: 180px;
+      font-weight: bold;
+    }
+    .detail-value {
+      flex: 1;
+      border-bottom: 1px dotted #666;
+      padding-left: 10px;
+    }
+    .complaint-box {
+      border: 1px solid #000;
+      padding: 15px;
+      min-height: 120px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f8f9fa;
+    }
+    .footer-note {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #555;
+      border-top: 1px solid #ccc;
+      padding-top: 15px;
+    }
+
+    /* Hide UI elements when printing */
+    .no-print {
+      display: none !important;
+    }
+
+    @media print {
+      body {
+        padding: 15mm 20mm;
+        margin: 0;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .success-box {
+        border: 1px solid #000;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="agency">Republic of the Philippines</div>
+    <div class="agency">Quezon City Government – IT Helpdesk</div>
+    <div class="title">IT Job Request Ticket</div>
+  </div>
+
+  <div class="success-box">
+    Ticket Successfully Created!
+  </div>
+
+  <div class="ticket-number">
+    ${controlNumber}
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Date:</div>
+    <div class="detail-value">${data.date_mm}/${data.date_dd}/${data.date_yyyy}</div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Time:</div>
+    <div class="detail-value">${data.time} ${data.ampm}</div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Requested by:</div>
+    <div class="detail-value">${data.requested_by}</div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Division / Section:</div>
+    <div class="detail-value">${data.division}</div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Equipment / Brand:</div>
+    <div class="detail-value">${data.equipment || '—'} / ${data.brand_model || '—'}</div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-label">Request / Complaint:</div>
+  </div>
+  <div class="complaint-box">
+    ${data.description}
+  </div>
+
+  <div class="footer-note">
+    Please save or print this ticket number for reference.<br>
+    Your request has been forwarded to the IT team.
+  </div>
+
+  <!-- Buttons only visible on screen, hidden when printing -->
+  <div class="text-center mt-5 no-print">
+    <button onclick="window.print()" class="btn btn-primary px-5 py-3 me-3">Print Ticket</button>
+    <button onclick="window.close()" class="btn btn-outline-secondary px-5 py-3">Close</button>
+  </div>
+{% endblock %}
