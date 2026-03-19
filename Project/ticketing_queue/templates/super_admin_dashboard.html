@@ -105,6 +105,112 @@
         .sidebar-visible .sidebar { transform: translateX(0); }
         .main-content { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
     }
+
+    /* ── Enhanced Ticket Modal ── */
+    .tkt-modal-header {
+        background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%);
+        border-bottom: 3px solid #f9c900;
+        padding: 18px 24px;
+    }
+    .tkt-status-bar {
+        background: #f8fafd;
+        border-bottom: 1px solid #e2eaf4;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .tkt-status-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #8a9bb0;
+        text-transform: uppercase;
+    }
+    .tkt-info-section {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e8f0fa;
+        padding: 18px 20px;
+        height: 100%;
+    }
+    .tkt-section-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: #1565c0;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e8f0fa;
+        padding-bottom: 8px;
+        margin-bottom: 14px;
+        display: block;
+    }
+    .tkt-info-row {
+        display: flex;
+        padding: 6px 0;
+        border-bottom: 1px dashed #f0f4f8;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .tkt-info-row:last-child { border-bottom: none; }
+    .tkt-info-key {
+        font-size: 0.72rem;
+        color: #8a9bb0;
+        font-weight: 600;
+        min-width: 130px;
+        flex-shrink: 0;
+        padding-top: 1px;
+    }
+    .tkt-info-val {
+        font-size: 0.82rem;
+        color: #1a2a3a;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    .tkt-complaint-box {
+        background: #f8fafd;
+        border: 1px solid #e2eaf4;
+        border-left: 4px solid #1565c0;
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-size: 0.88rem;
+        color: #2c3e50;
+        min-height: 80px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.6;
+    }
+    .tkt-urgent-tag {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #fff0f0; color: #c0392b;
+        border: 1px solid #f5b7b1; border-radius: 20px;
+        padding: 3px 12px; font-size: 0.72rem; font-weight: 700;
+    }
+    .tkt-normal-tag {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0f4f8; color: #5a7a9a;
+        border: 1px solid #dde6f0; border-radius: 20px;
+        padding: 3px 12px; font-size: 0.72rem; font-weight: 600;
+    }
+    .tkt-assigned-val { color: #1565c0; font-weight: 700; }
+    .tkt-control-chip {
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        background: rgba(249,201,0,0.18);
+        color: #f9c900;
+        border-radius: 6px;
+        padding: 2px 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    .tkt-status-pill {
+        font-size: 0.78rem; font-weight: 700;
+        padding: 6px 18px; border-radius: 50px; letter-spacing: 0.05em;
+    }
+    .tkt-modal-footer {
+        background: #f8fafd;
+        border-top: 1px solid #e2eaf4;
+    }
 </style>
 {% endblock %}
 
@@ -256,94 +362,178 @@
                                             </td>
                                         </tr>
 
-                                        <!-- Updated View Details Modal - Form-like layout -->
-                                        <div class="modal fade" id="ticketModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="ticketModalLabel{{ ticket.pk }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="ticketModalLabel{{ ticket.pk }}">
-                                                            Ticket Details - {{ ticket.control_no }}
-                                                        </h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<style>
+.tkt-modal-header {
+    background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%) !important;
+    border-bottom: 3px solid #f9c900 !important;
+    padding: 18px 24px !important;
+}
+.tkt-status-bar {
+    background: #f8fafd !important;
+    border-bottom: 1px solid #e2eaf4 !important;
+    padding: 10px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+.tkt-status-label {
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.12em !important;
+    color: #8a9bb0 !important;
+    text-transform: uppercase !important;
+}
+.tkt-info-section {
+    background: #fff !important;
+    border-radius: 10px !important;
+    border: 1px solid #e8f0fa !important;
+    padding: 18px 20px !important;
+    height: 100% !important;
+}
+.tkt-section-label {
+    font-size: 0.6rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.14em !important;
+    color: #1565c0 !important;
+    text-transform: uppercase !important;
+    border-bottom: 2px solid #e8f0fa !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 14px !important;
+    display: block !important;
+}
+.tkt-info-row {
+    display: flex !important;
+    padding: 6px 0 !important;
+    border-bottom: 1px dashed #f0f4f8 !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+}
+.tkt-info-row:last-child { border-bottom: none !important; }
+.tkt-info-key {
+    font-size: 0.72rem !important;
+    color: #8a9bb0 !important;
+    font-weight: 600 !important;
+    min-width: 130px !important;
+    flex-shrink: 0 !important;
+    padding-top: 1px !important;
+}
+.tkt-info-val {
+    font-size: 0.82rem !important;
+    color: #1a2a3a !important;
+    font-weight: 500 !important;
+    word-break: break-word !important;
+}
+.tkt-complaint-box {
+    background: #f8fafd !important;
+    border: 1px solid #e2eaf4 !important;
+    border-left: 4px solid #1565c0 !important;
+    border-radius: 8px !important;
+    padding: 14px 16px !important;
+    font-size: 0.88rem !important;
+    color: #2c3e50 !important;
+    min-height: 80px !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    line-height: 1.6 !important;
+}
+.tkt-urgent-tag {
+    display: inline-flex !important; align-items: center !important; gap: 5px !important;
+    background: #fff0f0 !important; color: #c0392b !important;
+    border: 1px solid #f5b7b1 !important; border-radius: 20px !important;
+    padding: 3px 12px !important; font-size: 0.72rem !important; font-weight: 700 !important;
+}
+.tkt-normal-tag {
+    display: inline-flex !important; align-items: center !important; gap: 5px !important;
+    background: #f0f4f8 !important; color: #5a7a9a !important;
+    border: 1px solid #dde6f0 !important; border-radius: 20px !important;
+    padding: 3px 12px !important; font-size: 0.72rem !important; font-weight: 600 !important;
+}
+.tkt-assigned-val { color: #1565c0 !important; font-weight: 700 !important; }
+.tkt-control-chip {
+    font-family: 'Courier New', monospace !important;
+    font-size: 0.85rem !important;
+    background: rgba(249,201,0,0.18) !important;
+    color: #f9c900 !important;
+    border-radius: 6px !important;
+    padding: 2px 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+}
+.tkt-status-pill {
+    font-size: 0.78rem !important; font-weight: 700 !important;
+    padding: 6px 18px !important; border-radius: 50px !important; letter-spacing: 0.05em !important;
+}
+.tkt-modal-footer {
+    background: #f8fafd !important;
+    border-top: 1px solid #e2eaf4 !important;
+}
+</style>
+                                        <!-- View Details Modal (Enhanced) -->
+                                        <div class="modal fade" id="ticketModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                                <div class="modal-content border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+                                                    <div class="tkt-modal-header d-flex align-items-center justify-content-between">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
+                                                            <div>
+                                                                <div class="text-white-50" style="font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;">IT Helpdesk Job Ticket</div>
+                                                                <h5 class="text-white mb-0 fw-bold">Ticket Details &nbsp;<span class="tkt-control-chip">{{ ticket.control_no }}</span></h5>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <!-- Requester & Timing Section -->
-                                                        <div class="card mb-3 border-0 shadow-sm">
-                                                            <div class="card-body">
-                                                                <h6 class="card-subtitle mb-3 text-muted">Requester & Timing Information</h6>
-                                                                <dl class="row g-2 mb-0">
-                                                                    <dt class="col-sm-4 detail-label">Requested By:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.requested_by }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Date of Request:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.date_request }} {{ ticket.time_request }} {{ ticket.am_pm }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Elapsed Time:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.created_at|timesince }} ago</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Department / Division:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.department_division|default:"N/A" }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Section / Unit:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.section_unit|default:"N/A" }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Urgency:</dt>
-                                                                    <dd class="col-sm-8">
-                                                                        {% if ticket.is_urgent %}
-                                                                            <span class="badge bg-danger">URGENT</span>
-                                                                        {% else %}
-                                                                            <span class="badge bg-secondary">Normal</span>
-                                                                        {% endif %}
-                                                                    </dd>
-                                                                </dl>
+                                                    <div class="tkt-status-bar">
+                                                        <span class="tkt-status-label">Current Status</span>
+                                                        {% if ticket.status == 'pending' %}<span class="tkt-status-pill bg-warning text-dark">🕐 Pending</span>
+                                                        {% elif ticket.status == 'accepted' %}<span class="tkt-status-pill bg-info text-dark">✅ Accepted</span>{% endif %}
+                                                    </div>
+                                                    <div class="modal-body p-3">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-person-fill me-1"></i> Requester Information</span>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Requested By</span><span class="tkt-info-val fw-bold">{{ ticket.requested_by }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Date of Request</span><span class="tkt-info-val">{{ ticket.date_request }} {{ ticket.time_request }} {{ ticket.am_pm }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Elapsed Time</span><span class="tkt-info-val">{{ ticket.created_at|timesince }} ago</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Dept / Division</span><span class="tkt-info-val">{{ ticket.department_division|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Section / Unit</span><span class="tkt-info-val">{{ ticket.section_unit|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row">
+                                                                        <span class="tkt-info-key">Urgency</span>
+                                                                        <span class="tkt-info-val">{% if ticket.is_urgent %}<span class="tkt-urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>{% else %}<span class="tkt-normal-tag"><i class="bi bi-check-circle"></i> Normal</span>{% endif %}</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-
-                                                        <!-- Equipment Section -->
-                                                        <div class="card mb-3 border-0 shadow-sm">
-                                                            <div class="card-body">
-                                                                <h6 class="card-subtitle mb-3 text-muted">Equipment Information</h6>
-                                                                <dl class="row g-2 mb-0">
-                                                                    <dt class="col-sm-4 detail-label">Equipment:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.equipment|default:"N/A" }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Brand:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.brand|default:"N/A" }}</dd>
-
-                                                                    <dt class="col-sm-4 detail-label">Model:</dt>
-                                                                    <dd class="col-sm-8">{{ ticket.model|default:"N/A" }}</dd>
-                                                                </dl>
+                                                            <div class="col-md-6">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-pc-display me-1"></i> Equipment Information</span>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Equipment</span><span class="tkt-info-val">{{ ticket.equipment|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Brand</span><span class="tkt-info-val">{{ ticket.brand|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Model</span><span class="tkt-info-val">{{ ticket.model|default:"N/A" }}</span></div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-
-                                                        <!-- Complaint / Request Section -->
-                                                        <div class="card border-0 shadow-sm">
-                                                            <div class="card-body">
-                                                                <h6 class="card-subtitle mb-3 text-muted">Nature of Request / Complaint</h6>
-                                                                <div class="border p-3 bg-light rounded complaint-box">
-                                                                    {{ ticket.request_complaint|linebreaksbr }}
+                                                            <div class="col-12">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-chat-left-text-fill me-1"></i> Nature of Request / Complaint</span>
+                                                                    <div class="tkt-complaint-box">{{ ticket.request_complaint }}</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
+                                                    <div class="modal-footer tkt-modal-footer">
+                                                        <small class="text-muted me-auto"><i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division</small>
+                                                        <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
                                                         {% if ticket.status == 'pending' %}
                                                             <form method="post" action="{% url 'accept_ticket' ticket.pk %}" id="acceptForm{{ ticket.pk }}" class="d-inline">
                                                                 {% csrf_token %}
                                                                 <input type="hidden" name="tab" value="new">
-                                                                <button type="submit" class="btn btn-success">Accept</button>
+                                                                <button type="submit" class="btn btn-success btn-sm px-4">Accept</button>
                                                             </form>
                                                         {% endif %}
-
                                                         {% if ticket.status == 'accepted' %}
-                                                            <button type="button" class="btn btn-warning" 
-                                                                    data-bs-toggle="modal" 
+                                                            <button type="button" class="btn btn-warning btn-sm px-4"
+                                                                    data-bs-toggle="modal"
                                                                     data-bs-target="#assistModal{{ ticket.pk }}"
-                                                                    data-bs-dismiss="modal">
-                                                                Assign
-                                                            </button>
+                                                                    data-bs-dismiss="modal">Assign</button>
                                                         {% endif %}
                                                     </div>
                                                 </div>
@@ -494,70 +684,79 @@
                                             </div>
                                         </div>
 
-                                        <!-- View Details Modal -->
-                                        <div class="modal fade" id="viewModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="viewLabel{{ ticket.pk }}" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="viewLabel{{ ticket.pk }}">
-                                                            Ticket Details - {{ ticket.control_no }}
-                                                        </h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row g-3">
-                                                            <div class="col-md-6">
-                                                                <p><strong>Control No:</strong> {{ ticket.control_no }}</p>
-                                                                <p><strong>Requested By:</strong> {{ ticket.requested_by }}</p>
-                                                                <p><strong>Department / Division:</strong> {{ ticket.department_division|default:"N/A" }}</p>
-                                                                <p><strong>Section / Unit:</strong> {{ ticket.section_unit|default:"N/A" }}</p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><strong>Elapsed Time:</strong> {{ ticket.created_at|timesince }} ago</p>
-                                                                <p><strong>Urgency:</strong> 
-                                                                    {% if ticket.is_urgent %}
-                                                                        <span class="badge bg-danger">URGENT</span>
-                                                                    {% else %}
-                                                                        <span class="badge bg-secondary">Normal</span>
-                                                                    {% endif %}
-                                                                </p>
-                                                                {% if ticket.assisted_by %}
-                                                                    <p class="mt-2 text-warning fw-bold">
-                                                                        Assisted by: {{ ticket.assisted_by.username }}
-                                                                    </p>
-                                                                {% endif %}
+                                        <!-- View Details Modal (Enhanced) -->
+                                        <div class="modal fade" id="viewModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                                <div class="modal-content border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+                                                    <div class="tkt-modal-header d-flex align-items-center justify-content-between">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
+                                                            <div>
+                                                                <div class="text-white-50" style="font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;">IT Helpdesk Job Ticket</div>
+                                                                <h5 class="text-white mb-0 fw-bold">Ticket Details &nbsp;<span class="tkt-control-chip">{{ ticket.control_no }}</span></h5>
                                                             </div>
                                                         </div>
-                                                        <hr>
-                                                        <p><strong>Issue:</strong> {{ ticket.request_complaint }}</p>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
+                                                    <div class="tkt-status-bar">
+                                                        <span class="tkt-status-label">Current Status</span>
+                                                        {% if ticket.status == 'assisting' %}<span class="tkt-status-pill bg-primary text-white">🔧 Assisting</span>
+                                                        {% elif ticket.status == 'accepted' %}<span class="tkt-status-pill bg-info text-dark">✅ Accepted</span>{% endif %}
+                                                    </div>
+                                                    <div class="modal-body p-3">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-person-fill me-1"></i> Requester Information</span>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Requested By</span><span class="tkt-info-val fw-bold">{{ ticket.requested_by }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Elapsed Time</span><span class="tkt-info-val">{{ ticket.created_at|timesince }} ago</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Dept / Division</span><span class="tkt-info-val">{{ ticket.department_division|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Section / Unit</span><span class="tkt-info-val">{{ ticket.section_unit|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row">
+                                                                        <span class="tkt-info-key">Urgency</span>
+                                                                        <span class="tkt-info-val">{% if ticket.is_urgent %}<span class="tkt-urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>{% else %}<span class="tkt-normal-tag"><i class="bi bi-check-circle"></i> Normal</span>{% endif %}</span>
+                                                                    </div>
+                                                                    {% if ticket.assisted_by %}
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Assigned To</span><span class="tkt-info-val tkt-assigned-val">{{ ticket.assisted_by.get_full_name|default:ticket.assisted_by.username }}</span></div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-pc-display me-1"></i> Equipment Information</span>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Equipment</span><span class="tkt-info-val">{{ ticket.equipment|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Brand</span><span class="tkt-info-val">{{ ticket.brand|default:"N/A" }}</span></div>
+                                                                    <div class="tkt-info-row"><span class="tkt-info-key">Model</span><span class="tkt-info-val">{{ ticket.model|default:"N/A" }}</span></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <div class="tkt-info-section">
+                                                                    <span class="tkt-section-label"><i class="bi bi-chat-left-text-fill me-1"></i> Nature of Request / Complaint</span>
+                                                                    <div class="tkt-complaint-box">{{ ticket.request_complaint }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer tkt-modal-footer">
+                                                        <small class="text-muted me-auto"><i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division</small>
+                                                        <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
                                                         {% if ticket.status == 'accepted' or ticket.status == 'assisting' %}
-                                                            <button type="button" class="btn btn-primary"
+                                                            <button type="button" class="btn btn-primary btn-sm px-4"
                                                                     data-bs-toggle="modal"
                                                                     data-bs-target="#updateModal{{ ticket.pk }}"
-                                                                    data-bs-dismiss="modal">
-                                                                Update
-                                                            </button>
+                                                                    data-bs-dismiss="modal">Update</button>
                                                         {% endif %}
-
                                                         {% if ticket.status == 'accepted' %}
-                                                            <button type="button" class="btn btn-warning" 
-                                                                    data-bs-toggle="modal" 
-                                                                    data-bs-target="#assistConfirmModal{{ ticket.pk }}"
-                                                                    data-bs-dismiss="modal">
-                                                                Assist
-                                                            </button>
-                                                        {% endif %}
-
-                                                        {% if ticket.status == 'assisting' %}
-                                                            <button type="button" class="btn btn-success"
+                                                            <button type="button" class="btn btn-warning btn-sm px-4"
                                                                     data-bs-toggle="modal"
-                                                                    data-bs-target="#completeConfirmModal{{ ticket.pk }}">
-                                                                Complete
-                                                            </button>
+                                                                    data-bs-target="#assistConfirmModal{{ ticket.pk }}"
+                                                                    data-bs-dismiss="modal">Assist</button>
+                                                        {% endif %}
+                                                        {% if ticket.status == 'assisting' %}
+                                                            <button type="button" class="btn btn-success btn-sm px-4"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#completeConfirmModal{{ ticket.pk }}"
+                                                                    data-bs-dismiss="modal">Complete</button>
                                                         {% endif %}
                                                     </div>
                                                 </div>
@@ -968,6 +1167,3 @@ function validateAndSubmitAssist(ticketPk) {
 }
 </script>
 {% endblock %}
-
-
-

@@ -41,6 +41,8 @@
     .filter-form .form-control, .filter-form .form-select {
         font-size: 0.9rem;
     }
+
+
 </style>
 {% endblock %}
 
@@ -123,15 +125,14 @@
                                             <td>{{ ticket.completer_name }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-primary view-ticket-btn"
-                                                        data-bs-toggle="modal" data-bs-target="#ticketDetailModal"
                                                         data-control-no="{{ ticket.control_no }}"
                                                         data-requested-by="{{ ticket.requested_by }}"
-                                                        data-department="{{ ticket.original_department }}"    
-                                                        data-section="{{ ticket.original_section }}"          
+                                                        data-department="{{ ticket.original_department }}"
+                                                        data-section="{{ ticket.original_section }}"
                                                         data-description="{{ ticket.original_description|escapejs }}"
                                                         data-urgent="{% if ticket.is_urgent %}Yes{% else %}No{% endif %}"
-                                                        data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}"
-                                                        data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'Y-m-d H:i' }}{% else %}N/A{% endif %}"
+                                                        data-created="{{ ticket.created_at|date:'m/d/Y H:i' }}"
+                                                        data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'m/d/Y H:i' }}{% else %}N/A{% endif %}"
                                                         data-equipment="{{ ticket.original_equipment }}"
                                                         data-brand="{{ ticket.original_brand }}"
                                                         data-model="{{ ticket.original_model }}"
@@ -159,96 +160,248 @@
 
 </div>
 
-<!-- Redesigned Modal – Modern & Decent -->
-<div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-labelledby="ticketDetailLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header bg-gradient-primary text-white border-0 py-3">
-                <h5 class="modal-title fw-bold d-flex align-items-center" id="ticketDetailLabel">
-                    <i class="bi bi-ticket-detailed me-2"></i> Ticket Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="row g-4">
-                    <!-- Left Column -->
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <h6 class="card-title text-primary fw-bold mb-3">
-                                    <i class="bi bi-info-circle me-2"></i> Basic Information
-                                </h6>
-                                <dl class="row mb-0 small">
-                                    <dt class="col-sm-5 fw-semibold text-muted">Control No.</dt>
-                                    <dd class="col-sm-7 fw-bold" id="modal-control-no">-</dd>
+<!-- Enhanced Ticket Detail Modal -->
+<style>
+#ticketDetailModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+#ticketDetailModal .modal-header {
+    background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%);
+    border-bottom: 3px solid #f9c900;
+    padding: 18px 24px;
+}
+#ticketDetailModal .status-bar {
+    background: #f8fafd;
+    border-bottom: 1px solid #e2eaf4;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+#ticketDetailModal .status-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #8a9bb0;
+    text-transform: uppercase;
+}
+#ticketDetailModal .info-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8f0fa;
+    padding: 18px 20px;
+    height: 100%;
+}
+#ticketDetailModal .section-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #1565c0;
+    text-transform: uppercase;
+    border-bottom: 2px solid #e8f0fa;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    display: block;
+}
+#ticketDetailModal .info-row {
+    display: flex;
+    padding: 6px 0;
+    border-bottom: 1px dashed #f0f4f8;
+    align-items: flex-start;
+    gap: 10px;
+}
+#ticketDetailModal .info-row:last-child { border-bottom: none; }
+#ticketDetailModal .info-key {
+    font-size: 0.72rem;
+    color: #8a9bb0;
+    font-weight: 600;
+    min-width: 130px;
+    flex-shrink: 0;
+    padding-top: 1px;
+}
+#ticketDetailModal .info-val {
+    font-size: 0.82rem;
+    color: #1a2a3a;
+    font-weight: 500;
+    word-break: break-word;
+}
+#ticketDetailModal .complaint-box {
+    background: #f8fafd;
+    border: 1px solid #e2eaf4;
+    border-left: 4px solid #1565c0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: #2c3e50;
+    min-height: 80px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+#ticketDetailModal .urgent-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff0f0;
+    color: #c0392b;
+    border: 1px solid #f5b7b1;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+#ticketDetailModal .normal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f0f4f8;
+    color: #1a7a4a;
+    border: 1px solid #dde6f0;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+#ticketDetailModal .assigned-val {
+    color: #1565c0;
+    font-weight: 700;
+}
+#ticketDetailModal .control-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    background: rgba(249,201,0,0.18);
+    color: #f9c900;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+#ticketDetailModal .modified-notice {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-left: 4px solid #f9c900;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #856404;
+    font-weight: 600;
+    margin-top: 12px;
+}
+</style>
 
-                                    <dt class="col-sm-5 fw-semibold text-muted">Requested By</dt>
-                                    <dd class="col-sm-7" id="modal-requested-by">-</dd>
+<div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
 
-                                    <dt class="col-sm-5 fw-semibold text-muted">Department / Division</dt>
-                                    <dd class="col-sm-7" id="modal-department">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Section / Unit</dt>
-                                    <dd class="col-sm-7" id="modal-section">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Date Requested</dt>
-                                    <dd class="col-sm-7" id="modal-created">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Date Completed</dt>
-                                    <dd class="col-sm-7" id="modal-completed">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Completed By</dt>
-                                    <dd class="col-sm-7 fw-medium text-dark" id="modal-completer">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Urgency</dt>
-                                    <dd class="col-sm-7" id="modal-urgent">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-body">
-                                <h6 class="card-title text-primary fw-bold mb-3">
-                                    <i class="bi bi-laptop me-2"></i> Equipment Details
-                                </h6>
-                                <dl class="row mb-0 small">
-                                    <dt class="col-sm-5 fw-semibold text-muted">Equipment</dt>
-                                    <dd class="col-sm-7" id="modal-equipment">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Brand</dt>
-                                    <dd class="col-sm-7" id="modal-brand">-</dd>
-
-                                    <dt class="col-sm-5 fw-semibold text-muted">Model</dt>
-                                    <dd class="col-sm-7" id="modal-model">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="card-title text-primary fw-bold mb-3">
-                                    <i class="bi bi-chat-left-text me-2"></i> Full Request / Complaint
-                                </h6>
-                                <div class="complaint-box p-3 bg-white border rounded shadow-sm" id="modal-description" style="min-height: 140px; white-space: pre-wrap; font-size: 0.95rem;">
-                                    -
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Modified Notice -->
-                        <div id="modal-modified-badge" class="alert alert-warning mt-4 d-none shadow-sm" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <strong>Notice:</strong> This ticket was manually modified by an admin.
-                        </div>
+            <!-- Header -->
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
+                    <div>
+                        <div class="text-white-50 mb-0" style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase;">IT Helpdesk Job Ticket — Archived</div>
+                        <h5 class="modal-title text-white mb-0 fw-bold">
+                            Ticket Details &nbsp;
+                            <span class="control-chip" id="modal-control-no"></span>
+                        </h5>
                     </div>
                 </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-footer bg-light border-0 px-4 py-3">
-                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+
+            <!-- Status bar -->
+            <div class="status-bar">
+                <span class="status-label">Ticket Status</span>
+                <span class="normal-tag"><i class="bi bi-check-circle-fill me-1"></i> Completed</span>
             </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3">
+                <div class="row g-3">
+
+                    <!-- Left: Basic Info -->
+                    <div class="col-md-6">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-person-fill me-1"></i> Requester Information</div>
+                            <div class="info-row">
+                                <span class="info-key">Requested By</span>
+                                <span class="info-val fw-bold" id="modal-requested-by"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Dept / Division</span>
+                                <span class="info-val" id="modal-department"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Section / Unit</span>
+                                <span class="info-val" id="modal-section"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Date Requested</span>
+                                <span class="info-val" id="modal-created"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Date Completed</span>
+                                <span class="info-val" id="modal-completed"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Completed By</span>
+                                <span class="info-val assigned-val" id="modal-completer"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Urgency</span>
+                                <span class="info-val" id="modal-urgent"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Equipment -->
+                    <div class="col-md-6">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-pc-display me-1"></i> Equipment Details</div>
+                            <div class="info-row">
+                                <span class="info-key">Equipment</span>
+                                <span class="info-val" id="modal-equipment"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Brand</span>
+                                <span class="info-val" id="modal-brand"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Model</span>
+                                <span class="info-val" id="modal-model"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Complaint -->
+                    <div class="col-12">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-chat-left-text-fill me-1"></i> Nature of Request / Complaint</div>
+                            <div class="complaint-box" id="modal-description"></div>
+                        </div>
+                    </div>
+
+                    <!-- Modified notice -->
+                    <div class="col-12 d-none" id="modal-modified-badge">
+                        <div class="modified-notice">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Notice:</strong> This ticket was manually modified by an admin after submission.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer" style="background:#f8fafd; border-top:1px solid #e2eaf4;">
+                <small class="text-muted me-auto">
+                    <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
+                </small>
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -257,42 +410,33 @@
 
 {% block extra_js %}
 <script>
-// Search
-document.getElementById('archiveSearch')?.addEventListener('input', function() {
-    const filter = this.value.toLowerCase().trim();
-    const rows = document.querySelectorAll('tbody tr');
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? '' : 'none';
-    });
-});
-
-// Modal population
 document.querySelectorAll('.view-ticket-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.getElementById('modal-control-no').textContent = this.dataset.controlNo || 'N/A';
-        document.getElementById('modal-requested-by').textContent = this.dataset.requestedBy || 'N/A';
-        document.getElementById('modal-department').textContent = this.dataset.department || 'N/A';
-        document.getElementById('modal-section').textContent = this.dataset.section || 'N/A';
-        document.getElementById('modal-description').textContent = this.dataset.description || 'No description provided';
-        document.getElementById('modal-urgent').textContent = this.dataset.urgent || 'No';
-        document.getElementById('modal-created').textContent = this.dataset.created || 'N/A';
-        document.getElementById('modal-completed').textContent = this.dataset.completed || 'N/A';
-        document.getElementById('modal-equipment').textContent = this.dataset.equipment || 'N/A';
-        document.getElementById('modal-brand').textContent = this.dataset.brand || 'N/A';
-        document.getElementById('modal-model').textContent = this.dataset.model || 'N/A';
-        document.getElementById('modal-completer').textContent = this.dataset.completer || 'Unknown';
+    btn.addEventListener('click', function () {
+        const d = this.dataset;
 
-        // Modified notice (simple)
-        const modifiedBadge = document.getElementById('modal-modified-badge');
-        if (this.dataset.modified === 'true') {
-            modifiedBadge.classList.remove('d-none');
-        } else {
-            modifiedBadge.classList.add('d-none');
-        }
+        document.getElementById('modal-control-no').textContent  = d.controlNo   || 'N/A';
+        document.getElementById('modal-requested-by').textContent = d.requestedBy || 'N/A';
+        document.getElementById('modal-department').textContent  = d.department   || 'N/A';
+        document.getElementById('modal-section').textContent     = d.section      || 'N/A';
+        document.getElementById('modal-created').textContent     = d.created      || 'N/A';
+        document.getElementById('modal-completed').textContent   = d.completed    || 'N/A';
+        document.getElementById('modal-completer').textContent   = d.completer    || 'Unknown';
+        document.getElementById('modal-equipment').textContent   = d.equipment    || 'N/A';
+        document.getElementById('modal-brand').textContent       = d.brand        || 'N/A';
+        document.getElementById('modal-model').textContent       = d.model        || 'N/A';
+        document.getElementById('modal-description').textContent = d.description  || 'No description provided.';
 
-        document.querySelector('#ticketDetailModal .modal-title').textContent = 
-            `Ticket Details - ${this.dataset.controlNo || 'Unknown'}`;
+        // Urgency
+        const urgEl = document.getElementById('modal-urgent');
+        urgEl.innerHTML = d.urgent === 'Yes'
+            ? '<span class="urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>'
+            : '<span class="normal-tag"><i class="bi bi-check-circle"></i> Normal</span>';
+
+        // Modified notice
+        const modEl = document.getElementById('modal-modified-badge');
+        modEl.classList.toggle('d-none', d.modified !== 'true');
+
+        new bootstrap.Modal(document.getElementById('ticketDetailModal')).show();
     });
 });
 </script>

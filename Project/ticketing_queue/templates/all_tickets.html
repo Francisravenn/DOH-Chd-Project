@@ -59,7 +59,26 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'ticket_detail' ticket.pk %}" class="btn btn-sm btn-info">View</a>
+                        <button type="button" class="btn btn-sm btn-info"
+                                onclick="openTicketModal(
+                                    '{{ ticket.control_no }}',
+                                    '{{ ticket.requested_by|escapejs }}',
+                                    '{{ ticket.date_request|default:"N/A" }}',
+                                    '{{ ticket.time_request|default:"" }} {{ ticket.am_pm|default:"" }}',
+                                    '{{ ticket.department_division|default:"N/A"|escapejs }}',
+                                    '{{ ticket.section_unit|default:"N/A"|escapejs }}',
+                                    '{{ ticket.status|title }}',
+                                    '{{ ticket.is_urgent|yesno:"Yes,No" }}',
+                                    '{{ ticket.equipment|default:"N/A"|escapejs }}',
+                                    '{{ ticket.brand|default:"N/A"|escapejs }}',
+                                    '{{ ticket.model|default:"N/A"|escapejs }}',
+                                    '{{ ticket.request_complaint|escapejs }}',
+                                    '{% if ticket.assisted_by %}{{ ticket.assisted_by.get_full_name|default:ticket.assisted_by.username|escapejs }}{% else %}Not assigned{% endif %}',
+                                    '{{ ticket.created_at|date:"m/d/Y h:i A" }}',
+                                    '{{ ticket.completed_at|date:"m/d/Y h:i A"|default:"" }}'
+                                )">
+                            View
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
@@ -73,4 +92,294 @@
 
     <p class="text-muted mt-3">Total tickets: {{ total_tickets }}</p>
 </div>
+
+<!-- Ticket Detail Modal -->
+<style>
+.tkt-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.tkt-modal .modal-header {
+    background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%);
+    border-bottom: 3px solid #f9c900;
+    padding: 18px 24px;
+}
+.tkt-modal .modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+}
+.tkt-modal .status-bar {
+    background: #f8fafd;
+    border-bottom: 1px solid #e2eaf4;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.tkt-modal .status-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #8a9bb0;
+    text-transform: uppercase;
+}
+.tkt-modal .info-section {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e8f0fa;
+    padding: 18px 20px;
+    height: 100%;
+}
+.tkt-modal .section-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #1565c0;
+    text-transform: uppercase;
+    border-bottom: 2px solid #e8f0fa;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+}
+.tkt-modal .info-row {
+    display: flex;
+    padding: 6px 0;
+    border-bottom: 1px dashed #f0f4f8;
+    align-items: flex-start;
+    gap: 10px;
+}
+.tkt-modal .info-row:last-child { border-bottom: none; }
+.tkt-modal .info-key {
+    font-size: 0.72rem;
+    color: #8a9bb0;
+    font-weight: 600;
+    min-width: 120px;
+    flex-shrink: 0;
+    padding-top: 1px;
+}
+.tkt-modal .info-val {
+    font-size: 0.82rem;
+    color: #1a2a3a;
+    font-weight: 500;
+    word-break: break-word;
+}
+.tkt-modal .complaint-box {
+    background: #f8fafd;
+    border: 1px solid #e2eaf4;
+    border-left: 4px solid #1565c0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: #2c3e50;
+    min-height: 80px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.6;
+}
+.tkt-modal .status-pill {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 18px;
+    border-radius: 50px;
+    letter-spacing: 0.05em;
+}
+.tkt-modal .urgent-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff0f0;
+    color: #c0392b;
+    border: 1px solid #f5b7b1;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.tkt-modal .normal-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f0f4f8;
+    color: #5a7a9a;
+    border: 1px solid #dde6f0;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.tkt-modal .assigned-val {
+    color: #1565c0;
+    font-weight: 700;
+}
+.tkt-modal .control-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    background: rgba(249,201,0,0.18);
+    color: #f9c900;
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+</style>
+
+<div class="modal fade tkt-modal" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
+                    <div>
+                        <div class="text-white-50 mb-0" style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase;">IT Helpdesk Job Ticket</div>
+                        <h5 class="modal-title text-white mb-0 fw-bold">
+                            Ticket Details &nbsp;
+                            <span class="control-chip" id="modal_control_no"></span>
+                        </h5>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Status bar -->
+            <div class="status-bar">
+                <span class="status-label">Current Status</span>
+                <span id="modal_status_badge" class="status-pill"></span>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3">
+                <div class="row g-3">
+
+                    <!-- Requester Info -->
+                    <div class="col-md-6">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-person-fill me-1"></i> Requester Information</div>
+                            <div class="info-row">
+                                <span class="info-key">Requested By</span>
+                                <span class="info-val fw-bold" id="modal_requested_by"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Date of Request</span>
+                                <span class="info-val" id="modal_date_request"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Time of Request</span>
+                                <span class="info-val" id="modal_time_request"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Dept / Division</span>
+                                <span class="info-val" id="modal_department"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Section / Unit</span>
+                                <span class="info-val" id="modal_section"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Urgency</span>
+                                <span class="info-val" id="modal_urgency"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Equipment & Assignment -->
+                    <div class="col-md-6">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-pc-display me-1"></i> Equipment &amp; Assignment</div>
+                            <div class="info-row">
+                                <span class="info-key">Equipment</span>
+                                <span class="info-val" id="modal_equipment"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Brand</span>
+                                <span class="info-val" id="modal_brand"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Model</span>
+                                <span class="info-val" id="modal_model"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Assigned To</span>
+                                <span class="info-val assigned-val" id="modal_assisted_by"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Date Filed</span>
+                                <span class="info-val" id="modal_created_at"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-key">Date Completed</span>
+                                <span class="info-val" id="modal_completed_at"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Complaint -->
+                    <div class="col-12">
+                        <div class="info-section">
+                            <div class="section-label"><i class="bi bi-chat-left-text-fill me-1"></i> Nature of Request / Complaint</div>
+                            <div class="complaint-box" id="modal_complaint"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer" style="background:#f8fafd; border-top:1px solid #e2eaf4;">
+                <small class="text-muted me-auto">
+                    <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
+                </small>
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const statusStyles = {
+    'Pending':   { cls: 'bg-warning text-dark',   icon: '🕐' },
+    'Accepted':  { cls: 'bg-info text-dark',       icon: '✅' },
+    'Assisting': { cls: 'bg-primary text-white',   icon: '🔧' },
+    'Completed': { cls: 'bg-success text-white',   icon: '✔️' },
+};
+
+function openTicketModal(controlNo, requestedBy, dateReq, timeReq, dept, section,
+                          status, urgent, equipment, brand, model,
+                          complaint, assistedBy, createdAt, completedAt) {
+
+    document.getElementById('modal_control_no').textContent   = controlNo;
+    document.getElementById('modal_requested_by').textContent = requestedBy;
+    document.getElementById('modal_date_request').textContent = dateReq;
+    document.getElementById('modal_time_request').textContent = timeReq.trim() || '—';
+    document.getElementById('modal_department').textContent   = dept;
+    document.getElementById('modal_section').textContent      = section;
+    document.getElementById('modal_equipment').textContent    = equipment;
+    document.getElementById('modal_brand').textContent        = brand;
+    document.getElementById('modal_model').textContent        = model;
+    document.getElementById('modal_complaint').textContent    = complaint;
+    document.getElementById('modal_assisted_by').textContent  = assistedBy || 'Not assigned';
+    document.getElementById('modal_created_at').textContent   = createdAt;
+    document.getElementById('modal_completed_at').textContent = completedAt || '—';
+
+    // Urgency
+    const urgEl = document.getElementById('modal_urgency');
+    urgEl.innerHTML = urgent === 'Yes'
+        ? '<span class="urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>'
+        : '<span class="normal-tag"><i class="bi bi-check-circle"></i> Normal</span>';
+
+    // Status pill
+    const st = statusStyles[status] || { cls: 'bg-secondary text-white', icon: '' };
+    const statusEl = document.getElementById('modal_status_badge');
+    statusEl.className = `status-pill ${st.cls}`;
+    statusEl.textContent = `${st.icon} ${status}`;
+
+    new bootstrap.Modal(document.getElementById('ticketDetailModal')).show();
+}
+</script>
 {% endblock %}
