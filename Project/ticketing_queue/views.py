@@ -273,6 +273,10 @@ def admin_login(request):
                 ip_address=get_client_ip(request)
             )
 
+            if user.is_superuser:
+                messages.success(request, f"Welcome Super Admin - {user.username}")
+                return redirect('super_admin_dashboard')  
+
             return redirect('staff_dashboard')
     else:
         form = AuthenticationForm()
