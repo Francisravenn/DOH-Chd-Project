@@ -1,407 +1,628 @@
 {% extends "super_admin_base.html" %}
+{% load static %}
 
 {% block title %}Super Admin - Full Archive Access{% endblock %}
 
 {% block extra_css %}
 <style>
-    .superadmin-banner {
-        background: #343a40;
-        color: white;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        font-weight: 500;
-    }
-    .month-header {
-        background: #0d6efd;
-        color: white;
-        padding: 12px 18px;
-        border-radius: 6px 6px 0 0;
-        font-weight: 600;
-        margin: 0;
+    /* ── Outer layout: single column now that left sidebar is gone ── */
+    .archive-wrap {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
+        gap: 0;
+        min-height: 100%;
+    }
+
+    /* ══════════════════════════════
+       TOP: BY MONTH horizontal strip
+    ══════════════════════════════ */
+    .by-month-strip {
+        display: flex;
         align-items: center;
-        cursor: pointer;
+        gap: 6px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .month-header .badge {
-        background: white;
-        color: #0d6efd;
+    .by-month-strip-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #adb5bd;
+        margin-right: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .by-month-strip-year {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
         font-size: 0.9rem;
+        color: #495057;
+        flex-shrink: 0;
+        margin-right: 2px;
     }
-    .table th {
-        background: #0d6efd !important;
-        color: white !important;
+    .by-month-strip-year .yr-badge {
+        background: #1565c0;
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .by-month-divider {
+        width: 1px;
+        height: 18px;
+        background: #dee2e6;
+        flex-shrink: 0;
+        margin: 0 6px;
+    }
+    .by-month-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 0.88rem;
         font-weight: 600;
+        color: #495057;
+        text-decoration: none;
+        border-radius: 20px;
+        border: 1.5px solid #e9ecef;
+        background: #f8f9fa;
+        transition: all 0.15s;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: 'Open Sans', sans-serif;
     }
-    .urgent-row {
-        background: #dc354520 !important;
+    .by-month-pill:hover {
+        background: rgba(21,101,192,0.07);
+        border-color: #1565c0;
+        color: #1565c0;
+        text-decoration: none;
     }
-    .filter-form .form-control, .filter-form .form-select {
+    .by-month-pill.active {
+        background: #1565c0;
+        border-color: #1565c0;
+        color: #fff;
+        font-weight: 700;
+    }
+    .by-month-pill.active .m-count {
+        background: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+    .by-month-pill .m-count {
+        font-size: 0.72rem;
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 1px 7px;
+        border-radius: 8px;
+        font-weight: 700;
+    }
+
+    /* ══════════════════════════════
+       Main content: full width
+    ══════════════════════════════ */
+    .archive-content {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    /* Page title row */
+    .archive-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+    .archive-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .archive-subtitle {
+        font-size: 0.88rem;
+        color: #6c757d;
+        margin-top: 3px;
+        margin-bottom: 0;
+    }
+
+    /* Search */
+    .search-box-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+    .search-box-wrap i {
+        position: absolute;
+        left: 11px; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd; font-size: 0.9rem;
+        pointer-events: none;
+    }
+    #archiveSearch {
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        padding: 7px 14px 7px 34px;
         font-size: 0.9rem;
+        width: 240px;
+        outline: none;
+        background: #fff;
+        color: #495057;
+        font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.2s;
+    }
+    #archiveSearch:focus { border-color: #1565c0; }
+
+    /* Filter bar */
+    .filter-bar {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .filter-bar .form-label {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 4px;
+        display: block;
+    }
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        font-size: 0.92rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+    .filter-bar .btn-primary {
+        background: #1565c0;
+        border-color: #1565c0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 20px;
+    }
+    .filter-bar .btn-primary:hover { background: #1a3a6b; border-color: #1a3a6b; }
+    .filter-bar .btn-outline-secondary {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 16px;
+    }
+    .showing-count {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 18px;
     }
 
+    /* ── Month section ── */
+    .month-section { margin-bottom: 32px; }
+    .month-section-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 14px;
+    }
+    .month-section-badge {
+        background: #1565c0;
+        color: #fff;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 3px 11px;
+        border-radius: 12px;
+        font-family: 'Open Sans', sans-serif;
+    }
 
+    /* ── Table wrapper: no horizontal scroll ── */
+    .table-responsive {
+        overflow-x: visible;
+        border-radius: 8px;
+    }
+
+    /* ── Table ── */
+    .archive-tbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    /* Column widths — fixed layout respects these */
+    .archive-tbl .col-controlno { width: 14%; }
+    .archive-tbl .col-division  { width: 22%; }
+    .archive-tbl .col-reqby     { width: 10%; }
+    .archive-tbl .col-datereq   { width: 10%; }
+    .archive-tbl .col-datecmp   { width: 16%; }
+    .archive-tbl .col-cmpby     { width: 9%;  }
+    .archive-tbl .col-actions   { width: 12%; }
+
+    .archive-tbl thead th {
+        background: #fff !important;
+        color: #6c757d !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.07em !important;
+        text-transform: uppercase !important;
+        padding: 11px 11px !important;
+        border-bottom: 1.5px solid #e9ecef !important;
+        border-top: none !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .archive-tbl tbody tr {
+        border-bottom: 1px solid #f2f4f8;
+        transition: background 0.1s;
+    }
+    .archive-tbl tbody tr:last-child { border-bottom: none; }
+    .archive-tbl tbody tr:hover { background: #f8f9fc; }
+    .archive-tbl tbody tr.urgent-row { background: rgba(220,53,69,0.04); }
+    .archive-tbl tbody tr.urgent-row:hover { background: rgba(220,53,69,0.08); }
+    .archive-tbl td {
+        padding: 11px 11px;
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: #212529;
+        border: none !important;
+        overflow: hidden;
+        word-break: break-word;
+    }
+
+    /* Urgent label */
+    .urgent-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #dc3545;
+        letter-spacing: 0.03em;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .urgent-label i { margin-right: 2px; }
+
+    /* Control number */
+    .control-no-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    /* Date completed pill */
+    .date-done-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #e6f9ee;
+        color: #198754;
+        border: 1px solid #b2dfcf;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+    }
+    .date-done-pill i { font-size: 0.78rem; }
+
+    /* ── Action buttons ── */
+    .actions-cell {
+        white-space: nowrap;
+    }
+    .btn-view-det {
+        background: #1565c0;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-view-det:hover { background: #1a3a6b; color: #fff; }
+    .btn-del-det {
+        background: transparent;
+        color: #dc3545;
+        border: 1.5px solid #dc3545;
+        border-radius: 20px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+        margin-left: 4px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-del-det:hover { background: #dc3545; color: #fff; }
+
+    /* Reduce page padding on archive so table gets maximum room */
+    .page-content { padding: 1rem !important; }
+    #ticketDetailModal .modal-header {
+        background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
+        border-bottom: 3px solid #f9c900;
+    }
+    #ticketDetailModal .modal-header .modal-title,
+    #ticketDetailModal .modal-header h5 {
+        color: #fff;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+    }
+    #ticketDetailModal .modal-header .btn-close { filter: brightness(0) invert(1); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
+<div class="archive-wrap">
 
-    <div class="superadmin-banner">
-        SUPER ADMIN FULL ARCHIVE ACCESS • All records • No restrictions
+    <!-- ═══ Title + Search ═══ -->
+    <div class="archive-title-row">
+        <div>
+            <h2 class="archive-title">🗂 Completed Requests Archive</h2>
+            <p class="archive-subtitle">{{ archived_tickets.count }} completed tickets total</p>
+        </div>
+        <div class="search-box-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" id="archiveSearch" placeholder="Search control no., division…">
+        </div>
     </div>
 
-    <h2 class="mb-4">Completed Requests Archive (Super Admin View)</h2>
+    <!-- ═══ BY MONTH horizontal strip ═══ -->
+    <div class="by-month-strip">
+        <span class="by-month-strip-label">By Month</span>
+        <span class="by-month-strip-year">
+            <i class="bi bi-calendar3" style="font-size:0.75rem;color:#6c757d;"></i>
+            2026
+            <span class="yr-badge">{{ archived_tickets.count }}</span>
+        </span>
+        <div class="by-month-divider"></div>
+        {% regroup archived_tickets by completed_at|date:"F Y" as month_nav_list %}
+        {% for mg in month_nav_list %}
+        <a class="by-month-pill {% if forloop.first %}active{% endif %}" href="#month-{{ forloop.counter }}">
+            {{ mg.grouper|slice:":3" }}
+            <span class="m-count">{{ mg.list|length }}</span>
+        </a>
+        {% endfor %}
+    </div>
 
-    <!-- Filters -->
-    <form method="get" class="filter-form mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small">Date From</label>
-                <input type="date" name="date_from" class="form-control" value="{{ selected_date_from }}">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Date To</label>
-                <input type="date" name="date_to" class="form-control" value="{{ selected_date_to }}">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Completed By</label>
-                <select name="completed_by" class="form-select">
-                    <option value="all">All Staff</option>
-                    {% for user in all_staff %}
-                        <option value="{{ user.id }}" {% if selected_completed_by == user.id|stringformat:"s" %}selected{% endif %}>
-                            {{ user.username }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3 text-end">
-                <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
-                <a href="{% url 'super_admin_archive' %}" class="btn btn-outline-secondary mt-4">Clear</a>
-            </div>
+    <!-- ═══ Main content ═══ -->
+    <div class="archive-content">
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+            <form method="get">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Date From</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ selected_date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date To</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ selected_date_to }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Completed By</label>
+                        <select name="completed_by" class="form-select">
+                            <option value="all">All Staff</option>
+                            {% for user in all_staff %}
+                                <option value="{{ user.id }}" {% if selected_completed_by == user.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">Apply Filter</button>
+                        <a href="{% url 'super_admin_archive' %}" class="btn btn-outline-secondary flex-fill">Clear</a>
+                    </div>
+                </div>
+            </form>
         </div>
-    </form>
 
-    <p class="mb-4"><strong>Showing {{ archived_tickets.count }} archived tickets</strong></p>
+        <p class="showing-count">Showing {{ archived_tickets.count }} archived tickets</p>
 
-    {% if archived_tickets %}
-        <div class="accordion" id="archiveAccordion">
+        {% if archived_tickets %}
             {% regroup archived_tickets by completed_at|date:"F Y" as month_list %}
             {% for month_group in month_list %}
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
-                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
-                                type="button" 
-                                data-bs-toggle="collapse" 
-                                data-bs-target="#collapse{{ forloop.counter }}">
-                            {{ month_group.grouper }} ({{ month_group.list|length }} tickets)
-                        </button>
-                    </h2>
-                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
-                        <div class="accordion-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>CONTROL NO.</th>
-                                            <th>DIVISION / SECTION</th>
-                                            <th>REQUESTED BY</th>
-                                            <th>DATE REQUESTED</th>
-                                            <th>DATE COMPLETED</th>
-                                            <th>COMPLETED BY</th>
-                                            <th>ACTIONS</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for ticket in month_group.list %}
-                                        <tr class="{% if ticket.is_urgent %}urgent-row{% endif %}">
-                                            <td>{{ ticket.control_no }}</td>
-                                            <td>{{ ticket.division|default:"N/A" }}</td>
-                                            <td>{{ ticket.requested_by|default:"N/A" }}</td>
-                                            <td>{{ ticket.created_at|date:"m/d/Y" }}</td>
-                                            <td>{{ ticket.completed_at|date:"m/d/Y H:i" }}</td>
-                                            <td>{{ ticket.completer_name }}</td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-primary view-ticket-btn"
-                                                        data-control-no="{{ ticket.control_no }}"
-                                                        data-requested-by="{{ ticket.requested_by }}"
-                                                        data-department="{{ ticket.original_department }}"
-                                                        data-section="{{ ticket.original_section }}"
-                                                        data-description="{{ ticket.original_description|escapejs }}"
-                                                        data-urgent="{% if ticket.is_urgent %}Yes{% else %}No{% endif %}"
-                                                        data-created="{{ ticket.created_at|date:'m/d/Y H:i' }}"
-                                                        data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'m/d/Y H:i' }}{% else %}N/A{% endif %}"
-                                                        data-equipment="{{ ticket.original_equipment }}"
-                                                        data-brand="{{ ticket.original_brand }}"
-                                                        data-model="{{ ticket.original_model }}"
-                                                        data-completer="{{ ticket.completer_name }}"
-                                                        data-modified="{% if ticket.is_modified %}true{% else %}false{% endif %}">
-                                                    View Details
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+            <div class="month-section" id="month-{{ forloop.counter }}">
+                <div class="month-section-head">
+                    {{ month_group.grouper }}
+                    <span class="month-section-badge">{{ month_group.list|length }} ticket{{ month_group.list|length|pluralize }}</span>
                 </div>
+                <div class="table-responsive">
+                    <table class="archive-tbl">
+                        <colgroup>
+                            <col style="width:14%">
+                            <col style="width:22%">
+                            <col style="width:10%">
+                            <col style="width:10%">
+                            <col style="width:16%">
+                            <col style="width:9%">
+                            <col style="width:13%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Control No.</th>
+                                <th>Division / Section</th>
+                                <th>Requested By</th>
+                                <th>Date Requested</th>
+                                <th>Date Completed</th>
+                                <th>Completed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in month_group.list %}
+                            <tr class="{% if ticket.is_urgent %}urgent-row{% endif %}">
+                                <td>
+                                    {% if ticket.is_urgent %}
+                                        <span class="urgent-label"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>
+                                    {% endif %}
+                                    <span class="control-no-text">{{ ticket.control_no }}</span>
+                                </td>
+                                <td>{{ ticket.division|default:"N/A" }}</td>
+                                <td>{{ ticket.requested_by|default:"N/A" }}</td>
+                                <td style="white-space:nowrap;">{{ ticket.created_at|date:"m/d/Y" }}</td>
+                                <td>
+                                    <span class="date-done-pill">
+                                        <i class="bi bi-check2-circle"></i>
+                                        {{ ticket.completed_at|date:"m/d/Y H:i" }}
+                                    </span>
+                                </td>
+                                <td>{{ ticket.completer_name }}</td>
+                                <td class="actions-cell">
+                                    <button type="button" class="btn-view-det view-ticket-btn"
+                                            data-bs-toggle="modal" data-bs-target="#ticketDetailModal"
+                                            data-control-no="{{ ticket.control_no }}"
+                                            data-requested-by="{{ ticket.requested_by }}"
+                                            data-department="{{ ticket.original_department }}"
+                                            data-section="{{ ticket.original_section }}"
+                                            data-description="{{ ticket.original_description|escapejs }}"
+                                            data-urgent="{% if ticket.is_urgent %}Yes{% else %}No{% endif %}"
+                                            data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}"
+                                            data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'Y-m-d H:i' }}{% else %}N/A{% endif %}"
+                                            data-equipment="{{ ticket.original_equipment }}"
+                                            data-brand="{{ ticket.original_brand }}"
+                                            data-model="{{ ticket.original_model }}"
+                                            data-completer="{{ ticket.completer_name }}"
+                                            data-modified="{% if ticket.is_modified %}true{% else %}false{% endif %}">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </button>
+                                    <button type="button" class="btn-del-det">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info text-center py-5">
-            <h5>No archived tickets found</h5>
-            <p>Try adjusting the filters or complete some tickets first.</p>
-        </div>
-    {% endif %}
+        {% else %}
+            <div class="alert alert-info text-center py-5">
+                <h5>No archived tickets found</h5>
+                <p>Try adjusting the filters or complete some tickets first.</p>
+            </div>
+        {% endif %}
 
+    </div><!-- /archive-content -->
+</div><!-- /archive-wrap -->
 </div>
 
-<!-- Enhanced Ticket Detail Modal -->
-<style>
-#ticketDetailModal .modal-content {
-    border: none;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-}
-#ticketDetailModal .modal-header {
-    background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%);
-    border-bottom: 3px solid #f9c900;
-    padding: 18px 24px;
-}
-#ticketDetailModal .status-bar {
-    background: #f8fafd;
-    border-bottom: 1px solid #e2eaf4;
-    padding: 10px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-#ticketDetailModal .status-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #8a9bb0;
-    text-transform: uppercase;
-}
-#ticketDetailModal .info-section {
-    background: #fff;
-    border-radius: 10px;
-    border: 1px solid #e8f0fa;
-    padding: 18px 20px;
-    height: 100%;
-}
-#ticketDetailModal .section-label {
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    color: #1565c0;
-    text-transform: uppercase;
-    border-bottom: 2px solid #e8f0fa;
-    padding-bottom: 8px;
-    margin-bottom: 14px;
-    display: block;
-}
-#ticketDetailModal .info-row {
-    display: flex;
-    padding: 6px 0;
-    border-bottom: 1px dashed #f0f4f8;
-    align-items: flex-start;
-    gap: 10px;
-}
-#ticketDetailModal .info-row:last-child { border-bottom: none; }
-#ticketDetailModal .info-key {
-    font-size: 0.72rem;
-    color: #8a9bb0;
-    font-weight: 600;
-    min-width: 130px;
-    flex-shrink: 0;
-    padding-top: 1px;
-}
-#ticketDetailModal .info-val {
-    font-size: 0.82rem;
-    color: #1a2a3a;
-    font-weight: 500;
-    word-break: break-word;
-}
-#ticketDetailModal .complaint-box {
-    background: #f8fafd;
-    border: 1px solid #e2eaf4;
-    border-left: 4px solid #1565c0;
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-size: 0.88rem;
-    color: #2c3e50;
-    min-height: 80px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.6;
-}
-#ticketDetailModal .urgent-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #fff0f0;
-    color: #c0392b;
-    border: 1px solid #f5b7b1;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-#ticketDetailModal .normal-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f0f4f8;
-    color: #1a7a4a;
-    border: 1px solid #dde6f0;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-#ticketDetailModal .assigned-val {
-    color: #1565c0;
-    font-weight: 700;
-}
-#ticketDetailModal .control-chip {
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    background: rgba(249,201,0,0.18);
-    color: #f9c900;
-    border-radius: 6px;
-    padding: 2px 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-}
-#ticketDetailModal .modified-notice {
-    background: #fff8e1;
-    border: 1px solid #ffe082;
-    border-left: 4px solid #f9c900;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    color: #856404;
-    font-weight: 600;
-    margin-top: 12px;
-}
-</style>
-
-<div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-
-            <!-- Header -->
-            <div class="modal-header">
-                <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
-                    <div>
-                        <div class="text-white-50 mb-0" style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase;">IT Helpdesk Job Ticket — Archived</div>
-                        <h5 class="modal-title text-white mb-0 fw-bold">
-                            Ticket Details &nbsp;
-                            <span class="control-chip" id="modal-control-no"></span>
-                        </h5>
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- ── Ticket Detail Modal ── -->
+<div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-labelledby="ticketDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
+            <div class="modal-header border-0 py-3">
+                <h5 class="modal-title fw-bold d-flex align-items-center" id="ticketDetailLabel">
+                    <i class="bi bi-ticket-detailed me-2"></i> Ticket Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-            <!-- Status bar -->
-            <div class="status-bar">
-                <span class="status-label">Ticket Status</span>
-                <span class="normal-tag"><i class="bi bi-check-circle-fill me-1"></i> Completed</span>
-            </div>
-
-            <!-- Body -->
-            <div class="modal-body p-3">
-                <div class="row g-3">
-
-                    <!-- Left: Basic Info -->
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-4">
                     <div class="col-md-6">
-                        <div class="info-section">
-                            <div class="section-label"><i class="bi bi-person-fill me-1"></i> Requester Information</div>
-                            <div class="info-row">
-                                <span class="info-key">Requested By</span>
-                                <span class="info-val fw-bold" id="modal-requested-by"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Dept / Division</span>
-                                <span class="info-val" id="modal-department"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Section / Unit</span>
-                                <span class="info-val" id="modal-section"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Date Requested</span>
-                                <span class="info-val" id="modal-created"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Date Completed</span>
-                                <span class="info-val" id="modal-completed"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Completed By</span>
-                                <span class="info-val assigned-val" id="modal-completer"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Urgency</span>
-                                <span class="info-val" id="modal-urgent"></span>
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-info-circle me-2"></i> Basic Information
+                                </h6>
+                                <dl class="row mb-0 small">
+                                    <dt class="col-sm-5 fw-semibold text-muted">Control No.</dt>
+                                    <dd class="col-sm-7 fw-bold" id="modal-control-no">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Requested By</dt>
+                                    <dd class="col-sm-7" id="modal-requested-by">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Department / Division</dt>
+                                    <dd class="col-sm-7" id="modal-department">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Section / Unit</dt>
+                                    <dd class="col-sm-7" id="modal-section">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Date Requested</dt>
+                                    <dd class="col-sm-7" id="modal-created">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Date Completed</dt>
+                                    <dd class="col-sm-7" id="modal-completed">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Completed By</dt>
+                                    <dd class="col-sm-7 fw-medium text-dark" id="modal-completer">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Urgency</dt>
+                                    <dd class="col-sm-7" id="modal-urgent">-</dd>
+                                </dl>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Right: Equipment -->
                     <div class="col-md-6">
-                        <div class="info-section">
-                            <div class="section-label"><i class="bi bi-pc-display me-1"></i> Equipment Details</div>
-                            <div class="info-row">
-                                <span class="info-key">Equipment</span>
-                                <span class="info-val" id="modal-equipment"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Brand</span>
-                                <span class="info-val" id="modal-brand"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-key">Model</span>
-                                <span class="info-val" id="modal-model"></span>
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-laptop me-2"></i> Equipment Details
+                                </h6>
+                                <dl class="row mb-0 small">
+                                    <dt class="col-sm-5 fw-semibold text-muted">Equipment</dt>
+                                    <dd class="col-sm-7" id="modal-equipment">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Brand</dt>
+                                    <dd class="col-sm-7" id="modal-brand">-</dd>
+                                    <dt class="col-sm-5 fw-semibold text-muted">Model</dt>
+                                    <dd class="col-sm-7" id="modal-model">-</dd>
+                                </dl>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Complaint -->
-                    <div class="col-12">
-                        <div class="info-section">
-                            <div class="section-label"><i class="bi bi-chat-left-text-fill me-1"></i> Nature of Request / Complaint</div>
-                            <div class="complaint-box" id="modal-description"></div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary fw-bold mb-3">
+                                    <i class="bi bi-chat-left-text me-2"></i> Full Request / Complaint
+                                </h6>
+                                <div class="complaint-box p-3 bg-white border rounded shadow-sm" id="modal-description"
+                                     style="min-height:140px;white-space:pre-wrap;font-size:0.95rem;">-</div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Modified notice -->
-                    <div class="col-12 d-none" id="modal-modified-badge">
-                        <div class="modified-notice">
+                        <div id="modal-modified-badge" class="alert alert-warning mt-4 d-none shadow-sm" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <strong>Notice:</strong> This ticket was manually modified by an admin after submission.
+                            <strong>Notice:</strong> This ticket was manually modified by an admin.
                         </div>
                     </div>
-
                 </div>
             </div>
-
-            <!-- Footer -->
-            <div class="modal-footer" style="background:#f8fafd; border-top:1px solid #e2eaf4;">
-                <small class="text-muted me-auto">
-                    <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
-                </small>
-                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer bg-light border-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
             </div>
-
         </div>
     </div>
 </div>
@@ -410,33 +631,54 @@
 
 {% block extra_js %}
 <script>
+// Search
+document.getElementById('archiveSearch')?.addEventListener('input', function() {
+    const filter = this.value.toLowerCase().trim();
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+    });
+});
+
+// Active pill highlight on scroll
+(function () {
+    const pills = document.querySelectorAll('.by-month-pill');
+    const sections = document.querySelectorAll('.month-section');
+    if (!sections.length || !pills.length) return;
+    const scrollEl = document.querySelector('.page-content') || window;
+    function onScroll() {
+        let current = 0;
+        sections.forEach((sec, i) => {
+            const top = sec.getBoundingClientRect().top;
+            if (top <= 140) current = i;
+        });
+        pills.forEach((p, i) => {
+            p.classList.toggle('active', i === current);
+        });
+    }
+    scrollEl.addEventListener('scroll', onScroll, { passive: true });
+})();
+
+// Modal population
 document.querySelectorAll('.view-ticket-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const d = this.dataset;
-
-        document.getElementById('modal-control-no').textContent  = d.controlNo   || 'N/A';
-        document.getElementById('modal-requested-by').textContent = d.requestedBy || 'N/A';
-        document.getElementById('modal-department').textContent  = d.department   || 'N/A';
-        document.getElementById('modal-section').textContent     = d.section      || 'N/A';
-        document.getElementById('modal-created').textContent     = d.created      || 'N/A';
-        document.getElementById('modal-completed').textContent   = d.completed    || 'N/A';
-        document.getElementById('modal-completer').textContent   = d.completer    || 'Unknown';
-        document.getElementById('modal-equipment').textContent   = d.equipment    || 'N/A';
-        document.getElementById('modal-brand').textContent       = d.brand        || 'N/A';
-        document.getElementById('modal-model').textContent       = d.model        || 'N/A';
-        document.getElementById('modal-description').textContent = d.description  || 'No description provided.';
-
-        // Urgency
-        const urgEl = document.getElementById('modal-urgent');
-        urgEl.innerHTML = d.urgent === 'Yes'
-            ? '<span class="urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>'
-            : '<span class="normal-tag"><i class="bi bi-check-circle"></i> Normal</span>';
-
-        // Modified notice
-        const modEl = document.getElementById('modal-modified-badge');
-        modEl.classList.toggle('d-none', d.modified !== 'true');
-
-        new bootstrap.Modal(document.getElementById('ticketDetailModal')).show();
+    btn.addEventListener('click', function() {
+        document.getElementById('modal-control-no').textContent    = this.dataset.controlNo    || 'N/A';
+        document.getElementById('modal-requested-by').textContent  = this.dataset.requestedBy  || 'N/A';
+        document.getElementById('modal-department').textContent    = this.dataset.department   || 'N/A';
+        document.getElementById('modal-section').textContent       = this.dataset.section      || 'N/A';
+        document.getElementById('modal-description').textContent   = this.dataset.description  || 'No description provided';
+        document.getElementById('modal-urgent').textContent        = this.dataset.urgent       || 'No';
+        document.getElementById('modal-created').textContent       = this.dataset.created      || 'N/A';
+        document.getElementById('modal-completed').textContent     = this.dataset.completed    || 'N/A';
+        document.getElementById('modal-equipment').textContent     = this.dataset.equipment    || 'N/A';
+        document.getElementById('modal-brand').textContent         = this.dataset.brand        || 'N/A';
+        document.getElementById('modal-model').textContent         = this.dataset.model        || 'N/A';
+        document.getElementById('modal-completer').textContent     = this.dataset.completer    || 'Unknown';
+        const modifiedBadge = document.getElementById('modal-modified-badge');
+        this.dataset.modified === 'true'
+            ? modifiedBadge.classList.remove('d-none')
+            : modifiedBadge.classList.add('d-none');
+        document.querySelector('#ticketDetailModal .modal-title').innerHTML =
+            `<i class="bi bi-ticket-detailed me-2"></i> Ticket Details &mdash; ${this.dataset.controlNo || 'Unknown'}`;
     });
 });
 </script>

@@ -75,28 +75,15 @@
         margin-right: 8px;
         transition: background 0.15s, color 0.15s;
     }
-    .arc-month-list li:hover {
-        background: #eef2ff;
-        color: #0d6efd;
-    }
-    .arc-month-list li.active {
-        background: #dce8fd;
-        color: #0d6efd;
-        font-weight: 600;
-    }
+    .arc-month-list li:hover { background: #eef2ff; color: #0d6efd; }
+    .arc-month-list li.active { background: #dce8fd; color: #0d6efd; font-weight: 600; }
     .arc-month-list li .cnt {
-        font-size: 0.7rem;
-        font-weight: 700;
-        background: #adb5bd;
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 20px;
-        min-width: 20px;
-        text-align: center;
+        font-size: 0.7rem; font-weight: 700;
+        background: #adb5bd; color: #fff;
+        padding: 1px 6px; border-radius: 20px;
+        min-width: 20px; text-align: center;
     }
-    .arc-month-list li.active .cnt {
-        background: #0d6efd;
-    }
+    .arc-month-list li.active .cnt { background: #0d6efd; }
 
     /* ─── Main Content ─── */
     .arc-main {
@@ -112,360 +99,217 @@
         align-items: flex-start;
         margin-bottom: 20px;
     }
-    .arc-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #212529;
-        margin-bottom: 3px;
-    }
-    .arc-subtitle {
-        font-size: 0.82rem;
-        color: #868e96;
-    }
+    .arc-title { font-size: 1.3rem; font-weight: 700; color: #212529; margin-bottom: 3px; }
+    .arc-subtitle { font-size: 0.82rem; color: #868e96; }
     .arc-search {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 7px 14px;
-        font-size: 0.85rem;
-        width: 220px;
-        outline: none;
-        background: #fff;
-        transition: border 0.2s;
+        border: 1px solid #dee2e6; border-radius: 6px;
+        padding: 7px 14px; font-size: 0.85rem; width: 220px;
+        outline: none; background: #fff; transition: border 0.2s;
     }
-    .arc-search:focus {
-        border-color: #0d6efd;
-    }
+    .arc-search:focus { border-color: #1565c0; }
 
     /* ─── Month Sections ─── */
-    .arc-month-section {
-        display: none;
-    }
-    .arc-month-section.active {
-        display: block;
-    }
+    .arc-month-section { display: none; }
+    .arc-month-section.active { display: block; }
     .arc-month-heading {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #212529;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        font-size: 1rem; font-weight: 700; color: #212529;
+        margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
     }
     .arc-month-heading .tkt-badge {
-        font-size: 0.75rem;
-        background: #dce8fd;
-        color: #0d6efd;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-weight: 600;
+        font-size: 0.75rem; background: #dce8fd; color: #0d6efd;
+        padding: 3px 10px; border-radius: 20px; font-weight: 600;
     }
 
     /* ─── Table ─── */
     .arc-table-wrap {
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid #e8eaed;
-        overflow: hidden;
-        margin-bottom: 24px;
+        background: #fff; border-radius: 10px;
+        border: 1px solid #e8eaed; overflow: hidden; margin-bottom: 24px;
     }
-    .arc-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .arc-table thead tr {
-        border-bottom: 2px solid #e9ecef;
-    }
+    .arc-table { width: 100%; border-collapse: collapse; }
+    .arc-table thead tr { border-bottom: 2px solid #e9ecef; }
     .arc-table thead th {
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #adb5bd;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        padding: 12px 14px;
-        background: #fff;
-        white-space: nowrap;
+        font-size: 0.72rem; font-weight: 700; color: #adb5bd;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        padding: 12px 14px; background: #fff; white-space: nowrap;
     }
-    .arc-table tbody tr {
-        border-bottom: 1px solid #f5f5f5;
-        transition: background 0.12s;
-    }
-    .arc-table tbody tr:last-child {
-        border-bottom: none;
-    }
-    .arc-table tbody tr:hover {
-        background: #f8f9ff;
-    }
-    .arc-table tbody td {
-        padding: 12px 14px;
-        font-size: 0.875rem;
-        color: #343a40;
-        vertical-align: middle;
-    }
-    .urgent-label {
-        font-size: 0.68rem;
-        color: #dc3545;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        margin-bottom: 2px;
-    }
-    .ctrl-no {
-        font-weight: 700;
-        color: #212529;
-    }
+    .arc-table tbody tr { border-bottom: 1px solid #f5f5f5; transition: background 0.12s; }
+    .arc-table tbody tr:last-child { border-bottom: none; }
+    .arc-table tbody tr:hover { background: #f8f9ff; }
+    .arc-table tbody td { padding: 12px 14px; font-size: 0.875rem; color: #343a40; vertical-align: middle; }
+    .urgent-label { font-size: 0.68rem; color: #dc3545; font-weight: 700; display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
+    .ctrl-no { font-weight: 700; color: #212529; }
     .done-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        background: #eaf6ec;
-        color: #2d8a4e;
-        font-size: 0.76rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #eaf6ec; color: #2d8a4e;
+        font-size: 0.76rem; font-weight: 600;
+        padding: 4px 10px; border-radius: 20px; white-space: nowrap;
     }
-    .action-cell {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        flex-wrap: nowrap;
-    }
+    .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
     .btn-view-details {
-        background: #0d6efd;
-        color: #fff;
-        border: none;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.76rem;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
+        background: #1565c0; color: #fff; border: none;
+        padding: 5px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600;
+        cursor: pointer; white-space: nowrap;
+        font-family: 'Montserrat', sans-serif; letter-spacing: 0.03em;
         transition: background 0.15s;
     }
-    .btn-view-details:hover {
-        background: #0b5ed7;
-        color: #fff;
-    }
+    .btn-view-details:hover { background: #1a3a6b; color: #fff; }
     .btn-print-ticket {
-        background: #198754;
-        color: #fff;
-        border: none;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.76rem;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
-        text-decoration: none;
-        display: inline-block;
+        background: #198754; color: #fff; border: none;
+        padding: 5px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600;
+        cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block;
+        font-family: 'Montserrat', sans-serif; letter-spacing: 0.03em;
         transition: background 0.15s;
     }
-    .btn-print-ticket:hover {
-        background: #157347;
-        color: #fff;
-    }
+    .btn-print-ticket:hover { background: #146c43; color: #fff; }
 
     /* ─── Pagination ─── */
     .arc-pagination {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-top: 1px solid #e9ecef;
-        background: #fafafa;
-        border-radius: 0 0 10px 10px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 16px; border-top: 1px solid #e9ecef;
+        background: #fafafa; border-radius: 0 0 10px 10px;
     }
-    .arc-pagination .page-info {
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
-    .arc-pagination .page-info strong {
-        color: #343a40;
-    }
-    .arc-page-btns {
-        display: flex;
-        gap: 4px;
-        align-items: center;
-    }
+    .arc-pagination .page-info { font-size: 0.8rem; color: #6c757d; }
+    .arc-pagination .page-info strong { color: #343a40; }
+    .arc-page-btns { display: flex; gap: 4px; align-items: center; }
     .arc-page-btns button {
-        border: 1px solid #dee2e6;
-        background: #fff;
-        color: #343a40;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 5px 11px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.15s;
-        min-width: 34px;
-        line-height: 1;
+        border: 1px solid #dee2e6; background: #fff; color: #343a40;
+        font-size: 0.8rem; font-weight: 600; padding: 5px 11px;
+        border-radius: 6px; cursor: pointer; transition: all 0.15s;
+        min-width: 34px; line-height: 1;
     }
-    .arc-page-btns button:hover:not(:disabled):not(.active) {
-        background: #e9ecef;
-    }
-    .arc-page-btns button.active {
-        background: #0d6efd;
-        color: #fff;
-        border-color: #0d6efd;
-    }
-    .arc-page-btns button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
+    .arc-page-btns button:hover:not(:disabled):not(.active) { background: #e9ecef; }
+    .arc-page-btns button.active { background: #1565c0; color: #fff; border-color: #1565c0; }
+    .arc-page-btns button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* ─── Modal ─── */
-    #ticketDetailModal .modal-dialog {
-        max-width: 620px;
-    }
+    /* ════════════════════════════════════════
+       TICKET DETAIL MODAL — matches staff dashboard style
+    ════════════════════════════════════════ */
     #ticketDetailModal .modal-content {
         border: none;
-        border-radius: 4px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
     }
-    #ticketDetailModal .modal-header {
-        background: #0d6efd;
-        border-radius: 4px 4px 0 0;
-        padding: 0;
-        border-bottom: none;
+
+    /* Gradient header — identical to .tkt-modal-header */
+    .arc-modal-header {
+        background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
+        border-bottom: 3px solid #f9c900;
+        padding: 16px 24px;
+        display: flex; align-items: center; justify-content: space-between;
     }
-    .modal-gov-header {
-        width: 100%;
-        padding: 0;
+    .arc-modal-header-inner { display: flex; align-items: center; gap: 12px; }
+    .arc-modal-eyebrow {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem; letter-spacing: 0.1em;
+        text-transform: uppercase; color: rgba(255,255,255,0.6);
     }
-    .modal-gov-top {
-        background: #0d6efd;
-        padding: 14px 20px 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    .arc-modal-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0;
+        display: flex; align-items: center; gap: 10px;
     }
-    .modal-gov-agency {
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.75);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 600;
+    .arc-control-chip {
+        font-family: 'Courier New', monospace;
+        font-size: 0.82rem; font-weight: 700;
+        background: rgba(249,201,0,0.22); color: #f9c900;
+        border-radius: 6px; padding: 2px 10px; letter-spacing: 0.05em;
     }
-    .modal-gov-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #fff;
-        margin-top: 2px;
+    .arc-modal-close {
+        background: none; border: none; color: rgba(255,255,255,0.75);
+        font-size: 1.3rem; cursor: pointer; padding: 4px 8px;
+        line-height: 1; border-radius: 6px; transition: background 0.2s;
     }
-    .modal-gov-close {
-        background: none;
-        border: none;
-        color: rgba(255,255,255,0.8);
-        font-size: 1.3rem;
-        cursor: pointer;
-        line-height: 1;
-        padding: 4px 8px;
+    .arc-modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* Status bar — identical to .tkt-status-bar */
+    .arc-status-bar {
+        background: #f8fafd; border-bottom: 1px solid #e2eaf4;
+        padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
     }
-    .modal-gov-close:hover {
-        color: #fff;
+    .arc-status-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+        color: #8a9bb0; text-transform: uppercase;
     }
-    .modal-gov-banner {
-        background: #0b5ed7;
-        padding: 7px 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-top: 1px solid rgba(255,255,255,0.15);
+    .arc-status-pill {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.82rem; font-weight: 700;
+        padding: 5px 18px; border-radius: 50px; letter-spacing: 0.05em;
     }
-    .modal-gov-banner .control-chip {
-        background: rgba(255,255,255,0.15);
-        color: #fff;
-        font-size: 0.78rem;
-        font-weight: 700;
-        padding: 3px 12px;
-        border-radius: 20px;
-        letter-spacing: 0.03em;
+    .arc-urgent-tag {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #fee2e2; color: #b91c1c;
+        border: 1px solid #fecaca; border-radius: 20px;
+        padding: 4px 12px; font-size: 0.78rem; font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
     }
-    .modal-gov-banner .status-chip {
-        font-size: 0.73rem;
-        font-weight: 600;
-        padding: 3px 10px;
-        border-radius: 20px;
+    .arc-normal-tag {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f0f4f8; color: #5a7a9a;
+        border: 1px solid #dde6f0; border-radius: 20px;
+        padding: 4px 12px; font-size: 0.78rem; font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
     }
-    .modal-gov-banner .status-chip.completed {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    .modal-gov-banner .status-chip.urgent {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    #ticketDetailModal .modal-body {
-        padding: 0;
-    }
-    .modal-gov-body {
-        padding: 20px 24px 8px;
-    }
-    .modal-section-title {
-        font-size: 0.68rem;
-        font-weight: 700;
-        color: #0d6efd;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+
+    /* Body — matches .tkt-info-section */
+    #ticketDetailModal .modal-body { background: #f8fafd; padding: 16px; }
+    .arc-info-section {
+        background: #fff; border-radius: 10px;
+        border: 1px solid #e8f0fa; padding: 18px 20px;
         margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 2px solid #e9ecef;
     }
-    .modal-field-grid {
-        display: grid;
-        grid-template-columns: 170px 1fr;
-        gap: 0;
-        margin-bottom: 16px;
+    .arc-section-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.65rem; font-weight: 800;
+        letter-spacing: 0.14em; color: #1565c0; text-transform: uppercase;
+        border-bottom: 2px solid #e8f0fa; padding-bottom: 8px;
+        margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
     }
-    .modal-field-row {
-        display: contents;
+    .arc-info-row {
+        display: flex; padding: 7px 0;
+        border-bottom: 1px dashed #f0f4f8;
+        align-items: flex-start; gap: 10px;
     }
-    .modal-field-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #6c757d;
-        padding: 9px 12px 9px 0;
-        border-bottom: 1px solid #f1f3f5;
-        display: flex;
-        align-items: center;
+    .arc-info-row:last-child { border-bottom: none; }
+    .arc-info-key {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.78rem; color: #8a9bb0; font-weight: 600;
+        min-width: 140px; flex-shrink: 0; padding-top: 1px;
     }
-    .modal-field-value {
-        font-size: 0.875rem;
-        color: #212529;
-        padding: 9px 0;
-        border-bottom: 1px solid #f1f3f5;
-        display: flex;
-        align-items: center;
+    .arc-info-val {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.88rem; color: #1a2a3a;
+        font-weight: 500; word-break: break-word;
     }
-    .modal-field-row:last-child .modal-field-label,
-    .modal-field-row:last-child .modal-field-value {
-        border-bottom: none;
+    .arc-complaint-box {
+        background: #f8fafd; border: 1px solid #e2eaf4;
+        border-left: 4px solid #1565c0; border-radius: 8px;
+        padding: 14px 16px; font-size: 0.92rem; color: #2c3e50;
+        min-height: 70px; white-space: pre-wrap; word-wrap: break-word;
+        line-height: 1.6; font-family: 'Open Sans', sans-serif;
     }
-    .modal-desc-box {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 4px;
-        padding: 10px 14px;
-        font-size: 0.875rem;
-        color: #343a40;
-        white-space: pre-wrap;
-        max-height: 120px;
-        overflow-y: auto;
-        width: 100%;
-        line-height: 1.5;
+
+    /* Footer */
+    .arc-modal-footer {
+        background: #f8fafd; border-top: 1px solid #e2eaf4;
+        padding: 12px 20px; display: flex;
+        align-items: center; justify-content: space-between; gap: 10px;
     }
-    #ticketDetailModal .modal-footer {
-        padding: 12px 24px;
-        border-top: 1px solid #e9ecef;
-        background: #f8f9fa;
-        border-radius: 0 0 4px 4px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
+    .btn-mfooter-cancel {
+        background: transparent; color: #6c757d;
+        border: 1.5px solid #dee2e6; border-radius: 8px;
+        font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700;
+        padding: 7px 18px; cursor: pointer; transition: all 0.15s;
     }
+    .btn-mfooter-cancel:hover { background: #f8f9fa; }
+    .btn-mfooter-print {
+        background: #198754; color: #fff; border: none; border-radius: 8px;
+        font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700;
+        padding: 7px 20px; cursor: pointer; transition: background 0.15s;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-mfooter-print:hover { background: #146c43; color: #fff; }
 </style>
 {% endblock %}
 
@@ -539,7 +383,7 @@
                                     data-search="{{ ticket.control_no|lower }} {{ ticket.division|lower }} {{ ticket.requested_by|lower }}">
                                     <td>
                                         {% if ticket.is_urgent %}
-                                        <div class="urgent-label">⚠ URGENT</div>
+                                        <div class="urgent-label"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</div>
                                         {% endif %}
                                         <span class="ctrl-no">{{ ticket.control_no }}</span>
                                     </td>
@@ -547,7 +391,7 @@
                                     <td>{{ ticket.requested_by|default:"N/A" }}</td>
                                     <td>{{ ticket.created_at|date:"m/d/Y" }}</td>
                                     <td>
-                                        <span class="done-pill">✓ {{ ticket.completed_at|date:"m/d/Y" }}</span>
+                                        <span class="done-pill"><i class="bi bi-patch-check-fill"></i> {{ ticket.completed_at|date:"m/d/Y" }}</span>
                                     </td>
                                     <td>
                                         <div class="action-cell">
@@ -561,11 +405,15 @@
                                                     data-description="{{ ticket.description|escapejs }}"
                                                     data-urgent="{% if ticket.is_urgent %}Yes{% else %}No{% endif %}"
                                                     data-created="{{ ticket.created_at|date:'m/d/Y H:i' }}"
-                                                    data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'m/d/Y H:i' }}{% else %}N/A{% endif %}">
-                                                View Details
+                                                    data-completed="{% if ticket.completed_at %}{{ ticket.completed_at|date:'m/d/Y H:i' }}{% else %}N/A{% endif %}"
+                                                    data-equipment="{{ ticket.equipment|default:'N/A' }}"
+                                                    data-brand="{{ ticket.brand|default:'N/A' }}"
+                                                    data-model="{{ ticket.model|default:'N/A' }}"
+                                                    data-print-url="{% url 'archived_ticket_print' ticket.pk %}">
+                                                <i class="bi bi-eye me-1"></i>View Details
                                             </button>
                                             <a href="{% url 'archived_ticket_print' ticket.pk %}" class="btn-print-ticket">
-                                                Print Ticket
+                                                <i class="bi bi-printer-fill me-1"></i>Print
                                             </a>
                                         </div>
                                     </td>
@@ -589,58 +437,115 @@
     </div>
 </div>
 
-<!-- ── Government Ticket Detail Modal ── -->
+<!-- ════════════════════════════════════════
+     TICKET DETAIL MODAL — DOH branded style
+════════════════════════════════════════ -->
 <div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-gov-header">
-                    <div class="modal-gov-top">
-                        <div>
-                            <div class="modal-gov-agency">DOH CHD CALABARZON — IT Helpdesk</div>
-                            <div class="modal-gov-title">IT Service Request Record</div>
-                        </div>
-                        <button class="modal-gov-close" data-bs-dismiss="modal" aria-label="Close">✕</button>
+
+            <!-- Header -->
+            <div class="arc-modal-header">
+                <div class="arc-modal-header-inner">
+                    <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
+                    <div>
+                        <div class="arc-modal-eyebrow">IT Helpdesk Job Ticket</div>
+                        <h5 class="arc-modal-title">
+                            Ticket Details &nbsp;<span class="arc-control-chip" id="modal-header-control">—</span>
+                        </h5>
                     </div>
-                    <div class="modal-gov-banner">
-                        <span class="control-chip" id="modal-banner-control">—</span>
-                        <span class="status-chip completed">● Completed</span>
-                        <span class="status-chip urgent d-none" id="modal-banner-urgent">⚠ Urgent</span>
+                </div>
+                <button class="arc-modal-close" data-bs-dismiss="modal" aria-label="Close">✕</button>
+            </div>
+
+            <!-- Status bar -->
+            <div class="arc-status-bar">
+                <span class="arc-status-label">Current Status</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="arc-status-pill bg-success text-white">🏁 Completed</span>
+                    <span class="arc-urgent-tag d-none" id="modal-urgent-badge">
+                        <i class="bi bi-exclamation-triangle-fill"></i> URGENT
+                    </span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-3" style="background:#f8fafd;">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="arc-info-section" style="height:100%;">
+                            <div class="arc-section-label">
+                                <i class="bi bi-person-fill"></i> Request Information
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Control No.</span>
+                                <span class="arc-info-val fw-bold" id="modal-control-no">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Requested By</span>
+                                <span class="arc-info-val" id="modal-requested-by">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Division / Section</span>
+                                <span class="arc-info-val" id="modal-division">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Date Requested</span>
+                                <span class="arc-info-val" id="modal-created">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Date Completed</span>
+                                <span class="arc-info-val" id="modal-completed">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Urgency</span>
+                                <span class="arc-info-val" id="modal-urgency-val">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="arc-info-section" style="height:100%;">
+                            <div class="arc-section-label">
+                                <i class="bi bi-pc-display"></i> Equipment Information
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Equipment</span>
+                                <span class="arc-info-val" id="modal-equipment">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Brand</span>
+                                <span class="arc-info-val" id="modal-brand">—</span>
+                            </div>
+                            <div class="arc-info-row">
+                                <span class="arc-info-key">Model</span>
+                                <span class="arc-info-val" id="modal-model">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="arc-info-section" style="margin-bottom:0;">
+                            <div class="arc-section-label">
+                                <i class="bi bi-chat-left-text-fill"></i> Nature of Request / Complaint
+                            </div>
+                            <div class="arc-complaint-box" id="modal-description">—</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-body">
-                <div class="modal-gov-body">
-                    <div class="modal-section-title">Request Information</div>
-                    <div class="modal-field-grid">
-                        <div class="modal-field-row">
-                            <div class="modal-field-label">Control No.</div>
-                            <div class="modal-field-value fw-bold" id="modal-control-no">—</div>
-                        </div>
-                        <div class="modal-field-row">
-                            <div class="modal-field-label">Requested By</div>
-                            <div class="modal-field-value" id="modal-requested-by">—</div>
-                        </div>
-                        <div class="modal-field-row">
-                            <div class="modal-field-label">Division / Section</div>
-                            <div class="modal-field-value" id="modal-division">—</div>
-                        </div>
-                        <div class="modal-field-row">
-                            <div class="modal-field-label">Date Requested</div>
-                            <div class="modal-field-value" id="modal-created">—</div>
-                        </div>
-                        <div class="modal-field-row">
-                            <div class="modal-field-label">Date Completed</div>
-                            <div class="modal-field-value" id="modal-completed">—</div>
-                        </div>
-                    </div>
-                    <div class="modal-section-title mt-2">Nature of Request / Complaint</div>
-                    <div class="modal-desc-box" id="modal-description">—</div>
+
+            <!-- Footer -->
+            <div class="arc-modal-footer">
+                <small class="text-muted" style="font-size:0.78rem;">
+                    <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
+                </small>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">Close</button>
+                    <a href="#" class="btn-mfooter-print" id="modal-print-link">
+                        <i class="bi bi-printer-fill"></i> Print Ticket
+                    </a>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
-            </div>
+
         </div>
     </div>
 </div>
@@ -654,48 +559,28 @@ const ROWS_PER_PAGE = 25;
 function initPagination(tableId) {
     const table = document.getElementById(tableId);
     if (!table) return;
-
     const tbody = table.querySelector('tbody');
     const pgEl  = document.getElementById(tableId.replace('tbl-', 'pg-'));
     if (!tbody || !pgEl) return;
 
     let currentPage = 1;
 
-    function getAllRows() {
-        return Array.from(tbody.querySelectorAll('tr.ticket-row'));
-    }
-
-    function getFilteredRows() {
-        return getAllRows().filter(r => r.getAttribute('data-filtered') !== 'true');
-    }
+    function getAllRows()      { return Array.from(tbody.querySelectorAll('tr.ticket-row')); }
+    function getFilteredRows() { return getAllRows().filter(r => r.getAttribute('data-filtered') !== 'true'); }
 
     function renderPage() {
         const rows       = getFilteredRows();
         const total      = rows.length;
         const totalPages = Math.max(1, Math.ceil(total / ROWS_PER_PAGE));
-
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
 
-        // First hide ALL rows in this table
-        getAllRows().forEach(r => {
-            if (r.getAttribute('data-filtered') === 'true') {
-                r.style.display = 'none';
-            } else {
-                r.style.display = 'none';
-            }
-        });
+        getAllRows().forEach(r => { r.style.display = 'none'; });
 
-        // Show only rows for current page
         const start = (currentPage - 1) * ROWS_PER_PAGE;
         const end   = start + ROWS_PER_PAGE;
-        rows.forEach((row, i) => {
-            if (i >= start && i < end) {
-                row.style.display = '';
-            }
-        });
+        rows.forEach((row, i) => { if (i >= start && i < end) row.style.display = ''; });
 
-        // Build pagination UI
         const dispStart = total === 0 ? 0 : start + 1;
         const dispEnd   = Math.min(end, total);
 
@@ -703,54 +588,35 @@ function initPagination(tableId) {
         html += `<div class="arc-page-btns">`;
         html += `<button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
 
-        // Page number buttons with ellipsis
         const delta = 2;
         let lastPrinted = 0;
         for (let p = 1; p <= totalPages; p++) {
             const nearCurrent = p >= currentPage - delta && p <= currentPage + delta;
-            const isEdge      = p === 1 || p === totalPages;
+            const isEdge = p === 1 || p === totalPages;
             if (nearCurrent || isEdge) {
-                if (lastPrinted && p - lastPrinted > 1) {
+                if (lastPrinted && p - lastPrinted > 1)
                     html += `<button disabled style="border:none;background:none;cursor:default;">…</button>`;
-                }
                 html += `<button data-page="${p}" class="${p === currentPage ? 'active' : ''}">${p}</button>`;
                 lastPrinted = p;
             }
         }
-
         html += `<button data-action="next" ${currentPage === totalPages ? 'disabled' : ''}>Next ›</button>`;
         html += `</div>`;
 
         pgEl.innerHTML = html;
         pgEl.style.display = 'flex';
 
-        // Bind button events
-        pgEl.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
-            currentPage--;
-            renderPage();
-        });
-        pgEl.querySelector('[data-action="next"]')?.addEventListener('click', () => {
-            currentPage++;
-            renderPage();
-        });
+        pgEl.querySelector('[data-action="prev"]')?.addEventListener('click', () => { currentPage--; renderPage(); });
+        pgEl.querySelector('[data-action="next"]')?.addEventListener('click', () => { currentPage++; renderPage(); });
         pgEl.querySelectorAll('[data-page]').forEach(btn => {
-            btn.addEventListener('click', function () {
-                currentPage = parseInt(this.dataset.page);
-                renderPage();
-            });
+            btn.addEventListener('click', function () { currentPage = parseInt(this.dataset.page); renderPage(); });
         });
     }
 
-    // Expose repaginate for search
-    table._repaginate = function () {
-        currentPage = 1;
-        renderPage();
-    };
-
+    table._repaginate = function () { currentPage = 1; renderPage(); };
     renderPage();
 }
 
-// Init all tables on page load
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.arc-table').forEach(function (table) {
         if (table.id) initPagination(table.id);
@@ -787,12 +653,10 @@ document.querySelectorAll('.arc-year-row').forEach(function (row) {
 // ── Search ──
 document.getElementById('archiveSearch')?.addEventListener('input', function () {
     const filter = this.value.toLowerCase().trim();
-
     document.querySelectorAll('.arc-table').forEach(function (table) {
         table.querySelectorAll('tr.ticket-row').forEach(function (row) {
             const text  = (row.dataset.search || '').toLowerCase();
-            const match = text.includes(filter);
-            row.setAttribute('data-filtered', match ? 'false' : 'true');
+            row.setAttribute('data-filtered', text.includes(filter) ? 'false' : 'true');
         });
         if (table._repaginate) table._repaginate();
     });
@@ -804,14 +668,35 @@ document.querySelectorAll('.view-ticket-btn').forEach(function (btn) {
         const controlNo = this.dataset.controlNo || 'N/A';
         const isUrgent  = this.dataset.urgent === 'Yes';
 
-        document.getElementById('modal-banner-control').textContent = controlNo;
-        document.getElementById('modal-control-no').textContent     = controlNo;
-        document.getElementById('modal-requested-by').textContent   = this.dataset.requestedBy || 'N/A';
-        document.getElementById('modal-division').textContent       = this.dataset.division || 'N/A';
-        document.getElementById('modal-description').textContent    = this.dataset.description || 'No description provided.';
-        document.getElementById('modal-created').textContent        = this.dataset.created || 'N/A';
-        document.getElementById('modal-completed').textContent      = this.dataset.completed || 'N/A';
-        document.getElementById('modal-banner-urgent').classList.toggle('d-none', !isUrgent);
+        // Header
+        document.getElementById('modal-header-control').textContent = controlNo;
+
+        // Urgent badge in status bar
+        const urgentBadge = document.getElementById('modal-urgent-badge');
+        urgentBadge.classList.toggle('d-none', !isUrgent);
+
+        // Fields
+        document.getElementById('modal-control-no').textContent   = controlNo;
+        document.getElementById('modal-requested-by').textContent = this.dataset.requestedBy || 'N/A';
+        document.getElementById('modal-division').textContent     = this.dataset.division || 'N/A';
+        document.getElementById('modal-created').textContent      = this.dataset.created || 'N/A';
+        document.getElementById('modal-completed').textContent    = this.dataset.completed || 'N/A';
+        document.getElementById('modal-description').textContent  = this.dataset.description || 'No description provided.';
+        document.getElementById('modal-equipment').textContent    = this.dataset.equipment || 'N/A';
+        document.getElementById('modal-brand').textContent        = this.dataset.brand || 'N/A';
+        document.getElementById('modal-model').textContent        = this.dataset.model || 'N/A';
+
+        // Urgency row value
+        const urgencyVal = document.getElementById('modal-urgency-val');
+        if (isUrgent) {
+            urgencyVal.innerHTML = '<span class="arc-urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>';
+        } else {
+            urgencyVal.innerHTML = '<span class="arc-normal-tag"><i class="bi bi-check-circle"></i> Normal</span>';
+        }
+
+        // Print link
+        const printUrl = this.dataset.printUrl || '#';
+        document.getElementById('modal-print-link').href = printUrl;
     });
 });
 </script>

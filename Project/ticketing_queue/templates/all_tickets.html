@@ -2,36 +2,477 @@
 
 {% block title %}All Tickets - Super Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Reduce page padding to maximise table room */
+    .page-content { padding: 1rem !important; }
+
+    /* ── Page title row ── */
+    .tickets-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+    .tickets-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .tickets-subtitle {
+        font-size: 0.88rem;
+        color: #6c757d;
+        margin-top: 3px;
+        margin-bottom: 0;
+    }
+
+    /* ── Search box ── */
+    .search-box-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+    .search-box-wrap i {
+        position: absolute;
+        left: 11px; top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd; font-size: 0.9rem;
+        pointer-events: none;
+    }
+    #ticketSearch {
+        border: 1px solid #dee2e6;
+        border-radius: 20px;
+        padding: 7px 14px 7px 34px;
+        font-size: 0.9rem;
+        width: 240px;
+        outline: none;
+        background: #fff;
+        color: #495057;
+        font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.2s;
+    }
+    #ticketSearch:focus { border-color: #1565c0; }
+
+    /* ── Tab strip (matches by-month-strip) ── */
+    .tab-strip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .tab-strip-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #adb5bd;
+        margin-right: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .tab-divider {
+        width: 1px;
+        height: 18px;
+        background: #dee2e6;
+        flex-shrink: 0;
+        margin: 0 6px;
+    }
+    .tab-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #495057;
+        text-decoration: none;
+        border-radius: 20px;
+        border: 1.5px solid #e9ecef;
+        background: #f8f9fa;
+        transition: all 0.15s;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .tab-pill:hover {
+        background: rgba(21,101,192,0.07);
+        border-color: #1565c0;
+        color: #1565c0;
+        text-decoration: none;
+    }
+    .tab-pill.active {
+        background: #1565c0;
+        border-color: #1565c0;
+        color: #fff;
+        font-weight: 700;
+    }
+    .tab-pill .tab-count {
+        font-size: 0.72rem;
+        background: rgba(0,0,0,0.1);
+        color: inherit;
+        padding: 1px 7px;
+        border-radius: 8px;
+        font-weight: 700;
+    }
+    .tab-pill.active .tab-count {
+        background: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+
+    /* ── Table card ── */
+    .tickets-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    /* ── Table ── */
+    .tickets-tbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        background: #fff;
+    }
+    .tickets-tbl thead th {
+        background: #fff !important;
+        color: #6c757d !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 0.66rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.07em !important;
+        text-transform: uppercase !important;
+        padding: 10px 10px !important;
+        border-bottom: 1.5px solid #e9ecef !important;
+        border-top: none !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .tickets-tbl tbody tr {
+        border-bottom: 1px solid #f2f4f8;
+        transition: background 0.1s;
+    }
+    .tickets-tbl tbody tr:last-child { border-bottom: none; }
+    .tickets-tbl tbody tr:hover { background: #f8f9fc; }
+    .tickets-tbl tbody tr.urgent-row { background: rgba(220,53,69,0.04); }
+    .tickets-tbl tbody tr.urgent-row:hover { background: rgba(220,53,69,0.08); }
+    .tickets-tbl td {
+        padding: 10px 10px;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #212529;
+        border: none !important;
+        word-break: break-word;
+    }
+
+    /* Control number */
+    .control-no-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    /* Urgent label inline */
+    .urgent-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #dc3545;
+        letter-spacing: 0.03em;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .urgent-label i { margin-right: 2px; }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.66rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .status-pending   { background: #fef9c3; color: #854d0e; }
+    .status-accepted  { background: #cffafe; color: #0e7490; }
+    .status-assisting { background: #dbeafe; color: #1d4ed8; }
+    .status-completed { background: #dcfce7; color: #15803d; }
+    .status-default   { background: #f1f5f9; color: #475569; }
+
+    /* Urgent pill */
+    .urgent-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: #fee2e2;
+        color: #b91c1c;
+        border-radius: 20px;
+        padding: 3px 8px;
+        font-size: 0.66rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        white-space: nowrap;
+    }
+    .normal-pill {
+        display: inline-flex;
+        align-items: center;
+        background: #f1f5f9;
+        color: #64748b;
+        border-radius: 20px;
+        padding: 3px 8px;
+        font-size: 0.66rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+        white-space: nowrap;
+    }
+
+    /* View button */
+    .btn-view-det {
+        background: #1565c0;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-view-det:hover { background: #1a3a6b; color: #fff; }
+
+    /* Total count line */
+    .showing-count {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #212529;
+        margin-top: 14px;
+        margin-bottom: 0;
+    }
+
+    /* ══════════════════════
+       MODAL
+    ══════════════════════ */
+    .tkt-modal .modal-content {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .tkt-modal .modal-header {
+        background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
+        border-bottom: 3px solid #f9c900;
+        padding: 16px 24px;
+    }
+    .tkt-modal .modal-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+    }
+    .tkt-modal .status-bar {
+        background: #f8fafd;
+        border-bottom: 1px solid #e2eaf4;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .tkt-modal .status-bar-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #8a9bb0;
+        text-transform: uppercase;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .tkt-modal .info-section {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e8f0fa;
+        padding: 18px 20px;
+        height: 100%;
+    }
+    .tkt-modal .section-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: #1565c0;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e8f0fa;
+        padding-bottom: 8px;
+        margin-bottom: 14px;
+    }
+    .tkt-modal .info-row {
+        display: flex;
+        padding: 7px 0;
+        border-bottom: 1px dashed #f0f4f8;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .tkt-modal .info-row:last-child { border-bottom: none; }
+    .tkt-modal .info-key {
+        font-size: 0.78rem;
+        color: #8a9bb0;
+        font-weight: 600;
+        min-width: 130px;
+        flex-shrink: 0;
+        padding-top: 1px;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .tkt-modal .info-val {
+        font-size: 0.88rem;
+        color: #1a2a3a;
+        font-weight: 500;
+        word-break: break-word;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .tkt-modal .complaint-box {
+        background: #f8fafd;
+        border: 1px solid #e2eaf4;
+        border-left: 4px solid #1565c0;
+        border-radius: 8px;
+        padding: 14px 16px;
+        font-size: 0.92rem;
+        color: #2c3e50;
+        min-height: 80px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.6;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .tkt-modal .status-pill {
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 5px 18px;
+        border-radius: 50px;
+        letter-spacing: 0.05em;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .tkt-modal .urgent-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .tkt-modal .normal-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f0f4f8;
+        color: #5a7a9a;
+        border: 1px solid #dde6f0;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .tkt-modal .assigned-val {
+        color: #1565c0;
+        font-weight: 700;
+    }
+    .tkt-modal .control-chip {
+        font-family: 'Courier New', monospace;
+        font-size: 0.88rem;
+        background: rgba(249,201,0,0.2);
+        color: #f9c900;
+        border-radius: 6px;
+        padding: 2px 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <h2 class="mb-4">All Tickets Overview</h2>
+<div class="container-fluid py-3">
 
-    <ul class="nav nav-tabs mb-4" id="ticketTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link {% if tab == 'pending' %}active{% endif %}" href="?tab=pending">Pending</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if tab == 'accepted' %}active{% endif %}" href="?tab=accepted">Accepted</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if tab == 'assisting' %}active{% endif %}" href="?tab=assisting">Assisting</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if tab == 'completed' %}active{% endif %}" href="?tab=completed">Completed</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if tab == 'all' or tab is None %}active{% endif %}" href="?tab=all">All</a>
-        </li>
-    </ul>
+    <!-- ═══ Title + Search ═══ -->
+    <div class="tickets-title-row">
+        <div>
+            <h2 class="tickets-title">🎫 All Tickets Overview</h2>
+            <p class="tickets-subtitle">Total: {{ total_tickets }} ticket{{ total_tickets|pluralize }}</p>
+        </div>
+        <div class="search-box-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" id="ticketSearch" placeholder="Search control no., requester…">
+        </div>
+    </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <thead class="table-dark">
+    <!-- ═══ Status tab strip ═══ -->
+    <div class="tab-strip">
+        <span class="tab-strip-label">Status</span>
+        <div class="tab-divider"></div>
+        <a href="?tab=all"       class="tab-pill {% if tab == 'all' or tab is None %}active{% endif %}">All</a>
+        <a href="?tab=pending"   class="tab-pill {% if tab == 'pending' %}active{% endif %}">
+            <i class="bi bi-clock" style="font-size:0.78rem;"></i> Pending
+        </a>
+        <a href="?tab=accepted"  class="tab-pill {% if tab == 'accepted' %}active{% endif %}">
+            <i class="bi bi-check-circle" style="font-size:0.78rem;"></i> Accepted
+        </a>
+        <a href="?tab=assisting" class="tab-pill {% if tab == 'assisting' %}active{% endif %}">
+            <i class="bi bi-headset" style="font-size:0.78rem;"></i> Assisting
+        </a>
+        <a href="?tab=completed" class="tab-pill {% if tab == 'completed' %}active{% endif %}">
+            <i class="bi bi-patch-check" style="font-size:0.78rem;"></i> Completed
+        </a>
+    </div>
+
+    <!-- ═══ Table ═══ -->
+    <div class="tickets-card">
+        <table class="tickets-tbl">
+            <colgroup>
+                <col style="width:13%">
+                <col style="width:10%">
+                <col style="width:19%">
+                <col style="width:17%">
+                <col style="width:11%">
+                <col style="width:11%">
+                <col style="width:8%">
+                <col style="width:11%">
+            </colgroup>
+            <thead>
                 <tr>
-                    <th>Control No</th>
+                    <th>Control No.</th>
                     <th>Requested By</th>
                     <th>Division / Section</th>
-                    <th>Issue (short)</th>
+                    <th>Issue</th>
                     <th>Status</th>
                     <th>Created</th>
                     <th>Urgent</th>
@@ -40,26 +481,39 @@
             </thead>
             <tbody>
                 {% for ticket in tickets %}
-                <tr>
-                    <td>{{ ticket.control_no }}</td>
-                    <td>{{ ticket.requested_by }}</td>
-                    <td>{{ ticket.department_division }} - {{ ticket.section_unit|default:"N/A" }}</td>
-                    <td>{{ ticket.request_complaint|truncatewords:10 }}</td>
-                    <td>
-                        <span class="badge bg-{% if ticket.status == 'pending' %}warning{% elif ticket.status == 'accepted' %}info{% elif ticket.status == 'assisting' %}warning{% else %}success{% endif %}">
-                            {{ ticket.status|title }}
-                        </span>
-                    </td>
-                    <td>{{ ticket.created_at|date:"m/d/Y h:i A" }}</td>
+                <tr class="{% if ticket.is_urgent %}urgent-row{% endif %}">
                     <td>
                         {% if ticket.is_urgent %}
-                            <span class="badge bg-danger">Yes</span>
+                            <span class="urgent-label"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>
+                        {% endif %}
+                        <span class="control-no-text">{{ ticket.control_no }}</span>
+                    </td>
+                    <td>{{ ticket.requested_by }}</td>
+                    <td>{{ ticket.department_division }}{% if ticket.section_unit %} — {{ ticket.section_unit }}{% endif %}</td>
+                    <td style="color:#495057;">{{ ticket.request_complaint|truncatewords:10 }}</td>
+                    <td>
+                        {% if ticket.status == 'pending' %}
+                            <span class="status-badge status-pending"><i class="bi bi-clock"></i> Pending</span>
+                        {% elif ticket.status == 'accepted' %}
+                            <span class="status-badge status-accepted"><i class="bi bi-check-circle"></i> Accepted</span>
+                        {% elif ticket.status == 'assisting' %}
+                            <span class="status-badge status-assisting"><i class="bi bi-headset"></i> Assisting</span>
+                        {% elif ticket.status == 'completed' %}
+                            <span class="status-badge status-completed"><i class="bi bi-patch-check"></i> Completed</span>
                         {% else %}
-                            <span class="badge bg-secondary">No</span>
+                            <span class="status-badge status-default">{{ ticket.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space:nowrap;font-size:0.84rem;color:#495057;">{{ ticket.created_at|date:"m/d/Y" }}<br><span style="font-size:0.78rem;color:#adb5bd;">{{ ticket.created_at|date:"h:i A" }}</span></td>
+                    <td>
+                        {% if ticket.is_urgent %}
+                            <span class="urgent-pill"><i class="bi bi-exclamation-triangle-fill"></i> Yes</span>
+                        {% else %}
+                            <span class="normal-pill">No</span>
                         {% endif %}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-info"
+                        <button type="button" class="btn-view-det"
                                 onclick="openTicketModal(
                                     '{{ ticket.control_no }}',
                                     '{{ ticket.requested_by|escapejs }}',
@@ -77,154 +531,31 @@
                                     '{{ ticket.created_at|date:"m/d/Y h:i A" }}',
                                     '{{ ticket.completed_at|date:"m/d/Y h:i A"|default:"" }}'
                                 )">
-                            View
+                            <i class="bi bi-eye me-1"></i>View
                         </button>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">No tickets found.</td>
+                    <td colspan="8">
+                        <div style="text-align:center;padding:3.5rem 1rem;color:#adb5bd;">
+                            <i class="bi bi-ticket-perforated" style="font-size:2.2rem;display:block;margin-bottom:0.75rem;"></i>
+                            <p style="font-size:0.88rem;margin:0;">No tickets found.</p>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <p class="text-muted mt-3">Total tickets: {{ total_tickets }}</p>
+    <p class="showing-count">Total tickets: {{ total_tickets }}</p>
+
 </div>
 
-<!-- Ticket Detail Modal -->
-<style>
-.tkt-modal .modal-content {
-    border: none;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-}
-.tkt-modal .modal-header {
-    background: linear-gradient(135deg, #0d2353 0%, #1565c0 100%);
-    border-bottom: 3px solid #f9c900;
-    padding: 18px 24px;
-}
-.tkt-modal .modal-title {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 0.02em;
-}
-.tkt-modal .status-bar {
-    background: #f8fafd;
-    border-bottom: 1px solid #e2eaf4;
-    padding: 10px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.tkt-modal .status-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #8a9bb0;
-    text-transform: uppercase;
-}
-.tkt-modal .info-section {
-    background: #fff;
-    border-radius: 10px;
-    border: 1px solid #e8f0fa;
-    padding: 18px 20px;
-    height: 100%;
-}
-.tkt-modal .section-label {
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    color: #1565c0;
-    text-transform: uppercase;
-    border-bottom: 2px solid #e8f0fa;
-    padding-bottom: 8px;
-    margin-bottom: 14px;
-}
-.tkt-modal .info-row {
-    display: flex;
-    padding: 6px 0;
-    border-bottom: 1px dashed #f0f4f8;
-    align-items: flex-start;
-    gap: 10px;
-}
-.tkt-modal .info-row:last-child { border-bottom: none; }
-.tkt-modal .info-key {
-    font-size: 0.72rem;
-    color: #8a9bb0;
-    font-weight: 600;
-    min-width: 120px;
-    flex-shrink: 0;
-    padding-top: 1px;
-}
-.tkt-modal .info-val {
-    font-size: 0.82rem;
-    color: #1a2a3a;
-    font-weight: 500;
-    word-break: break-word;
-}
-.tkt-modal .complaint-box {
-    background: #f8fafd;
-    border: 1px solid #e2eaf4;
-    border-left: 4px solid #1565c0;
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-size: 0.88rem;
-    color: #2c3e50;
-    min-height: 80px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.6;
-}
-.tkt-modal .status-pill {
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 6px 18px;
-    border-radius: 50px;
-    letter-spacing: 0.05em;
-}
-.tkt-modal .urgent-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #fff0f0;
-    color: #c0392b;
-    border: 1px solid #f5b7b1;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-.tkt-modal .normal-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f0f4f8;
-    color: #5a7a9a;
-    border: 1px solid #dde6f0;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-.tkt-modal .assigned-val {
-    color: #1565c0;
-    font-weight: 700;
-}
-.tkt-modal .control-chip {
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    background: rgba(249,201,0,0.18);
-    color: #f9c900;
-    border-radius: 6px;
-    padding: 2px 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-}
-</style>
-
+<!-- ══════════════════════════════════════
+     TICKET DETAIL MODAL
+══════════════════════════════════════ -->
 <div class="modal fade tkt-modal" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -234,10 +565,9 @@
                 <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
                     <div>
-                        <div class="text-white-50 mb-0" style="font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase;">IT Helpdesk Job Ticket</div>
+                        <div class="text-white-50 mb-0" style="font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;font-family:'Montserrat',sans-serif;">IT Helpdesk Job Ticket</div>
                         <h5 class="modal-title text-white mb-0 fw-bold">
-                            Ticket Details &nbsp;
-                            <span class="control-chip" id="modal_control_no"></span>
+                            Ticket Details &nbsp;<span class="control-chip" id="modal_control_no"></span>
                         </h5>
                     </div>
                 </div>
@@ -246,12 +576,12 @@
 
             <!-- Status bar -->
             <div class="status-bar">
-                <span class="status-label">Current Status</span>
+                <span class="status-bar-label">Current Status</span>
                 <span id="modal_status_badge" class="status-pill"></span>
             </div>
 
             <!-- Body -->
-            <div class="modal-body p-3">
+            <div class="modal-body p-3" style="background:#f8fafd;">
                 <div class="row g-3">
 
                     <!-- Requester Info -->
@@ -328,11 +658,11 @@
             </div>
 
             <!-- Footer -->
-            <div class="modal-footer" style="background:#f8fafd; border-top:1px solid #e2eaf4;">
-                <small class="text-muted me-auto">
+            <div class="modal-footer" style="background:#f8fafd;border-top:1px solid #e2eaf4;">
+                <small class="text-muted me-auto" style="font-size:0.8rem;">
                     <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
                 </small>
-                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
 
         </div>
@@ -342,11 +672,20 @@
 
 {% block extra_js %}
 <script>
+// Live search
+document.getElementById('ticketSearch')?.addEventListener('input', function () {
+    const filter = this.value.toLowerCase().trim();
+    document.querySelectorAll('.tickets-tbl tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+    });
+});
+
+// Status pill styles
 const statusStyles = {
-    'Pending':   { cls: 'bg-warning text-dark',   icon: '🕐' },
-    'Accepted':  { cls: 'bg-info text-dark',       icon: '✅' },
-    'Assisting': { cls: 'bg-primary text-white',   icon: '🔧' },
-    'Completed': { cls: 'bg-success text-white',   icon: '✔️' },
+    'Pending':   { cls: 'bg-warning text-dark',  icon: '🕐' },
+    'Accepted':  { cls: 'bg-info text-dark',      icon: '✅' },
+    'Assisting': { cls: 'bg-primary text-white',  icon: '🔧' },
+    'Completed': { cls: 'bg-success text-white',  icon: '✔️'  },
 };
 
 function openTicketModal(controlNo, requestedBy, dateReq, timeReq, dept, section,

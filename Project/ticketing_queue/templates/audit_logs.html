@@ -3,128 +3,481 @@
 
 {% block title %}Audit & Logs{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Reduce page padding to maximise table room */
+    .page-content { padding: 1rem !important; }
+
+    /* ── Page title row ── */
+    .audit-title-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+    .audit-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .audit-subtitle {
+        font-size: 0.88rem;
+        color: #6c757d;
+        margin-top: 3px;
+        margin-bottom: 0;
+    }
+
+    /* ── Export button ── */
+    .btn-export {
+        background: #1565c0;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.84rem;
+        font-weight: 700;
+        padding: 9px 20px;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+        letter-spacing: 0.03em;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .btn-export:hover { background: #1a3a6b; color: #fff; }
+
+    /* ── Filter type pill tabs ── */
+    .filter-tabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 10px 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .filter-tabs-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #adb5bd;
+        margin-right: 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .filter-tab-divider {
+        width: 1px;
+        height: 18px;
+        background: #dee2e6;
+        flex-shrink: 0;
+        margin: 0 6px;
+    }
+    .filter-tab-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #495057;
+        text-decoration: none;
+        border-radius: 20px;
+        border: 1.5px solid #e9ecef;
+        background: #f8f9fa;
+        transition: all 0.15s;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .filter-tab-pill:hover {
+        background: rgba(21,101,192,0.07);
+        border-color: #1565c0;
+        color: #1565c0;
+        text-decoration: none;
+    }
+    .filter-tab-pill.active {
+        background: #1565c0;
+        border-color: #1565c0;
+        color: #fff;
+        font-weight: 700;
+    }
+    .filter-tab-pill .tab-count {
+        font-size: 0.72rem;
+        background: rgba(0,0,0,0.1);
+        color: inherit;
+        padding: 1px 7px;
+        border-radius: 8px;
+        font-weight: 700;
+    }
+    .filter-tab-pill.active .tab-count {
+        background: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+
+    /* ── Legend strip ── */
+    .legend-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .legend-strip-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #adb5bd;
+        flex-shrink: 0;
+    }
+    .legend-badge {
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .filter-bar .form-control,
+    .filter-bar .form-select {
+        font-size: 0.92rem;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .filter-bar .btn-primary {
+        background: #1565c0;
+        border-color: #1565c0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 20px;
+    }
+    .filter-bar .btn-primary:hover { background: #1a3a6b; border-color: #1a3a6b; }
+    .filter-bar .btn-outline-secondary {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 16px;
+    }
+
+    /* ── Table card ── */
+    .audit-card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    /* ── Table ── */
+    .audit-tbl {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        background: #fff;
+    }
+    .audit-tbl thead th {
+        background: #fff !important;
+        color: #6c757d !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.09em !important;
+        text-transform: uppercase !important;
+        padding: 12px 13px !important;
+        border-bottom: 1.5px solid #e9ecef !important;
+        border-top: none !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .audit-tbl tbody tr {
+        border-bottom: 1px solid #f2f4f8;
+        transition: background 0.1s;
+    }
+    .audit-tbl tbody tr:last-child { border-bottom: none; }
+    .audit-tbl tbody tr:hover { background: #f8f9fc; }
+    .audit-tbl td {
+        padding: 12px 13px;
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: #212529;
+        border: none !important;
+        word-break: break-word;
+    }
+
+    /* Timestamp */
+    .ts-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.86rem;
+        color: #495057;
+        white-space: nowrap;
+    }
+
+    /* Admin name */
+    .admin-name {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1565c0;
+    }
+
+    /* Control number */
+    .control-no-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #212529;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    /* Action badges */
+    .action-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: normal;
+        word-break: break-word;
+        max-width: 100%;
+    }
+    .action-badge.login    { background: #dbeafe; color: #1d4ed8; }
+    .action-badge.logout   { background: #ede9fe; color: #6d28d9; }
+    .action-badge.accepted { background: #dcfce7; color: #15803d; }
+    .action-badge.assigned { background: #d1fae5; color: #065f46; }
+    .action-badge.assisting{ background: #fef9c3; color: #854d0e; }
+    .action-badge.completed{ background: #cffafe; color: #0e7490; }
+    .action-badge.deleted  { background: #fee2e2; color: #b91c1c; }
+    .action-badge.created  { background: #f1f5f9; color: #475569; }
+    .action-badge.default  { background: #f1f5f9; color: #475569; }
+
+    /* IP address */
+    .ip-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.84rem;
+        color: #6c757d;
+        white-space: nowrap;
+    }
+
+    /* Description */
+    .desc-text {
+        font-size: 0.88rem;
+        color: #495057;
+        line-height: 1.4;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 3.5rem 1rem;
+        color: #adb5bd;
+    }
+    .empty-state i { font-size: 2.2rem; display: block; margin-bottom: 0.75rem; }
+    .empty-state p { font-size: 0.9rem; margin: 0; }
+
+    /* Showing count */
+    .showing-count {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 12px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Audit & Logs</h2>
-        <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
-    </div>
+<div class="container-fluid py-3">
 
-    <p class="text-muted mb-4">Complete system log – continuous record of all admin activity.</p>
-
-    <!-- Filter Tabs -->
-    <div class="mb-4">
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-primary {% if filter_type == 'all' %}active{% endif %}" onclick="window.location.href='?filter=all'">All Logs ({{ total_logs }})</button>
-            <button type="button" class="btn btn-outline-primary {% if filter_type == 'audit_trail' %}active{% endif %}" onclick="window.location.href='?filter=audit_trail'">Audit Trail</button>
-            <button type="button" class="btn btn-outline-primary {% if filter_type == 'deletion_logs' %}active{% endif %}" onclick="window.location.href='?filter=deletion_logs'">Deletion Logs</button>
+    <!-- ═══ Title + Export ═══ -->
+    <div class="audit-title-row">
+        <div>
+            <h2 class="audit-title">📋 Audit &amp; Logs</h2>
+            <p class="audit-subtitle">Complete system log — continuous record of all admin activity.</p>
         </div>
+        <button class="btn-export" onclick="exportCSV()">
+            <i class="bi bi-download"></i> Export CSV
+        </button>
     </div>
 
-    <div class="mb-4">
-        <small class="text-muted">Legend:</small><br>
-        <span class="badge bg-primary me-1">Login / Logout</span>
-        <span class="badge bg-success me-1">Accepted / Assigned Ticket</span>
-        <span class="badge bg-warning text-dark me-1">Assisting Ticket</span>
-        <span class="badge bg-info me-1">Completed Ticket</span>
-        <span class="badge bg-danger me-1">Deleted Ticket</span>
-        <span class="badge bg-secondary me-1">Created Ticket</span>
+    <!-- ═══ Filter type pill tabs ═══ -->
+    <div class="filter-tabs">
+        <span class="filter-tabs-label">View</span>
+        <div class="filter-tab-divider"></div>
+        <a href="?filter=all" class="filter-tab-pill {% if filter_type == 'all' %}active{% endif %}">
+            All Logs <span class="tab-count">{{ total_logs }}</span>
+        </a>
+        <a href="?filter=audit_trail" class="filter-tab-pill {% if filter_type == 'audit_trail' %}active{% endif %}">
+            Audit Trail
+        </a>
+        <a href="?filter=deletion_logs" class="filter-tab-pill {% if filter_type == 'deletion_logs' %}active{% endif %}">
+            Deletion Logs
+        </a>
     </div>
 
-    <!-- Search & Advanced Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Control no. or description..." value="{{ search }}">
-                </div>
-                <div class="col-md-2">
-                    <select name="action_type" class="form-select">
-                        <option value="all">All Actions</option>
-                        {% for action in action_types %}
-                            <option value="{{ action|lower }}" {% if selected_action == action|lower %}selected{% endif %}>{{ action }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="admin" class="form-select">
-                        <option value="all">All Admins</option>
-                        {% for admin in admins %}
-                            <option value="{{ admin }}" {% if selected_admin == admin %}selected{% endif %}>{{ admin }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
-                </div>
-                <div class="col-md-2">
-                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a href="{% url 'audit_logs' %}" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </form>
-        </div>
+    <!-- ═══ Legend ═══ -->
+    <div class="legend-strip">
+        <span class="legend-strip-label">Legend</span>
+        <span class="legend-badge" style="background:#dbeafe;color:#1d4ed8;">Login / Logout</span>
+        <span class="legend-badge" style="background:#dcfce7;color:#15803d;">Accepted / Assigned</span>
+        <span class="legend-badge" style="background:#fef9c3;color:#854d0e;">Assisting</span>
+        <span class="legend-badge" style="background:#cffafe;color:#0e7490;">Completed</span>
+        <span class="legend-badge" style="background:#fee2e2;color:#b91c1c;">Deleted</span>
+        <span class="legend-badge" style="background:#f1f5f9;color:#475569;">Created</span>
     </div>
 
-    <!-- Main Table -->
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>TIMESTAMP</th>
-                            <th>ADMIN</th>
-                            <th>ACTION</th>
-                            <th>TICKET</th>
-                            <th>DESCRIPTION</th>
-                            <th>IP ADDRESS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in logs %}
-                        <tr>
-                            <td>{{ log.timestamp|localtime|date:"m/d/Y h:i A" }}</td>
+    <!-- ═══ Search & Advanced Filters ═══ -->
+    <div class="filter-bar">
+        <form method="get" class="row g-2 align-items-end">
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search control no. or description…" value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <select name="action_type" class="form-select">
+                    <option value="all">All Actions</option>
+                    {% for action in action_types %}
+                        <option value="{{ action|lower }}" {% if selected_action == action|lower %}selected{% endif %}>{{ action }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="admin" class="form-select">
+                    <option value="all">All Admins</option>
+                    {% for admin in admins %}
+                        <option value="{{ admin }}" {% if selected_admin == admin %}selected{% endif %}>{{ admin }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-12 d-flex gap-2 mt-1">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel-fill me-1"></i> Filter
+                </button>
+                <a href="{% url 'audit_logs' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
 
-                            <td>
-                                {% if log.action == 'created ticket' %}
-                                    <span class="text-muted">—</span>  <!-- completely empty / dash only -->
-                                {% elif log.user %}
-                                    <strong>{{ log.user.username }}</strong>
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
+    <!-- ═══ Table ═══ -->
+    <div class="audit-card">
+        <div style="overflow-x:visible;">
+            <table class="audit-tbl">
+                <colgroup>
+                    <col style="width:12%">
+                    <col style="width:9%">
+                    <col style="width:16%">
+                    <col style="width:13%">
+                    <col style="width:41%">
+                    <col style="width:9%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Ticket</th>
+                        <th>Description</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <!-- TIMESTAMP -->
+                        <td>
+                            <span class="ts-text">{{ log.timestamp|localtime|date:"m/d/Y" }}<br>{{ log.timestamp|localtime|date:"h:i A" }}</span>
+                        </td>
 
-                            <!-- ACTION column: colored badges -->
-                            <td>
-                                <span class="badge rounded-pill px-3 py-2 fw-bold text-uppercase
-                                    {% if 'login' in log.action|lower or 'logout' in log.action|lower %}bg-primary{% endif %}
-                                    {% if 'accepted' in log.action|lower or 'assigned' in log.action|lower %}bg-success{% endif %}
-                                    {% if 'assisting' in log.action|lower %}bg-warning text-dark{% endif %}
-                                    {% if 'completed' in log.action|lower %}bg-info{% endif %}
-                                    {% if 'deleted' in log.action|lower %}bg-danger{% endif %}
-                                    {% if 'created' in log.action|lower %}bg-secondary{% endif %}
-                                    ">
-                                    {{ log.action|title }}
-                                </span>
-                            </td>
+                        <!-- ADMIN -->
+                        <td>
+                            {% if log.action == 'created ticket' %}
+                                <span class="text-muted" style="font-size:0.8rem;">—</span>
+                            {% elif log.user %}
+                                <span class="admin-name">{{ log.user.username }}</span>
+                            {% else %}
+                                <span class="text-muted" style="font-size:0.8rem;">—</span>
+                            {% endif %}
+                        </td>
 
-                            <!-- TICKET column -->
-                            <td>
-                                {% if log.ticket %}
-                                    <strong>{{ log.ticket.control_no }}</strong>
-                                {% elif log.action == 'created ticket' %}
-                                    <strong>—</strong> 
-                                {% else %}
-                                    <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
+                        <!-- ACTION badge -->
+                        <td>
+                            {% if 'login' in log.action|lower %}
+                                <span class="action-badge login"><i class="bi bi-box-arrow-in-right"></i> {{ log.action|title }}</span>
+                            {% elif 'logout' in log.action|lower %}
+                                <span class="action-badge logout"><i class="bi bi-box-arrow-right"></i> {{ log.action|title }}</span>
+                            {% elif 'accepted' in log.action|lower %}
+                                <span class="action-badge accepted"><i class="bi bi-check-circle-fill"></i> {{ log.action|title }}</span>
+                            {% elif 'assigned' in log.action|lower %}
+                                <span class="action-badge assigned"><i class="bi bi-person-check-fill"></i> {{ log.action|title }}</span>
+                            {% elif 'assisting' in log.action|lower %}
+                                <span class="action-badge assisting"><i class="bi bi-headset"></i> {{ log.action|title }}</span>
+                            {% elif 'completed' in log.action|lower %}
+                                <span class="action-badge completed"><i class="bi bi-patch-check-fill"></i> {{ log.action|title }}</span>
+                            {% elif 'deleted' in log.action|lower %}
+                                <span class="action-badge deleted"><i class="bi bi-trash3-fill"></i> {{ log.action|title }}</span>
+                            {% elif 'created' in log.action|lower %}
+                                <span class="action-badge created"><i class="bi bi-plus-circle-fill"></i> {{ log.action|title }}</span>
+                            {% else %}
+                                <span class="action-badge default">{{ log.action|title }}</span>
+                            {% endif %}
+                        </td>
 
-                            <!-- DESCRIPTION column - short summary -->
-                            <td>
+                        <!-- TICKET -->
+                        <td>
+                            {% if log.ticket %}
+                                <span class="control-no-text">{{ log.ticket.control_no }}</span>
+                            {% else %}
+                                <span class="text-muted" style="font-size:0.8rem;">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- DESCRIPTION -->
+                        <td>
+                            <span class="desc-text">
                                 {% if 'login' in log.action|lower %}
                                     {{ log.user.username }} logged in
                                 {% elif 'logout' in log.action|lower %}
@@ -142,28 +495,35 @@
                                 {% else %}
                                     {{ log.details|truncatewords:15 }}
                                 {% endif %}
-                            </td>
+                            </span>
+                        </td>
 
-                            <!-- IP ADDRESS -->
-                            <td>{{ log.ip_address|default:"—" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">No logs found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        <!-- IP ADDRESS -->
+                        <td>
+                            <span class="ip-text">{{ log.ip_address|default:"—" }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="bi bi-journal-x"></i>
+                                <p>No logs found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+
 </div>
 
-<!-- Simple JS for CSV export -->
 <script>
 function exportCSV() {
     let csv = "Timestamp,Admin,Action,Ticket,Description,IP Address\n";
-    document.querySelectorAll("table tbody tr").forEach(row => {
+    document.querySelectorAll(".audit-tbl tbody tr").forEach(row => {
         let rowData = Array.from(row.cells).map(cell => cell.innerText.trim().replace(/"/g, '""'));
         csv += '"' + rowData.join('","') + '"\n';
     });

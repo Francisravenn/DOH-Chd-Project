@@ -20,9 +20,8 @@
 
         body {
             margin: 0;
-            padding-top: 63px;
+            padding: 0;
             background-color: #f0f4f8;
-            transition: padding-left 0.3s ease;
             font-family: 'Open Sans', sans-serif;
         }
 
@@ -32,7 +31,7 @@
             top: 0;
             left: var(--sidebar-width);
             right: 0;
-            height: 60px;
+            height: var(--navbar-height);
             z-index: 1025;
             background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
             border-bottom: 3px solid #f9c900;
@@ -42,389 +41,156 @@
             padding: 0 16px;
             transition: left 0.3s ease;
         }
-        .sidebar-hidden .navbar {
-            left: var(--sidebar-collapsed-width);
-        }
-        .navbar-hamburger {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.3rem;
-            cursor: pointer;
-            padding: 4px 8px;
-            margin-right: 10px;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-        .navbar-brand-block {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-right: 16px;
-            flex-shrink: 0;
-        }
-        .navbar-brand-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-        }
-        .navbar-badge {
-            background: #f9c900;
-            color: #1a3a6b;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            letter-spacing: 0.08em;
-        }
+        .sidebar-hidden .navbar { left: var(--sidebar-collapsed-width); }
+
         .navbar-center {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
+            flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0;
         }
-        .navbar-center img {
-            height: 40px;
-            width: 40px;
-            object-fit: contain;
-            flex-shrink: 0;
-        }
-        .navbar-text-block {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-        .navbar-top-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .navbar-center img { height: 40px; width: 40px; object-fit: contain; flex-shrink: 0; }
+        .navbar-text-block { display: flex; flex-direction: column; min-width: 0; }
+        .navbar-top-row { display: flex; align-items: center; gap: 5px; }
         .navbar-republic, .navbar-dept {
             font-family: 'Open Sans', sans-serif;
-            font-size: 0.62rem;
-            color: rgba(255,255,255,0.8);
-            letter-spacing: 0.04em;
-            white-space: nowrap;
+            font-size: 0.62rem; color: rgba(255,255,255,0.8);
+            letter-spacing: 0.04em; white-space: nowrap;
         }
-        .navbar-dot {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.62rem;
-        }
-        .navbar-divider-line {
-            width: 340px;
-            height: 1px;
-            background: rgba(255,255,255,0.4);
-            margin: 2px 0;
-        }
+        .navbar-dot { color: rgba(255,255,255,0.5); font-size: 0.62rem; }
+        .navbar-divider-line { width: 340px; height: 1px; background: rgba(255,255,255,0.4); margin: 2px 0; }
         .navbar-chd {
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            white-space: nowrap;
+            font-size: 0.82rem; font-weight: 800; color: #fff;
+            letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
         }
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
-            margin-left: 16px;
-        }
+        .navbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; margin-left: 16px; }
         .navbar-logged-in {
             font-family: 'Open Sans', sans-serif;
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.85);
-            white-space: nowrap;
+            font-size: 0.72rem; color: rgba(255,255,255,0.85); white-space: nowrap;
         }
-        .navbar-logged-in strong {
-            color: #ffffff;
-            font-weight: 700;
-        }
+        .navbar-logged-in strong { color: #fff; font-weight: 700; }
         .btn-logout {
-            background: #1565c0;
-            border: 1.5px solid rgba(255,255,255,0.6);
-            color: #ffffff;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 5px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            letter-spacing: 0.04em;
-            transition: background 0.2s;
-            white-space: nowrap;
+            background: #1565c0; border: 1.5px solid rgba(255,255,255,0.6);
+            color: #fff; font-family: 'Montserrat', sans-serif;
+            font-size: 0.72rem; font-weight: 700; padding: 5px 14px; border-radius: 6px;
+            cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s; white-space: nowrap;
         }
         .btn-logout:hover { background: #0d47a1; }
-        .navbar-right-logo {
-            height: 38px;
-            width: 38px;
-            object-fit: contain;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .navbar-right-logo { height: 38px; width: 38px; object-fit: contain; border-radius: 50%; flex-shrink: 0; }
 
         /* ── SIDEBAR ── */
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
+            position: fixed; top: 0; left: 0; bottom: 0;
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #1a3a6b 0%, #1565c0 100%);
-            color: white;
-            overflow: hidden;
-            transition: width 0.3s ease;
-            z-index: 1030;
-            display: flex;
-            flex-direction: column;
+            color: white; overflow: hidden; transition: width 0.3s ease;
+            z-index: 1030; display: flex; flex-direction: column;
         }
-        /* Sidebar top brand area */
         .sidebar-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0 14px;
-            height: 63px;
-            min-height: 63px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0;
+            display: flex; align-items: center; gap: 8px;
+            padding: 0 14px; height: 63px; min-height: 63px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
         }
         .sidebar-hamburger {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.3rem;
-            cursor: pointer;
-            padding: 4px 6px;
-            flex-shrink: 0;
-            line-height: 1;
-            border-radius: 6px;
-            transition: background 0.2s;
+            background: none; border: none; color: #fff;
+            font-size: 1.3rem; cursor: pointer; padding: 4px 6px;
+            flex-shrink: 0; line-height: 1; border-radius: 6px; transition: background 0.2s;
         }
         .sidebar-hamburger:hover { background: rgba(255,255,255,0.12); }
         .sidebar-brand-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            transition: opacity 0.2s ease, width 0.3s ease;
+            font-family: 'Montserrat', sans-serif; font-size: 0.88rem; font-weight: 800; color: #fff;
+            white-space: nowrap; overflow: hidden; transition: opacity 0.2s ease, width 0.3s ease;
         }
         .sidebar-brand-badge {
-            background: #f9c900;
-            color: #1a3a6b;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            letter-spacing: 0.08em;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: opacity 0.2s ease;
+            background: #f9c900; color: #1a3a6b; font-family: 'Montserrat', sans-serif;
+            font-size: 0.55rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+            letter-spacing: 0.08em; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s ease;
         }
         .sidebar-hidden .sidebar-brand-text,
-        .sidebar-hidden .sidebar-brand-badge {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .sidebar-inner {
-            flex: 1;
-            padding: 16px 12px;
-            overflow: hidden;
-        }
+        .sidebar-hidden .sidebar-brand-badge { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
+        .sidebar-inner { flex: 1; padding: 16px 12px; overflow: hidden; }
         .sidebar-section-label {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.62rem;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase;
-            padding: 0 8px;
-            margin-bottom: 6px;
-            margin-top: 10px;
+            font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 800;
+            letter-spacing: 0.14em; color: rgba(255,255,255,0.5); text-transform: uppercase;
+            padding: 0 8px; margin-bottom: 6px; margin-top: 10px; transition: opacity 0.2s ease;
         }
         .sidebar .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: rgba(255,255,255,0.75);
-            padding: 9px 12px;
-            border-radius: 8px;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(255,255,255,0.75); padding: 9px 12px; border-radius: 8px;
+            font-family: 'Open Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
             transition: background 0.18s, color 0.18s, padding 0.3s ease;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
+            margin-bottom: 2px; white-space: nowrap; overflow: hidden;
         }
-        .sidebar .nav-link span {
-            transition: opacity 0.2s ease, width 0.3s ease;
-            opacity: 1;
-        }
-        .sidebar-section-label {
-            transition: opacity 0.2s ease;
-        }
-        .sidebar .nav-link i {
-            font-size: 1rem;
-            width: 18px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .sidebar .nav-link:hover {
-            color: #ffffff;
-            background: rgba(255,255,255,0.12);
-        }
-        .sidebar .nav-link.active {
-            color: #ffffff;
-            background: rgba(255,255,255,0.2);
-            font-weight: 700;
-        }
+        .sidebar .nav-link span { transition: opacity 0.2s ease, width 0.3s ease; opacity: 1; }
+        .sidebar .nav-link i { font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.12); }
+        .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.2); font-weight: 700; }
         .sidebar-footer {
-            padding: 12px 16px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.6rem;
-            font-weight: 700;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            padding: 12px 16px; font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 700;
+            color: rgba(255,255,255,0.35); letter-spacing: 0.08em; text-transform: uppercase;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
-        /* Collapsed sidebar - icons only */
-        .sidebar-hidden .sidebar {
-            width: var(--sidebar-collapsed-width);
-        }
-        .sidebar-hidden .sidebar .nav-link span {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
+        .sidebar-hidden .sidebar { width: var(--sidebar-collapsed-width); }
+        .sidebar-hidden .sidebar .nav-link span { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
         .sidebar-hidden .sidebar .sidebar-section-label,
-        .sidebar-hidden .sidebar .sidebar-footer {
-            opacity: 0;
-            pointer-events: none;
-            font-size: 0;
-            padding: 0;
-            margin: 0;
-            height: 0;
-            overflow: hidden;
-        }
-        .sidebar-hidden .sidebar .nav-link {
-            justify-content: center;
-            padding: 10px 0;
-            border-radius: 8px;
-            position: relative;
-            gap: 0;
-        }
-        .sidebar-hidden .sidebar .nav-link i {
-            width: auto;
-            font-size: 1.15rem;
-            margin: 0;
-        }
-        .sidebar-hidden .sidebar-inner {
-            padding: 16px 8px;
-            transition: padding 0.3s ease;
-        }
-        /* Tooltip on hover when collapsed */
+        .sidebar-hidden .sidebar .sidebar-footer { opacity: 0; pointer-events: none; font-size: 0; padding: 0; margin: 0; height: 0; overflow: hidden; }
+        .sidebar-hidden .sidebar .nav-link { justify-content: center; padding: 10px 0; border-radius: 8px; position: relative; gap: 0; }
+        .sidebar-hidden .sidebar .nav-link i { width: auto; font-size: 1.15rem; margin: 0; }
+        .sidebar-hidden .sidebar-inner { padding: 16px 8px; transition: padding 0.3s ease; }
         .sidebar-hidden .sidebar .nav-link:hover::after {
             content: attr(data-label);
-            position: absolute;
-            left: calc(var(--sidebar-collapsed-width) - 4px);
-            top: 50%;
-            transform: translateY(-50%);
-            background: #1a3a6b;
-            color: #fff;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 6px;
-            white-space: nowrap;
-            z-index: 2000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            pointer-events: none;
-        }
-        .sidebar-hidden .page-content {
-            padding-left: calc(var(--sidebar-collapsed-width) + 1.5rem);
+            position: absolute; left: calc(var(--sidebar-collapsed-width) - 4px);
+            top: 50%; transform: translateY(-50%);
+            background: #1a3a6b; color: #fff; font-size: 0.75rem; font-weight: 600;
+            padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+            z-index: 2000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;
         }
 
-        /* ── PAGE CONTENT ── */
-        .page-wrapper { display: flex; min-height: 100vh; }
+        /* ── PAGE CONTENT ──
+           ✅ No z-index set here — prevents creating a stacking context
+              that would trap child modals below other fixed elements */
         .page-content {
-            flex: 1;
-            padding: 1.5rem;
-            padding-left: calc(var(--sidebar-width) + 1.5rem);
-            padding-right: calc(var(--right-panel-width) + 1.5rem);
-            transition: padding-left 0.3s ease, padding-right 0.3s ease;
-            background-color: #f0f4f8;
-            overflow-y: auto;
-            will-change: padding-left;
+            position: fixed;
+            top: 63px; left: var(--sidebar-width); right: var(--right-panel-width); bottom: 0;
+            padding: 1.5rem; overflow-y: auto; overflow-x: hidden;
+            transition: left 0.3s ease; background-color: #f0f4f8;
         }
-        .sidebar-hidden .page-content {
-            padding-left: calc(var(--sidebar-collapsed-width) + 1.5rem);
-            padding-right: calc(var(--right-panel-width) + 1.5rem);
+        .sidebar-hidden .page-content { left: var(--sidebar-collapsed-width); }
+
+        /* ── RIGHT PANEL ──
+           ✅ z-index 1026: above page content, but Bootstrap modals (1055)
+              and backdrops (1050) will always render above this */
+        .right-panel {
+            position: fixed; top: var(--navbar-height); right: 0; bottom: 0;
+            width: var(--right-panel-width); background: #f8f9fa;
+            border-left: 1px solid #dee2e6; overflow-y: auto;
+            padding: 1rem 0.75rem; box-shadow: -2px 0 8px rgba(0,0,0,0.08);
+            z-index: 1026;
         }
 
-        /* ===================== RIGHT PANEL ===================== */
-        .right-panel {
-            position: fixed;
-            top: var(--navbar-height);
-            right: 0;
-            bottom: 0;
-            width: var(--right-panel-width);
-            background: #f8f9fa;
-            border-left: 1px solid #dee2e6;
-            overflow-y: auto;
-            padding: 1rem 0.75rem;
-            box-shadow: -2px 0 8px rgba(0,0,0,0.08);
-            z-index: 1010;
-        }
         .rp-title {
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #dc3545;
-            border-bottom: 2px solid #dc3545;
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.1em; color: #dc3545;
+            border-bottom: 2px solid #dc3545; padding-bottom: 0.5rem;
+            margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.4rem;
         }
         .rp-live-dot {
-            width: 7px; height: 7px; min-width: 7px;
-            background: #dc3545; border-radius: 50%;
-            animation: rp-blink 1.4s infinite; flex-shrink: 0;
+            width: 7px; height: 7px; min-width: 7px; background: #dc3545;
+            border-radius: 50%; animation: rp-blink 1.4s infinite; flex-shrink: 0;
         }
         @keyframes rp-blink {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.3; transform: scale(1.3); }
         }
         .rp-ticket {
-            background: #ffffff; border-radius: 8px; margin-bottom: 0.75rem;
-            overflow: hidden; border: 1px solid #dee2e6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+            background: #fff; border-radius: 8px; margin-bottom: 0.75rem;
+            overflow: hidden; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.09);
         }
         .rp-ticket-header {
             background-color: #212529; padding: 0.5rem 0.65rem;
             display: flex; align-items: center; justify-content: space-between; gap: 0.3rem;
         }
         .rp-ticket-number {
-            color: #ffffff; font-family: 'Courier New', monospace;
-            font-size: 0.85rem; font-weight: 700; word-break: break-all; line-height: 1.4; flex: 1;
+            color: #fff; font-family: 'Courier New', monospace;
+            font-size: 0.78rem; font-weight: 700; word-break: break-all; line-height: 1.4; flex: 1;
         }
         .rp-online-dot {
             width: 7px; height: 7px; min-width: 7px; background: #2ecc71;
@@ -442,7 +208,7 @@
             font-size: 0.62rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
         }
         .rp-agent-name {
-            font-size: 0.78rem; font-weight: 700; color: #0d6efd;
+            font-size: 0.75rem; font-weight: 700; color: #0d6efd;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .rp-ticket-timer {
@@ -456,22 +222,21 @@
         .rp-empty { text-align: center; padding: 2rem 0.5rem; color: #adb5bd; }
         .rp-empty i { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
         .rp-empty p { font-size: 0.75rem; margin: 0; line-height: 1.5; }
-        /* ====================================================== */
 
         .card { border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-        .table thead { background-color: #212529; color: white; }
         .table-responsive { overflow-x: auto; }
 
         @media (max-width: 991.98px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar-visible .sidebar { transform: translateX(0); }
-            .page-content { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+            .page-content { left: 0 !important; right: 0 !important; }
             .right-panel { transform: translateX(100%); }
             .navbar-center { display: none; }
+            .navbar { left: 0; }
         }
     </style>
 
-    {% block extra_head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="sidebar-visible">
 
@@ -490,7 +255,6 @@
             <span class="navbar-chd">Calabarzon Center for Health Development</span>
         </div>
     </div>
-
     <div class="navbar-right">
         <span class="navbar-logged-in">Logged in as: <strong>{{ request.user.username|upper|default:"STAFF" }}</strong></span>
         <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#logoutModal">LOGOUT</button>
@@ -500,7 +264,6 @@
 
 <!-- Sidebar -->
 <div class="sidebar" id="sidebarMenu">
-    <!-- Brand + Hamburger -->
     <div class="sidebar-brand">
         <button class="sidebar-hamburger" id="sidebarToggle">
             <i class="bi bi-list"></i>
@@ -552,7 +315,7 @@
                 {% endif %}
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'generate_report' %}active{% endif %}" href="{% url 'superadmin_reports' %}" data-label="Reports">
+                <a class="nav-link {% if request.resolver_match.url_name == 'generate_report' %}active{% endif %}" href="{% url 'generate_report' %}" data-label="Reports">
                     <i class="bi bi-download"></i> <span>Reports</span>
                 </a>
             </li>
@@ -568,12 +331,10 @@
 
 <!-- Right Panel -->
 <div class="right-panel">
-
     <div class="rp-title">
         <span class="rp-live-dot"></span>
         Currently Assisting
     </div>
-
     {% if assisting_tickets %}
         {% for ticket in assisting_tickets %}
         <div class="rp-ticket">
@@ -590,25 +351,17 @@
             </div>
             <div class="rp-ticket-timer">
                 <span class="rp-timer-label">⏱ Elapsed</span>
-                <div class="timer fw-bold"
-                     id="timer-{{ ticket.pk }}"
-                     data-assisted-at="{{ ticket.assisted_at|date:'c' }}"
-                     style="font-size: 0.88rem;">
-                    ...
-                </div>
+                <div class="timer fw-bold" id="timer-{{ ticket.pk }}" data-assisted-at="{{ ticket.assisted_at|date:'c' }}" style="font-size:0.88rem;">...</div>
             </div>
-            <div style="padding: 0.5rem 0.65rem; background: #f8f9fa; border-top: 1px solid #e9ecef;">
-                <button type="button"
-                        class="btn btn-success btn-sm w-100 complete-btn"
+            <div style="padding:0.5rem 0.65rem;background:#f8f9fa;border-top:1px solid #e9ecef;">
+                <button type="button" class="btn btn-success btn-sm w-100 complete-btn"
                         data-ticket-id="{{ ticket.pk }}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#confirmCompleteModal"
-                        style="font-size: 0.72rem; font-weight: 600; padding: 0.35rem 0.5rem; border-radius: 5px;">
+                        data-bs-toggle="modal" data-bs-target="#confirmCompleteModal"
+                        style="font-size:0.72rem;font-weight:600;padding:0.35rem 0.5rem;border-radius:5px;">
                     <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
                 </button>
             </div>
         </div>
-
         <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="completeForm{{ ticket.pk }}" class="d-none">
             {% csrf_token %}
             <input type="hidden" name="from_super_admin" value="1">
@@ -620,16 +373,15 @@
             <p>No active<br>tickets.</p>
         </div>
     {% endif %}
-
 </div>
 
-<!-- Confirmation Modal -->
+<!-- Confirm Complete Modal -->
 <div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="confirmCompleteLabel">Confirm Completion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">Are you sure you want to mark this ticket as completed?</div>
             <div class="modal-footer">
@@ -651,7 +403,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">Are you sure you want to logout?</div>
             <div class="modal-footer">
@@ -664,6 +416,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+/* ── Sidebar toggle ── */
 document.addEventListener('DOMContentLoaded', function () {
     const body = document.body;
     const hamburger = document.getElementById('sidebarToggle');
@@ -674,16 +427,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-let currentCompleteFormId = null;
+/* ── ✅ THE REAL FIX: relocate ALL modals to <body> directly.
+   Modals buried inside .page-content inherit its stacking context
+   and get clipped by the right panel. Moving them to <body> root
+   makes them render at the true top level, above everything. ── */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.modal').forEach(function (modal) {
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
+});
 
+/* ── Mark as Completed ── */
+let currentCompleteFormId = null;
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.complete-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-            const ticketId = this.getAttribute('data-ticket-id');
-            currentCompleteFormId = 'completeForm' + ticketId;
+            currentCompleteFormId = 'completeForm' + this.getAttribute('data-ticket-id');
         });
     });
-
     const confirmBtn = document.getElementById('confirmCompleteBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
@@ -697,6 +460,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+/* ── Elapsed timer ── */
 function updateAssistingTimers() {
     document.querySelectorAll('.timer').forEach(timerEl => {
         const assistedAtStr = timerEl.dataset.assistedAt;
@@ -710,8 +474,7 @@ function updateAssistingTimers() {
         const days    = Math.floor(diffSeconds / 86400);
         let display, colorClass;
         if (days >= 1) {
-            const h = hours > 0 ? ` ${hours}h` : '';
-            display = `${days}d${h}`; colorClass = 'text-danger fw-bold';
+            display = `${days}d${hours > 0 ? ` ${hours}h` : ''}`; colorClass = 'text-danger fw-bold';
         } else if (hours >= 1) {
             display = `${hours}h ${minutes}m`; colorClass = 'text-danger fw-bold';
         } else if (minutes >= 10) {
@@ -724,7 +487,6 @@ function updateAssistingTimers() {
         timerEl.innerHTML = `<span class="${colorClass}">${display}</span>`;
     });
 }
-
 setInterval(updateAssistingTimers, 1000);
 updateAssistingTimers();
 </script>
