@@ -34,5 +34,8 @@ urlpatterns = [
     path('archive/ticket/<int:pk>/print/', views.archived_ticket_print, name='archived_ticket_print'),
     path('archive/save-action-taken/', views.save_action_taken, name='save_action_taken'),
     path('add-action-taken-option/', views.add_action_taken_option, name='add_action_taken_option'),
+    path('super/reports/', views.superadmin_reports, name='superadmin_reports'),
+
+
     
 ]

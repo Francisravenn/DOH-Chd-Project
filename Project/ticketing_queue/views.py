@@ -241,7 +241,33 @@ def search_ticket_api(request):
             'query':        query,
         })
 
-    # 3. Nothing found
+    # 3. Partial control number match — e.g. "0022" finds "DOH4A-ICT-2026-0022"
+    tickets_by_ctrl = Ticket.objects.filter(control_no__icontains=query).order_by('-created_at')
+    if tickets_by_ctrl.exists():
+        if tickets_by_ctrl.count() == 1:
+            return JsonResponse({'found': True, 'ticket': format_ticket(tickets_by_ctrl.first())})
+        active_count = tickets_by_ctrl.filter(status__in=['pending', 'accepted', 'assisting']).count()
+        return JsonResponse({
+            'found':        True,
+            'tickets':      [format_ticket(t) for t in tickets_by_ctrl[:20]],
+            'has_active':   active_count > 0,
+            'active_count': active_count,
+            'query':        query,
+        })
+
+    # 4. Partial name match — e.g. "ang" finds "Angelo"
+    tickets_by_partial_name = Ticket.objects.filter(requested_by__icontains=query).order_by('-created_at')
+    if tickets_by_partial_name.exists():
+        active_count = tickets_by_partial_name.filter(status__in=['pending', 'accepted', 'assisting']).count()
+        return JsonResponse({
+            'found':        True,
+            'tickets':      [format_ticket(t) for t in tickets_by_partial_name[:20]],
+            'has_active':   active_count > 0,
+            'active_count': active_count,
+            'query':        query,
+        })
+
+    # 5. Nothing found
     return JsonResponse({'found': False, 'query': query})
 
 
@@ -1302,6 +1328,374 @@ def all_tickets(request):
     }
 
     return render(request, 'all_tickets.html', context)
+
+
+
+
+@login_required
+@user_passes_test(is_superadmin, login_url='staff_login')
+def superadmin_reports(request):
+    date_from     = request.GET.get('date_from', '').strip()
+    date_to       = request.GET.get('date_to', '').strip()
+    division      = request.GET.get('division', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    admin_filter  = request.GET.get('admin_filter', '').strip()
+    export_type   = request.GET.get('export', '')
+
+    selected_admin_obj    = None
+    admin_total_handled   = 0
+    admin_total_completed = 0
+    admin_perf_rate       = 0
+
+    if admin_filter:
+        try:
+            selected_admin_obj = User.objects.get(id=admin_filter, is_staff=True)
+        except User.DoesNotExist:
+            pass
+
+    queryset = Ticket.objects.all()
+    if selected_admin_obj:
+        queryset = queryset.filter(assisted_by=selected_admin_obj)
+    if date_from:
+        try: queryset = queryset.filter(created_at__date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError: pass
+    if date_to:
+        try: queryset = queryset.filter(created_at__date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError: pass
+    if division:
+        queryset = queryset.filter(department_division=division)
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
+
+    total_requests  = queryset.count()
+    completed_count = queryset.filter(status='completed').count()
+    accepted_count  = queryset.filter(status__in=['accepted', 'assisting']).count()
+    pending_count   = queryset.filter(status='pending').count()
+    urgent_count    = queryset.filter(is_urgent=True).count()
+
+    completion_rate = round((completed_count / total_requests * 100), 1) if total_requests > 0 else 0.0
+    urgent_percent  = round((urgent_count / total_requests * 100), 1) if total_requests > 0 else 0.0
+
+    admin_total_handled   = total_requests
+    admin_total_completed = completed_count
+    admin_perf_rate       = completion_rate
+
+    avg_resolution     = "N/A"
+    fastest_resolution = "N/A"
+    slowest_resolution = "N/A"
+    sla_rate           = "N/A"
+
+    avg_qs = queryset.filter(status='completed', completed_at__isnull=False, created_at__isnull=False)
+    if avg_qs.exists():
+        time_diff = ExpressionWrapper(F('completed_at') - F('created_at'), output_field=DurationField())
+        avg_dur   = avg_qs.annotate(duration=time_diff).aggregate(avg=Avg('duration'))['avg']
+        if avg_dur:
+            avg_resolution = f"{avg_dur.total_seconds() / 3600:.1f}h"
+        durations = [(t.completed_at - t.created_at).total_seconds() for t in avg_qs if t.completed_at and t.created_at]
+        if durations:
+            fastest_resolution = f"{min(durations) / 3600:.1f}h"
+            slowest_resolution = f"{max(durations) / 3600:.1f}h"
+            within_24h         = sum(1 for d in durations if d <= 86400)
+            sla_rate           = f"{round(within_24h / len(durations) * 100)}%"
+
+    tickets_over_time = (
+        queryset.annotate(day=TruncDay('created_at'))
+                .values('day').annotate(count=Count('id')).order_by('day')
+    )
+    chart_labels = [i['day'].strftime('%Y-%m-%d') for i in tickets_over_time]
+    chart_data   = [i['count'] for i in tickets_over_time]
+
+    BAR_COLORS = ['#1565c0','#1a7a4a','#f9c900','#9b59b6','#0891b2','#d97706','#e74c3c','#2ecc71']
+    division_qs = (
+        queryset.exclude(department_division__isnull=True).exclude(department_division='')
+                .values('department_division').annotate(count=Count('id')).order_by('-count')
+    )
+    max_div = division_qs[0]['count'] if division_qs else 1
+    division_data = []
+    for i, row in enumerate(division_qs):
+        pct = round(row['count'] / max_div * 100) if max_div > 0 else 0
+        division_data.append({
+            'division': row['department_division'],
+            'count':    row['count'],
+            'pct':      pct,
+            'color':    BAR_COLORS[i % len(BAR_COLORS)],
+        })
+
+    equipment_qs = (
+        queryset.exclude(equipment__isnull=True).exclude(equipment='')
+                .values('equipment')
+                .annotate(count=Count('id'), urgent=Count('id', filter=Q(is_urgent=True)), completed=Count('id', filter=Q(status='completed')))
+                .order_by('-count')
+    )
+    total_eq = sum(e['count'] for e in equipment_qs) or 1
+    equipment_analysis = [{
+        'equipment': e['equipment'], 'count': e['count'],
+        'urgent': e['urgent'], 'completed': e['completed'],
+        'pct': round(e['count'] / total_eq * 100),
+    } for e in equipment_qs[:10]]
+
+    all_staff    = User.objects.filter(is_staff=True, is_superuser=False).order_by('first_name', 'username')
+    perf_targets = [selected_admin_obj] if selected_admin_obj else list(all_staff)
+    admin_performance = []
+    for u in perf_targets:
+        u_qs        = queryset if selected_admin_obj else queryset.filter(assisted_by=u)
+        handled     = u_qs.count()
+        completed_u = u_qs.filter(status='completed').count()
+        avg_time    = "N/A"
+        perf_pct    = round(completed_u / handled * 100) if handled > 0 else 0
+        u_avg_qs    = u_qs.filter(status='completed', completed_at__isnull=False, assisted_at__isnull=False)
+        if u_avg_qs.exists():
+            td    = ExpressionWrapper(F('completed_at') - F('assisted_at'), output_field=DurationField())
+            u_avg = u_avg_qs.annotate(dur=td).aggregate(avg=Avg('dur'))['avg']
+            if u_avg:
+                avg_time = f"{u_avg.total_seconds() / 3600:.1f}h avg"
+        admin_performance.append({
+            'id': u.id, 'username': u.username,
+            'full_name': u.get_full_name() or u.username,
+            'handled': handled, 'completed': completed_u,
+            'avg_time': avg_time, 'perf_pct': perf_pct,
+            'is_selected': bool(selected_admin_obj),
+        })
+    admin_performance.sort(key=lambda x: x['perf_pct'], reverse=True)
+
+    equipment_types  = Ticket.objects.exclude(equipment__isnull=True).exclude(equipment='').values_list('equipment', flat=True).distinct().order_by('equipment')
+    filtered_tickets = queryset.order_by('-created_at')[:500]
+    divisions_list   = Ticket.objects.values_list('department_division', flat=True).distinct().exclude(department_division__isnull=True).exclude(department_division='').order_by('department_division')
+
+    if export_type == 'excel':
+        response = HttpResponse(content_type='text/csv')
+        admin_suffix = f"_{selected_admin_obj.username}" if selected_admin_obj else "_all"
+        filename = f"sa_report{admin_suffix}_{timezone.now().strftime('%Y%m%d_%H%M')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        writer = csv.writer(response)
+        writer.writerow(['Control No', 'Requested By', 'Division', 'Status', 'Urgent',
+                         'Assisted By', 'Created At', 'Completed At', 'Resolution Hours', 'Description'])
+        for t in filtered_tickets:
+            res_hours = ''
+            if t.completed_at and t.created_at:
+                res_hours = round((t.completed_at - t.created_at).total_seconds() / 3600, 1)
+            writer.writerow([
+                t.control_no, t.requested_by or 'N/A', t.department_division or 'N/A',
+                t.status.title(), 'Yes' if t.is_urgent else 'No',
+                t.assisted_by.get_full_name() or t.assisted_by.username if t.assisted_by else 'N/A',
+                t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else '',
+                t.completed_at.strftime('%Y-%m-%d %H:%M') if t.completed_at else '',
+                res_hours,
+                (t.request_complaint[:200] + '...') if t.request_complaint and len(t.request_complaint) > 200 else (t.request_complaint or ''),
+            ])
+        return response
+
+    if export_type == 'pdf':
+        from io import BytesIO
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import mm
+        import os
+
+        DOH_BLUE     = colors.HexColor('#1a3a6b')
+        DOH_GOLD     = colors.HexColor('#f9c900')
+        DOH_LIGHT_BG = colors.HexColor('#f0f4f8')
+        DOH_LIGHT    = colors.HexColor('#1565c0')
+        DOH_ROW_ALT  = colors.HexColor('#e8f0fb')
+        WHITE        = colors.white
+        GRAY_TEXT    = colors.HexColor('#5a7a9a')
+        DARK         = colors.HexColor('#1a1a2e')
+        GREEN_OK     = colors.HexColor('#1a7a4a')
+
+        APP_DIR  = os.path.dirname(os.path.abspath(__file__))
+        LOGO_BP  = os.path.join(APP_DIR, 'static', 'images', 'BAGONG_PILIPINAS_LOGO.png')
+        LOGO_DOH = os.path.join(APP_DIR, 'static', 'images', 'DOH_LOGO.png')
+        LOGO_CHD = os.path.join(APP_DIR, 'static', 'images', 'CHD4A.png')
+
+        generated_by = request.user.get_full_name() or request.user.username
+        ref_no       = f"DOH-CHD-CAL-ITH-{timezone.now().strftime('%Y%m%d-%H%M')}"
+        period_str   = f"{date_from or 'All'} – {date_to or 'Present'}"
+        report_for   = (
+            f"{selected_admin_obj.get_full_name() or selected_admin_obj.username} (@{selected_admin_obj.username})"
+            if selected_admin_obj else "All Staff"
+        )
+
+        def draw_page(canvas, doc):
+            canvas.saveState(); W, H = A4
+            canvas.setFillColor(DOH_BLUE);                 canvas.rect(0, H-70, W, 70, fill=1, stroke=0)
+            canvas.setFillColor(DOH_GOLD);                 canvas.rect(0, H-73, W, 3,  fill=1, stroke=0)
+            for path, x in [(LOGO_BP, 10), (LOGO_DOH, 58)]:
+                if os.path.exists(path):
+                    canvas.drawImage(path, x, H-63, width=44, height=44, preserveAspectRatio=True, mask='auto')
+            canvas.setFillColor(colors.HexColor('#ffffffcc')); canvas.setFont('Helvetica', 7.5)
+            canvas.drawString(118, H-28, 'Republic of the Philippines  ·  Department of Health')
+            canvas.setFillColor(WHITE);                    canvas.setFont('Helvetica-Bold', 11)
+            canvas.drawString(118, H-48, 'CENTER FOR HEALTH DEVELOPMENT - CALABARZON')
+            canvas.setFillColor(colors.HexColor('#ffffffaa')); canvas.setFont('Helvetica', 7)
+            canvas.drawString(118, H-60, 'Information and Communications Technology Division')
+            if os.path.exists(LOGO_CHD):
+                canvas.drawImage(LOGO_CHD, W-60, H-63, width=46, height=46, preserveAspectRatio=True, mask='auto')
+            canvas.setFillColor(DOH_LIGHT_BG);             canvas.rect(0, H-100, W, 27, fill=1, stroke=0)
+            canvas.setFillColor(DOH_BLUE);                 canvas.setFont('Helvetica-Bold', 8.5)
+            canvas.drawString(20, H-90, f'IT HELPDESK REPORT — {report_for.upper()}')
+            canvas.setFillColor(GRAY_TEXT);                canvas.setFont('Helvetica', 7.5)
+            canvas.drawRightString(W-20, H-86, f'Ref: {ref_no}')
+            canvas.drawRightString(W-20, H-95, f'Period: {period_str}')
+            canvas.setFillColor(DOH_BLUE);                 canvas.rect(0, 0, W, 32, fill=1, stroke=0)
+            canvas.setFillColor(DOH_GOLD);                 canvas.rect(0, 32, W, 2,  fill=1, stroke=0)
+            canvas.setFillColor(WHITE);                    canvas.setFont('Helvetica', 7)
+            canvas.drawString(20, 18, 'DOH CHD CALABARZON  ·  ICT Helpdesk System  ·  For official use only.')
+            canvas.drawRightString(W-20, 18, f'Generated by: {generated_by}   |   Page {doc.page}')
+            canvas.restoreState()
+
+        def S(name, **kw): return ParagraphStyle(name, **kw)
+        section_title = S('SecTitle', fontSize=9, fontName='Helvetica-Bold', textColor=DOH_BLUE,
+                           spaceAfter=6, spaceBefore=14, leading=12, backColor=DOH_LIGHT_BG)
+        normal_s = S('NormalS', fontSize=8, fontName='Helvetica',      textColor=DARK,      leading=11)
+        small_s  = S('SmallS',  fontSize=7, fontName='Helvetica',      textColor=GRAY_TEXT, leading=10)
+        bold_s   = S('BoldS',   fontSize=8, fontName='Helvetica-Bold', textColor=DARK,      leading=11)
+
+        buffer  = BytesIO()
+        doc_obj = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=115, bottomMargin=45)
+        elements = []
+
+        elements.append(Paragraph("REPORT INFORMATION", section_title))
+        info_table = Table([
+            ['Report Reference No.', ref_no,                                        'Generated By',    generated_by],
+            ['Date Generated',       timezone.now().strftime('%B %d, %Y %I:%M %p'), 'Period Covered',  period_str],
+            ['Report For',           report_for,                                     'Division Filter', division or 'All Divisions'],
+        ], colWidths=[100, 155, 95, 150])
+        info_table.setStyle(TableStyle([
+            ('FONTNAME',      (0,0), (-1,-1), 'Helvetica'),
+            ('FONTSIZE',      (0,0), (-1,-1), 7.5),
+            ('FONTNAME',      (0,0), (0,-1),  'Helvetica-Bold'),
+            ('FONTNAME',      (2,0), (2,-1),  'Helvetica-Bold'),
+            ('TEXTCOLOR',     (0,0), (0,-1),  GRAY_TEXT),
+            ('TEXTCOLOR',     (2,0), (2,-1),  GRAY_TEXT),
+            ('ROWBACKGROUNDS',(0,0), (-1,-1), [WHITE, DOH_LIGHT_BG]),
+            ('GRID',          (0,0), (-1,-1), 0.3, colors.HexColor('#dde6f0')),
+            ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING',    (0,0), (-1,-1), 5),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ('LEFTPADDING',   (0,0), (-1,-1), 8),
+        ]))
+        elements.append(info_table)
+
+        elements.append(Spacer(1, 8))
+        elements.append(Paragraph("SUMMARY OF REQUESTS", section_title))
+        kpi_rows = [
+            ('Total Requests',         str(total_requests),    'Within selected filters'),
+            ('Completed / Resolved',   str(completed_count),   f'{completion_rate}% completion rate'),
+            ('Accepted / In Progress', str(accepted_count),    'Currently being handled'),
+            ('Pending / New',          str(pending_count),     'Awaiting review or assignment'),
+            ('Urgent / Priority',      str(urgent_count),      f'{urgent_percent}% of total'),
+            ('Avg Resolution Time',    str(avg_resolution),    'Average hours from filing to completion'),
+            ('Fastest Resolution',     str(fastest_resolution),'Minimum time to complete'),
+            ('Slowest Resolution',     str(slowest_resolution),'Maximum time to complete'),
+            ('SLA Within 24h',         str(sla_rate),          'Tickets resolved within 24 hours'),
+        ]
+        kpi_data = [[Paragraph('<b>Performance Indicator</b>', bold_s),
+                     Paragraph('<b>Value</b>', bold_s),
+                     Paragraph('<b>Remarks</b>', bold_s)]]
+        for r in kpi_rows:
+            kpi_data.append([Paragraph(r[0], normal_s), Paragraph(f'<b>{r[1]}</b>', bold_s), Paragraph(r[2], small_s)])
+        kpi_table = Table(kpi_data, colWidths=[210, 80, 210])
+        kpi_table.setStyle(TableStyle([
+            ('BACKGROUND',    (0,0), (-1,0), DOH_BLUE),
+            ('TEXTCOLOR',     (0,0), (-1,0), WHITE),
+            ('LINEBELOW',     (0,0), (-1,0), 2, DOH_GOLD),
+            ('ROWBACKGROUNDS',(0,1), (-1,-1), [DOH_ROW_ALT, WHITE]),
+            ('GRID',          (0,0), (-1,-1), 0.4, colors.HexColor('#c0cfe0')),
+            ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),
+            ('TOPPADDING',    (0,0), (-1,-1), 6),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ('LEFTPADDING',   (0,0), (-1,-1), 8),
+            ('ALIGN',         (1,1), (1,-1),  'CENTER'),
+        ]))
+        elements.append(kpi_table)
+
+        elements.append(Spacer(1, 8))
+        elements.append(Paragraph("DETAILED TICKET RECORDS", section_title))
+        tkt_header = [Paragraph(f'<b>{h}</b>', bold_s) for h in
+                      ['Control No.', 'Requested By', 'Division', 'Assisted By', 'Status', 'Date Filed', 'Nature of Request']]
+        sc_map = {
+            'completed': GREEN_OK,
+            'assisting': DOH_LIGHT,
+            'pending':   colors.HexColor('#856404'),
+            'accepted':  colors.HexColor('#0c5460'),
+        }
+        tkt_data = [tkt_header]
+        for i, t in enumerate(filtered_tickets):
+            sc     = sc_map.get(t.status, DARK)
+            st_s   = S(f'st{i}', fontSize=7.5, fontName='Helvetica-Bold', textColor=sc,        leading=10)
+            ctrl_s = S(f'ct{i}', fontSize=7,   fontName='Helvetica-Bold', textColor=DOH_LIGHT, leading=10)
+            div_text = (t.department_division or 'N/A') + (f' — {t.section_unit}' if t.section_unit else '')
+            asst     = (t.assisted_by.get_full_name() or t.assisted_by.username) if t.assisted_by else 'N/A'
+            tkt_data.append([
+                Paragraph(t.control_no or 'N/A', ctrl_s),
+                Paragraph(t.requested_by or 'N/A', normal_s),
+                Paragraph(div_text, small_s),
+                Paragraph(asst, normal_s),
+                Paragraph(t.status.title(), st_s),
+                Paragraph(t.created_at.strftime('%m/%d/%Y') if t.created_at else 'N/A', small_s),
+                Paragraph((t.request_complaint or '')[:80], normal_s),
+            ])
+        if len(tkt_data) > 1:
+            tbl = Table(tkt_data, colWidths=[65, 65, 88, 68, 50, 56, 108], repeatRows=1, splitByRow=1)
+            tbl.setStyle(TableStyle([
+                ('BACKGROUND',    (0,0), (-1,0), DOH_BLUE),
+                ('TEXTCOLOR',     (0,0), (-1,0), WHITE),
+                ('LINEBELOW',     (0,0), (-1,0), 2, DOH_GOLD),
+                ('ROWBACKGROUNDS',(0,1), (-1,-1), [DOH_ROW_ALT, WHITE]),
+                ('GRID',          (0,0), (-1,-1), 0.3, colors.HexColor('#c0cfe0')),
+                ('VALIGN',        (0,0), (-1,-1), 'TOP'),
+                ('TOPPADDING',    (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+                ('LEFTPADDING',   (0,0), (-1,-1), 5),
+            ]))
+            elements.append(tbl)
+        else:
+            elements.append(Paragraph("No tickets found for the selected filters.", normal_s))
+
+        doc_obj.build(elements, onFirstPage=draw_page, onLaterPages=draw_page)
+        pdf = buffer.getvalue(); buffer.close()
+        resp = HttpResponse(content_type='application/pdf')
+        sfx  = f"_{selected_admin_obj.username}" if selected_admin_obj else ""
+        resp['Content-Disposition'] = f'attachment; filename="DOH_SA_Report{sfx}_{timezone.now().strftime("%Y%m%d_%H%M")}.pdf"'
+        resp.write(pdf)
+        return resp
+
+    context = {
+        'total_requests':        total_requests,
+        'completed_count':       completed_count,
+        'accepted_count':        accepted_count,
+        'pending_count':         pending_count,
+        'urgent_count':          urgent_count,
+        'completion_rate':       completion_rate,
+        'urgent_percent':        urgent_percent,
+        'avg_resolution':        avg_resolution,
+        'fastest_resolution':    fastest_resolution,
+        'slowest_resolution':    slowest_resolution,
+        'sla_rate':              sla_rate,
+        'tickets_over_time':     {'labels': chart_labels, 'data': chart_data},
+        'status_breakdown':      {'new': pending_count, 'accepted': accepted_count, 'completed': completed_count, 'urgent': urgent_count, 'total': total_requests},
+        'division_data':         division_data,
+        'equipment_analysis':    equipment_analysis,
+        'admin_performance':     admin_performance,
+        'all_staff':             all_staff,
+        'equipment_types':       equipment_types,
+        'divisions':             divisions_list,
+        'selected_admin':        admin_filter,
+        'selected_admin_obj':    selected_admin_obj,
+        'admin_total_handled':   admin_total_handled,
+        'admin_total_completed': admin_total_completed,
+        'admin_perf_rate':       admin_perf_rate,
+        'date_from':             date_from,
+        'date_to':               date_to,
+        'selected_division':     division,
+        'selected_status':       status_filter,
+        'filtered_tickets':      filtered_tickets,
+        'show_table':            queryset.exists(),
+        'assisting_tickets':     Ticket.objects.filter(status='assisting').order_by('-assisted_at'),
+    }
+    return render(request, 'super_admin_reports.html', context)
 
 
 

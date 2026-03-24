@@ -10,44 +10,100 @@
         min-height: 100vh;
     }
 
-    .hero-wrapper {
-        padding: 60px 16px 40px;
-        text-align: center;
+        /* ── HERO ── */
+        /* ── LAYOUT: full viewport, no scroll ── */
+    html, body {
+        height: 100%;
+        overflow: hidden;
     }
+    .page-content-wrapper {
+        /* height set by JS to exactly fill between navbar and footer */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 16px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* ── HERO ── */
+    .hero-wrapper {
+        text-align: center;
+        margin-bottom: 28px;
+        padding: 0;
+    }
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(21,101,192,0.07);
+        border: 1px solid rgba(21,101,192,0.18);
+        border-radius: 30px;
+        padding: 4px 14px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.58rem;
+        font-weight: 800;
+        color: #1565c0;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+    .hero-eyebrow i { font-size: 0.7rem; }
     .hero-title {
         font-family: 'Montserrat', sans-serif;
-        font-size: 1.6rem;
-        font-weight: 800;
+        font-size: 1.65rem;
+        font-weight: 900;
         color: #1a3a6b;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.03em;
         text-transform: uppercase;
         margin-bottom: 8px;
+        line-height: 1.15;
     }
     .hero-sub {
         font-family: 'Open Sans', sans-serif;
-        font-size: 0.9rem;
-        color: #5a7a9a;
-        margin-bottom: 48px;
+        font-size: 0.85rem;
+        color: #7a8fa8;
+        margin-bottom: 14px;
     }
+    .hero-meta {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(21,101,192,0.1);
+        border-radius: 40px;
+        padding: 6px 20px;
+        gap: 14px;
+        box-shadow: 0 2px 12px rgba(21,101,192,0.07);
+    }
+    .hero-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.68rem;
+        color: #5a7a9a;
+        font-weight: 600;
+    }
+    .hero-meta-item i { color: #1565c0; font-size: 0.72rem; }
+    .hero-meta-sep { width: 1px; height: 12px; background: #c0cfe0; }
 
+    /* ── CARDS ── */
     .choices-wrapper {
         display: flex;
         justify-content: center;
         gap: 24px;
         flex-wrap: wrap;
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 0 16px 60px;
+        max-width: 860px;
+        width: 100%;
     }
-
     .choice-card {
         background: #ffffff;
-        border-radius: 16px;
-        padding: 40px 32px 36px;
-        width: 260px;
+        border-radius: 18px;
+        padding: 28px 28px 26px;
+        width: 380px;
         text-align: center;
-        box-shadow: 0 8px 32px rgba(21, 101, 192, 0.12);
-        text-decoration: none;
+        box-shadow: 0 4px 24px rgba(21,101,192,0.10), 0 1px 4px rgba(21,101,192,0.06);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
         position: relative;
         overflow: hidden;
@@ -55,85 +111,85 @@
     }
     .choice-card:nth-child(1) { animation-delay: 0.1s; }
     .choice-card:nth-child(2) { animation-delay: 0.2s; }
-    .choice-card:nth-child(3) { animation-delay: 0.3s; }
 
     @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(24px); }
+        from { opacity: 0; transform: translateY(20px); }
         to   { opacity: 1; transform: translateY(0); }
     }
-
     .choice-card::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 4px;
-        border-radius: 16px 16px 0 0;
     }
-    .choice-card.submit::before { background: linear-gradient(90deg, #1565c0, #1e88e5); }
-    .choice-card.view::before   { background: linear-gradient(90deg, #2e7d32, #43a047); }
-    .choice-card.search::before { background: linear-gradient(90deg, #e65100, #fb8c00); }
-
+    .choice-card.submit::before { background: linear-gradient(90deg, #1a3a6b, #1565c0, #1e88e5); }
+    .choice-card.search::before { background: linear-gradient(90deg, #b45309, #d97706, #fb8c00); }
     .choice-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 16px 48px rgba(21, 101, 192, 0.18);
+        transform: translateY(-5px);
+        box-shadow: 0 16px 48px rgba(21,101,192,0.15);
     }
-
     .choice-icon {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
+        margin: 0 auto 14px;
         font-size: 1.6rem;
     }
-    .choice-card.submit .choice-icon { background: #e3f0ff; color: #1565c0; }
-    .choice-card.view .choice-icon   { background: #e8f5e9; color: #2e7d32; }
-    .choice-card.search .choice-icon { background: #fff3e0; color: #e65100; }
-
+    .choice-card.submit .choice-icon { background: linear-gradient(135deg,#e3f0ff,#c8e0ff); color: #1565c0; }
+    .choice-card.search .choice-icon { background: linear-gradient(135deg,#fff3e0,#ffe0b2); color: #d97706; }
     .choice-title {
         font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 800;
         color: #1a1a2e;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .choice-desc {
         font-family: 'Open Sans', sans-serif;
-        font-size: 0.78rem;
-        color: #7a8fa8;
+        font-size: 0.76rem;
+        color: #8a9ab5;
         line-height: 1.6;
-        margin-bottom: 24px;
+        margin-bottom: 18px;
     }
+    .choice-card-divider {
+        width: 36px;
+        height: 2px;
+        border-radius: 2px;
+        margin: 0 auto 16px;
+    }
+    .choice-card.submit .choice-card-divider { background: linear-gradient(90deg,#1565c0,#1e88e5); }
+    .choice-card.search .choice-card-divider { background: linear-gradient(90deg,#d97706,#fb8c00); }
     .choice-btn {
         display: inline-block;
-        padding: 9px 28px;
-        border-radius: 8px;
+        padding: 10px 28px;
+        border-radius: 9px;
         font-family: 'Montserrat', sans-serif;
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         text-decoration: none;
-        transition: opacity 0.2s;
+        transition: opacity 0.2s, transform 0.15s;
         border: none;
         cursor: pointer;
         width: 100%;
     }
-    .choice-btn:hover { opacity: 0.88; }
-    .choice-card.submit .choice-btn { background: linear-gradient(90deg, #1565c0, #1e88e5); color: #fff; }
-    .choice-card.view .choice-btn   { background: linear-gradient(90deg, #2e7d32, #43a047); color: #fff; }
-    .choice-card.search .choice-btn { background: linear-gradient(90deg, #e65100, #fb8c00); color: #fff; }
+    .choice-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .choice-card.submit .choice-btn { background: linear-gradient(90deg,#1a3a6b,#1565c0); color: #fff; }
+    .choice-card.search .choice-btn { background: linear-gradient(90deg,#b45309,#d97706); color: #fff; }
 
     /* Search form */
     .search-form { display: flex; flex-direction: column; gap: 8px; }
     .search-input {
         width: 100%;
-        border: 1.5px solid #dde3ed;
-        border-radius: 8px;
-        padding: 9px 12px;
+        border: 1.5px solid #e0e7ef;
+        border-radius: 9px;
+        padding: 10px 14px;
         font-family: 'Open Sans', sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         color: #1a1a2e;
         background: #f7f9fc;
         outline: none;
@@ -141,29 +197,113 @@
         text-align: center;
     }
     .search-input:focus {
-        border-color: #e65100;
-        box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.1);
+        border-color: #d97706;
+        box-shadow: 0 0 0 3px rgba(217,119,6,0.12);
         background: #fff;
     }
-    .search-input::placeholder { color: #b0bac8; font-size: 0.78rem; }
+    .search-input::placeholder { color: #b0bac8; font-size: 0.76rem; }
     .search-error {
         background: #fff0f0;
         border: 1px solid #ffcccc;
-        border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 0.75rem;
+        border-radius: 7px;
+        padding: 7px 12px;
+        font-size: 0.72rem;
         color: #c0392b;
-        margin-top: 6px;
+        margin-top: 2px;
         display: none;
     }
     .search-error.show { display: block; }
 
-    @media (max-width: 640px) {
-        .choice-card { width: 100%; max-width: 360px; }
-        .hero-title { font-size: 1.2rem; }
+    /* Live search dropdown */
+    .search-wrapper { position: relative; }
+    .search-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0; right: 0;
+        background: #fff;
+        border: 1.5px solid #e0e7ef;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(21,101,192,0.14);
+        z-index: 999;
+        overflow: hidden;
+        display: none;
+        max-height: 260px;
+        overflow-y: auto;
+    }
+    .search-dropdown.show { display: block; }
+    .search-drop-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f4f8;
+        transition: background 0.12s;
+        text-align: left;
+    }
+    .search-drop-item:last-child { border-bottom: none; }
+    .search-drop-item:hover { background: #f0f6ff; }
+    .search-drop-icon {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        background: #e8f0fb;
+        color: #1565c0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem; flex-shrink: 0;
+    }
+    .search-drop-icon.urgent { background: #fff0f0; color: #c0392b; }
+    .search-drop-main { flex: 1; min-width: 0; }
+    .search-drop-ctrl {
+        font-family: 'Courier New', monospace;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #1a3a6b;
+    }
+    .search-drop-name {
+        font-size: 0.7rem;
+        color: #8a9ab5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .search-drop-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 20px;
+        flex-shrink: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .search-drop-loading {
+        padding: 16px;
+        text-align: center;
+        font-size: 0.75rem;
+        color: #8a9ab5;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .search-drop-empty {
+        padding: 16px;
+        text-align: center;
+        font-size: 0.75rem;
+        color: #b0bac8;
+        font-family: 'Open Sans', sans-serif;
     }
 
-    /* ── FORM MODAL ── */
+    @media (max-width: 860px) {
+        html, body { overflow: auto; }
+        .page-content-wrapper {
+            height: auto;
+            overflow: auto;
+            padding: 40px 16px 40px;
+            justify-content: flex-start;
+        }
+        .choice-card { width: 100%; max-width: 400px; }
+        .hero-title { font-size: 1.2rem; }
+        .hero-meta { display: none; }
+    }
+
+/* ── FORM MODAL ── */
     .form-modal-overlay {
         display: none;
         position: fixed;
@@ -581,9 +721,23 @@
 {% endblock %}
 
 {% block content %}
+<div class="page-content-wrapper">
 <div class="hero-wrapper">
-    <h1 class="hero-title">DOH CHD CALABARZON IT Helpdesk</h1>
-    <p class="hero-sub">What would you like to do today?</p>
+    <div class="hero-eyebrow">
+        <i class="bi bi-shield-check-fill"></i> ICT Division &nbsp;·&nbsp; Official IT Helpdesk
+    </div>
+    <h1 class="hero-title">DOH CHD Calabarzon<br>IT Helpdesk</h1>
+    <p class="hero-sub">How can we help you today?</p>
+    <div class="hero-meta">
+        <div class="hero-meta-item"><i class="bi bi-clock-fill"></i> Mon – Fri, 8:00 AM – 5:00 PM</div>
+        <div class="hero-meta-sep"></div>
+        <div class="hero-meta-item" id="locationItem" style="cursor:pointer;" onclick="detectLocation()" title="Click to detect your location">
+            <i class="bi bi-geo-alt-fill" id="locationIcon"></i>
+            <span id="locationText">CHD CALABARZON</span>
+        </div>
+        <div class="hero-meta-sep"></div>
+        <div class="hero-meta-item"><i class="bi bi-headset"></i> ICT Division</div>
+    </div>
 </div>
 
 <div class="choices-wrapper">
@@ -594,7 +748,8 @@
             <i class="bi bi-plus-circle-fill"></i>
         </div>
         <div class="choice-title">Submit a Request</div>
-        <div class="choice-desc">File a new IT helpdesk request or report an issue with your equipment.</div>
+        <div class="choice-desc">File a new IT helpdesk request or report an issue with your equipment. Our team will respond promptly.</div>
+        <div class="choice-card-divider"></div>
         <span class="choice-btn">Submit Request</span>
     </div>
 
@@ -603,17 +758,22 @@
         <div class="choice-icon">
             <i class="bi bi-search"></i>
         </div>
-        <div class="choice-title">Search Ticket</div>
-        <div class="choice-desc">Enter your Control Number to find a specific ticket.</div>
+        <div class="choice-title">Track Your Ticket</div>
+        <div class="choice-desc">Enter your Control Number or full name to check the status of your request.</div>
+        <div class="choice-card-divider"></div>
         <form class="search-form" id="searchForm">
-            <input type="text" class="search-input" id="searchInput"
-                   placeholder="e.g. DOH4A-ICT-2026-0001"
-                   autocomplete="off">
-            <button type="submit" class="choice-btn">Search</button>
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="searchInput"
+                       placeholder="Control No. or your name..."
+                       autocomplete="off">
+                <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+            <button type="submit" class="choice-btn">Search Ticket</button>
         </form>
-        <div class="search-error" id="searchError">Please enter a Control Number.</div>
+        <div class="search-error" id="searchError">Please enter a Control Number or your name.</div>
     </div>
 
+</div>
 </div>
 {% endblock %}
 
@@ -652,6 +812,19 @@
 </style>
 
 <script>
+// Set content wrapper height to exactly fill between navbar and footer
+function fitContentWrapper() {
+    const wrapper = document.querySelector('.page-content-wrapper');
+    if (!wrapper) return;
+    // Find all fixed/sticky elements that aren't the wrapper itself
+    const navbar  = document.querySelector('nav, .navbar, header, [class*="navbar"]');
+    const footer  = document.querySelector('footer, [class*="footer"]:not(.modal-footer-note)');
+    const navH    = navbar ? navbar.offsetHeight : 60;
+    const footH   = footer ? footer.offsetHeight : 48;
+    wrapper.style.height = (window.innerHeight - navH - footH) + 'px';
+}
+window.addEventListener('resize', fitContentWrapper);
+
 // Status map
 const statusLabels = {
     'pending':   'Submitted',
@@ -1489,8 +1662,138 @@ document.getElementById('searchForm').addEventListener('submit', function (e) {
         });
 });
 
+// ── LIVE SEARCH ──
+let searchDebounceTimer = null;
+const dropdown = document.getElementById('searchDropdown');
+
+const statusColors = {
+    'pending':   { bg: '#fff3cd', color: '#856404' },
+    'accepted':  { bg: '#d1ecf1', color: '#0c5460' },
+    'assisting': { bg: '#fff0f0', color: '#c0392b' },
+    'completed': { bg: '#d4edda', color: '#155724' },
+};
+
 document.getElementById('searchInput').addEventListener('input', function () {
     document.getElementById('searchError').classList.remove('show');
+    const val = this.value.trim();
+
+    clearTimeout(searchDebounceTimer);
+
+    if (val.length < 2) {
+        dropdown.classList.remove('show');
+        dropdown.innerHTML = '';
+        return;
+    }
+
+    // Show loading
+    dropdown.innerHTML = '<div class="search-drop-loading"><i class="bi bi-arrow-repeat" style="animation:spin 0.8s linear infinite;display:inline-block;margin-right:6px;"></i>Searching...</div>';
+    dropdown.classList.add('show');
+
+    searchDebounceTimer = setTimeout(() => {
+        fetch(`{% url 'search_ticket_api' %}?control_no=` + encodeURIComponent(val))
+            .then(r => r.json())
+            .then(data => {
+                if (!data.found) {
+                    dropdown.innerHTML = '<div class="search-drop-empty"><i class="bi bi-search" style="margin-right:5px;"></i>No results found</div>';
+                    return;
+                }
+
+                const tickets = data.tickets ? data.tickets : [data.ticket];
+                dropdown.innerHTML = tickets.map(t => {
+                    const sc = statusColors[t.status] || { bg: '#f0f4f8', color: '#5a7a9a' };
+                    const isUrgent = t.is_urgent;
+                    return `<div class="search-drop-item" onclick="selectDropdownTicket(${JSON.stringify(t).replace(/"/g,'&quot;')})">
+                        <div class="search-drop-icon ${isUrgent ? 'urgent' : ''}">
+                            <i class="bi bi-${isUrgent ? 'exclamation-triangle-fill' : 'ticket-perforated-fill'}"></i>
+                        </div>
+                        <div class="search-drop-main">
+                            <div class="search-drop-ctrl">${t.control_no}</div>
+                            <div class="search-drop-name">${t.requested_by} &nbsp;·&nbsp; ${t.department_division || 'N/A'}</div>
+                        </div>
+                        <span class="search-drop-badge" style="background:${sc.bg};color:${sc.color};">
+                            ${statusLabels[t.status] || t.status}
+                        </span>
+                    </div>`;
+                }).join('');
+            })
+            .catch(() => {
+                dropdown.innerHTML = '<div class="search-drop-empty">Error searching. Try again.</div>';
+            });
+    }, 320);
+});
+
+function selectDropdownTicket(t) {
+    dropdown.classList.remove('show');
+    document.getElementById('searchInput').value = t.control_no;
+
+    // Open modal directly with this ticket
+    const data = { found: true, ticket: t };
+    searchResultSingle = t;
+    document.getElementById('modalBody').innerHTML = buildModalContent(data);
+    attachSinglePrintBtn();
+    openModal();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-wrapper')) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// ── LOCATION DETECTION ──
+function detectLocation() {
+    const icon = document.getElementById('locationIcon');
+    const text = document.getElementById('locationText');
+
+    if (!navigator.geolocation) {
+        text.textContent = 'Location unavailable';
+        return;
+    }
+
+    // Animate icon while detecting
+    icon.className = 'bi bi-arrow-repeat';
+    icon.style.animation = 'spin 1s linear infinite';
+    icon.style.display = 'inline-block';
+    text.textContent = 'Detecting...';
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            // Reverse geocode using OpenStreetMap Nominatim (free, no API key)
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                .then(r => r.json())
+                .then(data => {
+                    icon.style.animation = '';
+                    icon.className = 'bi bi-geo-alt-fill';
+                    const addr = data.address;
+                    // Build a clean location string
+                    const city = addr.city || addr.town || addr.municipality || addr.village || '';
+                    const province = addr.province || addr.state || '';
+                    text.textContent = city && province ? `${city}, ${province}` : (city || province || 'Location found');
+                })
+                .catch(() => {
+                    icon.style.animation = '';
+                    icon.className = 'bi bi-geo-alt-fill';
+                    text.textContent = `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
+                });
+        },
+        function(err) {
+            icon.style.animation = '';
+            icon.className = 'bi bi-geo-alt-fill';
+            // Fall back to a static label — geolocation requires HTTPS in production
+            text.textContent = 'CHD CALABARZON';
+        },
+        { timeout: 8000, maximumAge: 60000 }
+    );
+}
+
+// Auto-detect location on page load
+window.addEventListener('load', function() {
+    fitContentWrapper();
+    detectLocation();
 });
 </script>
 {% endblock %}

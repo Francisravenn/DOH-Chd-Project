@@ -552,7 +552,7 @@
                 {% endif %}
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'generate_report' %}active{% endif %}" href="{% url 'generate_report' %}" data-label="Reports">
+                <a class="nav-link {% if request.resolver_match.url_name == 'generate_report' %}active{% endif %}" href="{% url 'superadmin_reports' %}" data-label="Reports">
                     <i class="bi bi-download"></i> <span>Reports</span>
                 </a>
             </li>
