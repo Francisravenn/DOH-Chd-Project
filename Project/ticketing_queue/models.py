@@ -259,3 +259,10 @@ class ActionTakenOption(models.Model):
 
     class Meta:
         ordering = ['name']
+
+class AdminOnlineStatus(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='online_status')
+    last_seen = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.last_seen}"

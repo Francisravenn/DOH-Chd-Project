@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'ticketing_queue.apps.TicketingQueueConfig',
     'widget_tweaks',
     
+    
 
 ]
 
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'ticketing_queue.middleware.AdminActivityMiddleware',
 ]
 
 

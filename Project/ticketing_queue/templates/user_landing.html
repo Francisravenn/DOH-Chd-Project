@@ -890,6 +890,32 @@ function buildSingleTicket(t, collapsible = false, index = 0) {
         <div class="modal-tracker" style="${collapsible?'padding:14px 24px;':''}">
             <div class="tracker-label">Ticket Progress</div>
             ${buildTrackerHTML(t.status)}
+            ${t.status === 'pending' && t.online_count !== undefined ? `
+            <div style="margin-top:14px; padding:10px 14px; border-radius:10px;
+                        background:${t.available_count > 0 ? '#f0faf4' : '#fff8f0'};
+                        border:1px solid ${t.available_count > 0 ? '#a8d5b5' : '#f0c080'};">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span style="width:8px; height:8px; border-radius:50%;
+                                 background:${t.online_count > 0 ? '#2ecc71' : '#bdc3c7'};
+                                 display:inline-block; flex-shrink:0;
+                                 ${t.online_count > 0 ? 'box-shadow:0 0 0 3px rgba(46,204,113,0.2);' : ''}"></span>
+                    <span style="font-family:'Montserrat',sans-serif; font-size:0.7rem; font-weight:700;
+                                 color:${t.online_count > 0 ? '#1a7a4a' : '#8a9ab5'};">
+                        ${t.online_count > 0
+                            ? `${t.online_count} IT Staff Online`
+                            : 'No IT Staff Currently Online'}
+                    </span>
+                </div>
+                ${t.online_count > 0 ? `
+                <div style="font-family:'Open Sans',sans-serif; font-size:0.7rem; color:#5a7a9a; padding-left:16px;">
+                    ${t.available_count > 0
+                        ? `<span style="color:#1a7a4a; font-weight:600;">${t.available_count} available</span> · ${t.online_count - t.available_count} currently assisting — your request will be attended to shortly.`
+                        : `All ${t.online_count} staff are currently assisting other requests. Your ticket is queued.`}
+                </div>` : `
+                <div style="font-family:'Open Sans',sans-serif; font-size:0.7rem; color:#8a9ab5; padding-left:16px;">
+                    Your request has been recorded and will be reviewed once staff is available.
+                </div>`}
+            </div>` : ''}
         </div>
         <div class="modal-details">
             <div class="detail-row">
@@ -1728,12 +1754,32 @@ function selectDropdownTicket(t) {
     dropdown.classList.remove('show');
     document.getElementById('searchInput').value = t.control_no;
 
-    // Open modal directly with this ticket
-    const data = { found: true, ticket: t };
-    searchResultSingle = t;
-    document.getElementById('modalBody').innerHTML = buildModalContent(data);
-    attachSinglePrintBtn();
+    // Show loading first
+    document.getElementById('modalBody').innerHTML = `
+        <div class="modal-top-bar">
+            <h5>Loading...</h5>
+            <button class="modal-close-btn" onclick="closeModal()"><i class="bi bi-x"></i></button>
+        </div>
+        <div class="modal-loading">
+            <i class="bi bi-arrow-repeat" style="font-size:1.8rem; display:block; margin-bottom:10px; animation: spin 1s linear infinite;"></i>
+            Loading ticket...
+        </div>`;
     openModal();
+
+    // Re-fetch by control number to get fresh data including online_count
+    fetch(`{% url 'search_ticket_api' %}?control_no=` + encodeURIComponent(t.control_no))
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('modalBody').innerHTML = buildModalContent(data);
+            attachSinglePrintBtn();
+        })
+        .catch(() => {
+            // Fallback to cached data if fetch fails
+            const data = { found: true, ticket: t };
+            searchResultSingle = t;
+            document.getElementById('modalBody').innerHTML = buildModalContent(data);
+            attachSinglePrintBtn();
+        });
 }
 
 // Close dropdown when clicking outside
@@ -1799,3 +1845,4 @@ window.addEventListener('load', function() {
 });
 </script>
 {% endblock %}
+

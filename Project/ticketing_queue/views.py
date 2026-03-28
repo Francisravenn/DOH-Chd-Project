@@ -34,7 +34,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.enums import TA_JUSTIFY
 from reportlab.lib.pagesizes import A4
 
-
+from .models import AdminOnlineStatus
 
 from django.db.models import Count, Avg
 import csv
@@ -219,11 +219,34 @@ def search_ticket_api(request):
             'assisted_by':         assisted_by_str,
             'completed_at':        completed_str,
         }
+    
+    from datetime import timedelta
+    online_cutoff = timezone.now() - timedelta(minutes=2)
+    online_statuses = AdminOnlineStatus.objects.filter(
+        last_seen__gte=online_cutoff
+    ).filter(
+        Q(user__is_staff=True) | Q(user__is_superuser=True)
+    ).select_related('user')
+
+    online_count = online_statuses.count()
+
+    # Available = online but NOT currently assisting any ticket
+    busy_user_ids = Ticket.objects.filter(
+        status='assisting'
+    ).values_list('assisted_by_id', flat=True)
+
+    available_count = online_statuses.exclude(
+        user_id__in=busy_user_ids
+    ).count()
 
     # 1. Try exact control number match first
     ticket = Ticket.objects.filter(control_no__iexact=query).first()
     if ticket:
-        return JsonResponse({'found': True, 'ticket': format_ticket(ticket)})
+        data = format_ticket(ticket)
+        if ticket.status == 'pending':
+            data['online_count'] = online_count
+            data['available_count'] = available_count
+        return JsonResponse({'found': True, 'ticket': data})
 
     # 2. Try name search (contains, case-insensitive) — latest first
     tickets_by_name = Ticket.objects.filter(
@@ -238,6 +261,8 @@ def search_ticket_api(request):
             'tickets':      [format_ticket(t) for t in tickets_by_name],
             'has_active':   active_count > 0,
             'active_count': active_count,
+            'online_count':     online_count,        
+            'available_count':  available_count,     
             'query':        query,
         })
 
@@ -252,6 +277,8 @@ def search_ticket_api(request):
             'tickets':      [format_ticket(t) for t in tickets_by_ctrl[:20]],
             'has_active':   active_count > 0,
             'active_count': active_count,
+            'online_count':     online_count,        
+            'available_count':  available_count,     
             'query':        query,
         })
 
@@ -264,6 +291,8 @@ def search_ticket_api(request):
             'tickets':      [format_ticket(t) for t in tickets_by_partial_name[:20]],
             'has_active':   active_count > 0,
             'active_count': active_count,
+            'online_count':     online_count,        
+            'available_count':  available_count,     
             'query':        query,
         })
 
@@ -750,6 +779,11 @@ def generate_report(request):
 @login_required
 def admin_logout(request):
     user = request.user
+    logout(request)
+
+    from .models import AdminOnlineStatus
+    AdminOnlineStatus.objects.filter(user=user).delete()
+    
     logout(request)
     
     AuditLog.objects.create(
@@ -2181,4 +2215,4 @@ def add_action_taken_option(request):
 
 
 
-
+search_ticket_api
