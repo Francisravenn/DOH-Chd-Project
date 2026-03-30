@@ -4,289 +4,541 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOH IT Helpdesk — Live Queue Monitor</title>
+    <title>DOH CHD IT — Live Service Queue [FULL SCREEN]</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600;700;800&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
 
+        :root {
+            --bg-base: #080c10;
+            --bg-panel: #0d1117;
+            --bg-card: #111720;
+            --bg-highlight: #151e2a;
+            --border: rgba(255,255,255,0.07);
+            --border-strong: rgba(255,255,255,0.14);
+            --yellow: #f5c518;
+            --green: #00e676;
+            --blue: #2196f3;
+            --red: #ff3d3d;
+            --amber: #ffab40;
+            --teal: #00bcd4;
+            --text-primary: #f0f4f8;
+            --text-secondary: #8899aa;
+            --text-dim: #4a5568;
+            --font-display: 'Bebas Neue', 'Barlow Condensed', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-body: 'Barlow Condensed', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
-            width: 100vw; height: 100vh;
+            height: 100vh;
+            width: 100vw;
             overflow: hidden;
-            background: #0a1628;
-            font-family: 'Open Sans', sans-serif;
-            color: #fff;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 15px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.06) 2px,
+                rgba(0,0,0,0.06) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
         }
 
         .lq-wrap {
-            display: flex; flex-direction: column;
-            width: 100vw; height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
         }
 
-        /* ── HEADER ── */
+        /* ==================== HEADER ==================== */
         .lq-header {
+            height: 78px;
+            background: var(--bg-panel);
+            border-bottom: 4px solid var(--yellow);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
             flex-shrink: 0;
-            height: 64px;
-            background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
-            border-bottom: 3px solid #f9c900;
-            display: flex; align-items: center;
-            padding: 0 18px; gap: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
         }
-        .lq-logos { display: flex; align-items: center; gap: 5px; }
-        .lq-logos img { height: 42px; width: 42px; object-fit: contain; }
-        .lq-vdiv { width: 1px; height: 34px; background: rgba(255,255,255,0.25); margin: 0 8px; }
-        .lq-agency { display: flex; flex-direction: column; }
-        .lq-agency-sub { font-size: 0.56rem; color: rgba(255,255,255,0.65); letter-spacing: 0.04em; text-transform: uppercase; }
-        .lq-agency-line { width: 260px; height: 1px; background: rgba(255,255,255,0.25); margin: 2px 0; }
-        .lq-agency-name { font-family: 'Montserrat', sans-serif; font-size: 0.78rem; font-weight: 800; color: #fff; letter-spacing: 0.05em; text-transform: uppercase; }
-        .lq-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .lq-badge { background: #f9c900; color: #1a3a6b; font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 800; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.1em; }
-        .lq-htitle { font-family: 'Montserrat', sans-serif; font-size: 0.92rem; font-weight: 800; color: #fff; letter-spacing: 0.03em; }
-        .lq-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .lq-dt { font-size: 0.68rem; color: rgba(255,255,255,0.75); text-align: right; line-height: 1.4; }
-        .lq-live { display: inline-flex; align-items: center; gap: 4px; font-size: 0.6rem; font-weight: 700; color: #4ade80; letter-spacing: 0.08em; text-transform: uppercase; }
-        .lq-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: blink 1.4s infinite; }
-        @keyframes blink { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(1.4);} }
-        .lq-logo-r { height: 42px; width: 42px; object-fit: contain; border-radius: 50%; }
 
-        /* ── KPI STRIP ── */
+        .lq-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .lq-brand img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .lq-brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lq-brand-sup {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .lq-brand-main {
+            font-family: var(--font-display);
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .lq-title {
+            flex: 1;
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 28px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--yellow);
+        }
+
+        .lq-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .lq-clock {
+            font-family: var(--font-display);
+            font-size: 34px;
+            letter-spacing: 4px;
+            color: var(--text-primary);
+        }
+
+        .live-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,61,61,0.15);
+            border: 1px solid rgba(255,61,61,0.45);
+            color: var(--red);
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .live-dot {
+            width: 9px; height: 9px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: blink 1.4s infinite;
+        }
+
+        @keyframes blink {
+            0%,100% { opacity: 1; box-shadow: 0 0 8px var(--red); }
+            50% { opacity: 0.4; box-shadow: none; }
+        }
+
+        /* ==================== KPI STRIP ==================== */
         .lq-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 12px 20px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
             flex-shrink: 0;
-            display: grid; grid-template-columns: repeat(4,1fr);
-            gap: 8px; padding: 8px 14px;
-            background: #0a1628;
         }
-        .lq-kpi {
-            background: #112240; border-radius: 7px;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-top: 3px solid;
-            padding: 8px 12px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .lq-kpi.blue  { border-top-color: #1565c0; }
-        .lq-kpi.amber { border-top-color: #d97706; }
-        .lq-kpi.green { border-top-color: #1a7a4a; }
-        .lq-kpi.slate { border-top-color: #475569; }
-        .lq-kpi-ico {
-            width: 32px; height: 32px; border-radius: 7px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.9rem; flex-shrink: 0;
-        }
-        .lq-kpi.blue  .lq-kpi-ico { background: rgba(21,101,192,0.22); color: #60a5fa; }
-        .lq-kpi.amber .lq-kpi-ico { background: rgba(217,119,6,0.22);  color: #fbbf24; }
-        .lq-kpi.green .lq-kpi-ico { background: rgba(26,122,74,0.22);  color: #4ade80; }
-        .lq-kpi.slate .lq-kpi-ico { background: rgba(71,85,105,0.22);  color: #94a3b8; }
-        .lq-kpi-lbl { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-bottom: 1px; }
-        .lq-kpi-val { font-family: 'Montserrat', sans-serif; font-size: 1.65rem; font-weight: 900; color: #fff; line-height: 1; }
 
-        /* ── COLUMNS ── */
+        .lq-kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .lq-kpi.blue   { border-left: 4px solid var(--blue); }
+        .lq-kpi.amber  { border-left: 4px solid var(--amber); }
+        .lq-kpi.green  { border-left: 4px solid var(--green); }
+        .lq-kpi.slate  { border-left: 4px solid #64748b; }
+
+        .lq-kpi-ico {
+            width: 42px; height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .lq-kpi.blue .lq-kpi-ico   { background: rgba(33,150,243,0.15); color: var(--blue); }
+        .lq-kpi.amber .lq-kpi-ico  { background: rgba(255,171,64,0.15); color: var(--amber); }
+        .lq-kpi.green .lq-kpi-ico  { background: rgba(0,230,118,0.15); color: var(--green); }
+        .lq-kpi.slate .lq-kpi-ico  { background: rgba(100,116,139,0.15); color: #94a3b8; }
+
+        .lq-kpi-info { flex: 1; }
+        .lq-kpi-lbl {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .lq-kpi-val {
+            font-family: var(--font-display);
+            font-size: 38px;
+            line-height: 1;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* ==================== COLUMNS ==================== */
         .lq-cols {
             flex: 1;
-            display: grid; grid-template-columns: repeat(4,1fr);
-            gap: 8px; padding: 0 14px 8px;
-            min-height: 0; overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1.15fr;
+            gap: 10px;
+            padding: 0 20px 14px;
+            overflow: hidden;
+            min-height: 0;
         }
+
         .lq-col {
-            background: #112240; border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.07);
-            display: flex; flex-direction: column;
-            overflow: hidden; min-height: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
+
         .lq-col-hd {
-            flex-shrink: 0; padding: 7px 10px;
-            display: flex; align-items: center; gap: 7px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
-        .lq-col-hd.new    { background: rgba(21,101,192,0.12); }
-        .lq-col-hd.queue  { background: rgba(217,119,6,0.12); }
-        .lq-col-hd.assist { background: rgba(26,122,74,0.12); }
-        .lq-col-hd.done   { background: rgba(71,85,105,0.12); }
-        .lq-col-ttl { font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
-        .lq-col-hd.new    .lq-col-ttl { color: #60a5fa; }
-        .lq-col-hd.queue  .lq-col-ttl { color: #fbbf24; }
-        .lq-col-hd.assist .lq-col-ttl { color: #4ade80; }
-        .lq-col-hd.done   .lq-col-ttl { color: #94a3b8; }
-        .lq-cnt { margin-left: auto; font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; color: #fff; }
-        .lq-col-hd.new    .lq-cnt { background: #1565c0; }
-        .lq-col-hd.queue  .lq-cnt { background: #d97706; }
-        .lq-col-hd.assist .lq-cnt { background: #1a7a4a; }
-        .lq-col-hd.done   .lq-cnt { background: #475569; }
+
+        .lq-col-hd.new    { border-bottom-color: var(--amber); }
+        .lq-col-hd.queue  { border-bottom-color: var(--blue); }
+        .lq-col-hd.assist { border-bottom-color: var(--green); }
+        .lq-col-hd.done   { border-bottom-color: #64748b; }
+
+        .lq-col-ttl {
+            font-family: var(--font-display);
+            font-size: 17px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .lq-col.new .lq-col-ttl    { color: var(--amber); }
+        .lq-col.queue .lq-col-ttl  { color: var(--blue); }
+        .lq-col.assist .lq-col-ttl { color: var(--green); }
+        .lq-col.done .lq-col-ttl   { color: #94a3b8; }
+
+        .lq-cnt {
+            margin-left: auto;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .lq-col.new .lq-cnt    { background: rgba(255,171,64,0.2); color: var(--amber); }
+        .lq-col.queue .lq-cnt  { background: rgba(33,150,243,0.2); color: var(--blue); }
+        .lq-col.assist .lq-cnt { background: rgba(0,230,118,0.2); color: var(--green); }
+        .lq-col.done .lq-cnt   { background: rgba(148,163,184,0.2); color: #94a3b8; }
+
         .lq-col-bd {
-            flex: 1; overflow-y: auto; padding: 7px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.08) transparent;
+            scrollbar-color: var(--border-strong) transparent;
         }
-        .lq-col-bd::-webkit-scrollbar { width: 3px; }
-        .lq-col-bd::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 
-        /* ── TICKET ── */
+        .lq-col-bd::-webkit-scrollbar { width: 4px; }
+        .lq-col-bd::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+        /* Ticket Card */
         .tk {
-            background: #0d1b2e;
-            border: 1px solid rgba(255,255,255,0.07);
-            border-left: 3px solid #334155;
-            border-radius: 5px; padding: 7px 9px; margin-bottom: 5px;
+            background: var(--bg-highlight);
+            border: 1px solid var(--border);
+            border-left: 4px solid #64748b;
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
         }
-        .tk.urgent { border-left-color: #ef4444; background: rgba(239,68,68,0.05); }
-        .tk.inqueue { border-left-color: #d97706; }
-        .tk.active  { border-left-color: #22c55e; }
-        .tk.done    { border-left-color: #475569; }
-        .tk-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-        .tk-ctrl { font-family: 'Courier New', monospace; font-size: 0.72rem; font-weight: 700; color: #93c5fd; background: rgba(147,197,253,0.1); padding: 1px 6px; border-radius: 3px; }
-        .tk-urg { font-size: 0.55rem; font-weight: 700; color: #fca5a5; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.25); padding: 1px 5px; border-radius: 20px; display: inline-flex; align-items: center; gap: 2px; }
-        .tk-row { font-size: 0.63rem; color: #94a3b8; margin-bottom: 2px; display: flex; gap: 4px; }
-        .tk-k { color: #475569; min-width: 64px; flex-shrink: 0; font-size: 0.6rem; }
-        .tk-v { color: #cbd5e1; font-weight: 600; }
-        .tk-time { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.58rem; color: #475569; display: flex; align-items: center; gap: 3px; }
-        .lq-empty { text-align: center; padding: 20px 8px; color: #334155; }
-        .lq-empty i { font-size: 1.2rem; display: block; margin-bottom: 5px; }
-        .lq-empty p { font-size: 0.65rem; margin: 0; }
 
-        /* ── FOOTER ── */
+        .tk:hover { background: #1a2330; border-color: var(--border-strong); }
+
+        .tk.urgent { border-left-color: var(--red); background: rgba(255,61,61,0.08); }
+        .tk.inqueue { border-left-color: var(--amber); }
+        .tk.active { border-left-color: var(--green); }
+        .tk.done { border-left-color: #64748b; }
+
+        .tk-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .tk-ctrl {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .tk-urg {
+            background: var(--red);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 3px;
+            letter-spacing: 1px;
+        }
+
+        .tk-row {
+            font-size: 13px;
+            margin-bottom: 3px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tk-k {
+            color: var(--text-secondary);
+            min-width: 78px;
+            font-weight: 600;
+        }
+
+        .tk-v {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .tk-time {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-size: 12.5px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        .lq-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .lq-empty i { font-size: 2.2rem; margin-bottom: 12px; opacity: 0.4; }
+
+        /* Footer */
         .lq-footer {
-            flex-shrink: 0; height: 24px;
-            background: #070e1a;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex; align-items: center; justify-content: center;
-            gap: 8px; font-size: 0.58rem; color: #334155;
+            height: 32px;
+            background: #0a0f17;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            gap: 8px;
         }
     </style>
 </head>
 <body>
 <div class="lq-wrap">
-
     <!-- HEADER -->
     <header class="lq-header">
-        <div class="lq-logos">
-            <img src="{% static 'images/BAGONG_PILIPINAS_LOGO.png' %}" alt="">
-            <img src="{% static 'images/DOH_LOGO.png' %}" alt="">
+        <div class="lq-brand">
+            <img src="{% static 'images/CHD4A.png' %}" alt="CHD4A">
+            <div class="lq-brand-text">
+                <span class="lq-brand-sup">DOH CHD CALABARZON</span>
+                <span class="lq-brand-main">IT HELPDESK</span>
+            </div>
         </div>
-        <div class="lq-vdiv"></div>
-        <div class="lq-agency">
-            <span class="lq-agency-sub">Republic of the Philippines · Department of Health</span>
-            <div class="lq-agency-line"></div>
-            <span class="lq-agency-name">Calabarzon Center for Health Development</span>
-        </div>
-        <div class="lq-center">
-            <span class="lq-badge">LIVE</span>
-            <span class="lq-htitle">IT Helpdesk Queue Monitor</span>
-        </div>
+
+        <div class="lq-title">LIVE SERVICE QUEUE MONITOR</div>
+
         <div class="lq-right">
-            <div class="lq-dt" id="datetime-display">Loading...</div>
-            <div class="lq-live"><span class="lq-dot"></span>Live</div>
+            <span class="lq-clock" id="live-clock">00:00:00</span>
+            <div class="live-pill">
+                <span class="live-dot"></span>
+                LIVE
+            </div>
         </div>
-        <img src="{% static 'images/CHD4A.png' %}" alt="" class="lq-logo-r">
     </header>
 
     <!-- KPI STRIP -->
     <div class="lq-kpis">
         <div class="lq-kpi blue">
             <div class="lq-kpi-ico"><i class="bi bi-inbox-fill"></i></div>
-            <div><div class="lq-kpi-lbl">New Requests</div><div class="lq-kpi-val" id="kpi-new">0</div></div>
+            <div class="lq-kpi-info">
+                <div class="lq-kpi-lbl">New Requests</div>
+                <div class="lq-kpi-val" id="kpi-new">0</div>
+            </div>
         </div>
         <div class="lq-kpi amber">
             <div class="lq-kpi-ico"><i class="bi bi-hourglass-split"></i></div>
-            <div><div class="lq-kpi-lbl">In Queue</div><div class="lq-kpi-val" id="kpi-queue">0</div></div>
+            <div class="lq-kpi-info">
+                <div class="lq-kpi-lbl">In Queue</div>
+                <div class="lq-kpi-val" id="kpi-queue">0</div>
+            </div>
         </div>
         <div class="lq-kpi green">
             <div class="lq-kpi-ico"><i class="bi bi-person-check-fill"></i></div>
-            <div><div class="lq-kpi-lbl">Currently Assisting</div><div class="lq-kpi-val" id="kpi-assisting">0</div></div>
+            <div class="lq-kpi-info">
+                <div class="lq-kpi-lbl">Currently Assisting</div>
+                <div class="lq-kpi-val" id="kpi-assisting">0</div>
+            </div>
         </div>
         <div class="lq-kpi slate">
             <div class="lq-kpi-ico"><i class="bi bi-check-circle-fill"></i></div>
-            <div><div class="lq-kpi-lbl">Completed Today</div><div class="lq-kpi-val" id="kpi-completed">0</div></div>
+            <div class="lq-kpi-info">
+                <div class="lq-kpi-lbl">Completed Today</div>
+                <div class="lq-kpi-val" id="kpi-completed">0</div>
+            </div>
         </div>
     </div>
 
     <!-- 4 COLUMNS -->
     <div class="lq-cols">
-        <div class="lq-col">
+        <!-- New Requests -->
+        <div class="lq-col new">
             <div class="lq-col-hd new">
-                <i class="bi bi-inbox-fill" style="font-size:0.75rem;color:#60a5fa;"></i>
+                <i class="bi bi-inbox-fill"></i>
                 <span class="lq-col-ttl">New Requests</span>
                 <span class="lq-cnt" id="cnt-new">0</span>
             </div>
             <div class="lq-col-bd" id="new-requests">
-                <div class="lq-empty"><i class="bi bi-inbox"></i><p>No new requests.</p></div>
+                <div class="lq-empty"><i class="bi bi-inbox"></i><p>No new requests yet</p></div>
             </div>
         </div>
 
-        <div class="lq-col">
+        <!-- In Queue -->
+        <div class="lq-col queue">
             <div class="lq-col-hd queue">
-                <i class="bi bi-hourglass-split" style="font-size:0.75rem;color:#fbbf24;"></i>
+                <i class="bi bi-hourglass-split"></i>
                 <span class="lq-col-ttl">In Queue</span>
                 <span class="lq-cnt" id="cnt-queue">0</span>
             </div>
             <div class="lq-col-bd" id="accepted">
-                <div class="lq-empty"><i class="bi bi-check2-all"></i><p>Queue is clear.</p></div>
+                <div class="lq-empty"><i class="bi bi-hourglass"></i><p>Queue is clear</p></div>
             </div>
         </div>
 
-        <div class="lq-col">
+        <!-- Assisting -->
+        <div class="lq-col assist">
             <div class="lq-col-hd assist">
-                <i class="bi bi-person-check-fill" style="font-size:0.75rem;color:#4ade80;"></i>
-                <span class="lq-col-ttl">Assisting</span>
+                <i class="bi bi-person-check-fill"></i>
+                <span class="lq-col-ttl">Now Serving</span>
                 <span class="lq-cnt" id="cnt-assisting">0</span>
             </div>
             <div class="lq-col-bd" id="assisting">
-                <div class="lq-empty"><i class="bi bi-person-workspace"></i><p>No active assistance.</p></div>
+                <div class="lq-empty"><i class="bi bi-person-workspace"></i><p>No active sessions</p></div>
             </div>
         </div>
 
-        <div class="lq-col">
+        <!-- Completed -->
+        <div class="lq-col done">
             <div class="lq-col-hd done">
-                <i class="bi bi-check-circle-fill" style="font-size:0.75rem;color:#94a3b8;"></i>
+                <i class="bi bi-check-circle-fill"></i>
                 <span class="lq-col-ttl">Recently Completed</span>
                 <span class="lq-cnt" id="cnt-completed">0</span>
             </div>
             <div class="lq-col-bd" id="completed">
-                <div class="lq-empty"><i class="bi bi-archive"></i><p>No completions yet.</p></div>
+                <div class="lq-empty"><i class="bi bi-archive"></i><p>No completions yet</p></div>
             </div>
         </div>
     </div>
 
     <!-- FOOTER -->
     <div class="lq-footer">
-        <span class="lq-dot"></span>
-        Auto-updates every 8 seconds &nbsp;·&nbsp; DOH CHD CALABARZON IT Helpdesk Live Queue Monitor
+        <span class="live-dot" style="background:#00e676; animation:blink 1.8s infinite;"></span>
+        Auto-sync every 8 seconds • DOH CHD CALABARZON IT Helpdesk Live Queue
     </div>
-
 </div>
 
 <script>
-    function updateDateTime() {
-        document.getElementById('datetime-display').innerHTML =
-            new Date().toLocaleString('en-PH', {
-                timeZone: 'Asia/Manila',
-                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-                hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
-            });
+    function updateClock() {
+        const el = document.getElementById('live-clock');
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        el.textContent = `${h}:${m}:${s}`;
     }
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+    setInterval(updateClock, 1000);
+    updateClock();
 
     function tk(t, type) {
-        const urgent = t.is_urgent;
-        let cls = { new:'', accepted:'inqueue', assisting:'active', completed:'done' }[type] || '';
+        const urgent = t.is_urgent || false;
+        let cls = '';
         if (urgent) cls = 'urgent';
+        else if (type === 'accepted') cls = 'inqueue';
+        else if (type === 'assisting') cls = 'active';
+        else if (type === 'completed') cls = 'done';
 
-        const urgBadge = urgent
-            ? `<span class="tk-urg"><i class="bi bi-exclamation-triangle-fill"></i>URGENT</span>` : '';
+        const urgBadge = urgent ? `<span class="tk-urg">URGENT</span>` : '';
 
-        let time = '';
-        if (type === 'new' || type === 'accepted')
-            time = `<div class="tk-time"><i class="bi bi-clock"></i>Waiting ${t.elapsed||'N/A'}</div>`;
-        else if (type === 'assisting')
-            time = `<div class="tk-time"><i class="bi bi-person-check"></i>${t.assisted_by||'Unknown'} · Since ${t.assisted_at||'N/A'}</div>`;
-        else if (type === 'completed')
-            time = `<div class="tk-time"><i class="bi bi-check-circle"></i>${t.completed_at||'N/A'}</div>`;
+        let timeHTML = '';
+        if (type === 'new' || type === 'accepted') {
+            timeHTML = `<div class="tk-time"><i class="bi bi-clock"></i> Waiting ${t.elapsed || '—'}</div>`;
+        } else if (type === 'assisting') {
+            timeHTML = `<div class="tk-time"><i class="bi bi-person-check"></i> ${t.assisted_by || 'Staff'} • Since ${t.assisted_at || '—'}</div>`;
+        } else if (type === 'completed') {
+            timeHTML = `<div class="tk-time"><i class="bi bi-check-circle"></i> ${t.completed_at || '—'}</div>`;
+        }
 
-        return `<div class="tk ${cls}">
-            <div class="tk-top"><span class="tk-ctrl">${t.control_no}</span>${urgBadge}</div>
-            <div class="tk-row"><span class="tk-k">Division</span><span class="tk-v">${t.division_section||'N/A'}</span></div>
-            <div class="tk-row"><span class="tk-k">Requested by</span><span class="tk-v">${t.requested_by||'N/A'}</span></div>
-            ${time}
-        </div>`;
+        return `
+            <div class="tk ${cls}">
+                <div class="tk-top">
+                    <span class="tk-ctrl">${t.control_no || '—'}</span>
+                    ${urgBadge}
+                </div>
+                <div class="tk-row"><span class="tk-k">Division</span><span class="tk-v">${t.division_section || 'N/A'}</span></div>
+                <div class="tk-row"><span class="tk-k">Requested by</span><span class="tk-v">${t.requested_by || 'N/A'}</span></div>
+                ${timeHTML}
+            </div>
+        `;
     }
 
     function empty(icon, msg) {
@@ -295,25 +547,50 @@
 
     async function refresh() {
         try {
-            const res  = await fetch("{% url 'live_queue' %}", { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const res = await fetch("{% url 'live_queue' %}", {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
             if (!res.ok) return;
             const d = await res.json();
 
-            const nr = d.new_requests?.length||0, ac = d.accepted?.length||0,
-                  as = d.assisting?.length||0,    cp = d.completed?.length||0;
+            const nr = d.new_requests?.length || 0;
+            const ac = d.accepted?.length || 0;
+            const as = d.assisting?.length || 0;
+            const cp = d.completed?.length || 0;
 
-            ['kpi-new','cnt-new'].forEach(id => document.getElementById(id).textContent = nr);
-            ['kpi-queue','cnt-queue'].forEach(id => document.getElementById(id).textContent = ac);
-            ['kpi-assisting','cnt-assisting'].forEach(id => document.getElementById(id).textContent = as);
-            ['kpi-completed','cnt-completed'].forEach(id => document.getElementById(id).textContent = cp);
+            // Update KPIs and counters
+            document.getElementById('kpi-new').textContent = nr;
+            document.getElementById('cnt-new').textContent = nr;
 
-            document.getElementById('new-requests').innerHTML = nr ? d.new_requests.map(t=>tk(t,'new')).join('') : empty('inbox','No new requests.');
-            document.getElementById('accepted').innerHTML     = ac ? d.accepted.map(t=>tk(t,'accepted')).join('') : empty('check2-all','Queue is clear.');
-            document.getElementById('assisting').innerHTML    = as ? d.assisting.map(t=>tk(t,'assisting')).join('') : empty('person-workspace','No active assistance.');
-            document.getElementById('completed').innerHTML    = cp ? d.completed.map(t=>tk(t,'completed')).join('') : empty('archive','No completions yet.');
-        } catch(e) { console.error(e); }
+            document.getElementById('kpi-queue').textContent = ac;
+            document.getElementById('cnt-queue').textContent = ac;
+
+            document.getElementById('kpi-assisting').textContent = as;
+            document.getElementById('cnt-assisting').textContent = as;
+
+            document.getElementById('kpi-completed').textContent = cp;
+            document.getElementById('cnt-completed').textContent = cp;
+
+            // Render columns
+            document.getElementById('new-requests').innerHTML = 
+                nr ? d.new_requests.map(t => tk(t, 'new')).join('') : empty('inbox', 'No new requests yet');
+
+            document.getElementById('accepted').innerHTML = 
+                ac ? d.accepted.map(t => tk(t, 'accepted')).join('') : empty('hourglass', 'Queue is clear');
+
+            document.getElementById('assisting').innerHTML = 
+                as ? d.assisting.map(t => tk(t, 'assisting')).join('') : empty('person-workspace', 'No active sessions');
+
+            document.getElementById('completed').innerHTML = 
+                cp ? d.completed.map(t => tk(t, 'completed')).join('') : empty('archive', 'No completions yet');
+
+        } catch (e) {
+            console.error('Queue refresh error:', e);
+        }
     }
 
+    // Initial load + auto refresh
     refresh();
     setInterval(refresh, 8000);
 </script>

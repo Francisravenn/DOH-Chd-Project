@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DOH IT Helpdesk admin_base{% endblock %}</title>
+    <title>{% block title %}DOH IT Helpdesk - Admin{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -47,15 +47,27 @@
             flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0;
         }
         .navbar-center img { height: 40px; width: 40px; object-fit: contain; flex-shrink: 0; }
+        .navbar-vdivider {
+            width: 1.5px;
+            height: 32px;
+            background: rgba(255,255,255,0.45);
+            flex-shrink: 0;
+            margin: 0 4px;
+        }
         .navbar-text-block { display: flex; flex-direction: column; min-width: 0; }
-        .navbar-top-row { display: flex; align-items: center; gap: 5px; }
+        .navbar-top-row {
+            display: flex; align-items: center; gap: 5px;
+            margin-bottom: 2px;
+        }
         .navbar-republic, .navbar-dept {
             font-family: 'Open Sans', sans-serif;
             font-size: 0.62rem; color: rgba(255,255,255,0.8);
             letter-spacing: 0.04em; white-space: nowrap;
         }
         .navbar-dot { color: rgba(255,255,255,0.5); font-size: 0.62rem; }
-        .navbar-divider-line { width: 340px; height: 1px; background: rgba(255,255,255,0.4); margin: 2px 0; }
+
+        /* REMOVED: .navbar-divider-line — no horizontal line */
+
         .navbar-chd {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.82rem; font-weight: 800; color: #fff;
@@ -71,7 +83,7 @@
             background: #1565c0; border: 1.5px solid rgba(255,255,255,0.6);
             color: #fff; font-family: 'Montserrat', sans-serif;
             font-size: 0.72rem; font-weight: 700; padding: 5px 14px; border-radius: 6px;
-            cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s; white-space: nowrap;
+            cursor: pointer; letter-spacing: 0.04em; transition: background 0.2s;
         }
         .btn-logout:hover { background: #0d47a1; }
         .navbar-right-logo { height: 38px; width: 38px; object-fit: contain; border-radius: 50%; flex-shrink: 0; }
@@ -106,6 +118,7 @@
         }
         .sidebar-hidden .sidebar-brand-text,
         .sidebar-hidden .sidebar-brand-badge { opacity: 0; width: 0; overflow: hidden; pointer-events: none; }
+
         .sidebar-inner { flex: 1; padding: 16px 12px; overflow: hidden; }
         .sidebar-section-label {
             font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 800;
@@ -123,6 +136,7 @@
         .sidebar .nav-link i { font-size: 1rem; width: 18px; text-align: center; flex-shrink: 0; }
         .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.12); }
         .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.2); font-weight: 700; }
+
         .sidebar-footer {
             padding: 12px 16px; font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 700;
             color: rgba(255,255,255,0.35); letter-spacing: 0.08em; text-transform: uppercase;
@@ -144,9 +158,7 @@
             z-index: 2000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); pointer-events: none;
         }
 
-        /* ── PAGE CONTENT ──
-           ✅ No z-index set here — prevents creating a stacking context
-              that would trap child modals below other fixed elements */
+        /* ── PAGE CONTENT ── */
         .page-content {
             position: fixed;
             top: 63px; left: var(--sidebar-width); right: var(--right-panel-width); bottom: 0;
@@ -155,9 +167,7 @@
         }
         .sidebar-hidden .page-content { left: var(--sidebar-collapsed-width); }
 
-        /* ── RIGHT PANEL ──
-           ✅ z-index 1026: above page content, but Bootstrap modals (1055)
-              and backdrops (1050) will always render above this */
+        /* ── RIGHT PANEL ── */
         .right-panel {
             position: fixed; top: var(--navbar-height); right: 0; bottom: 0;
             width: var(--right-panel-width); background: #f8f9fa;
@@ -224,8 +234,34 @@
         .rp-empty p { font-size: 0.75rem; margin: 0; line-height: 1.5; }
 
         .card { border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-        .table thead { background-color: #212529; color: white; }
         .table-responsive { overflow-x: auto; }
+
+        /* ── MODAL STYLES ── */
+        .tkt-modal-header {
+            background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
+            border-bottom: 3px solid #f9c900;
+            padding: 16px 24px;
+        }
+        .tkt-modal-footer {
+            background: #f8fafd;
+            border-top: 1px solid #e2eaf4;
+            padding: 16px 24px;
+        }
+        .btn-mfooter-cancel {
+            background: transparent; color: #6c757d;
+            border: 1.5px solid #dee2e6; border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem; font-weight: 700; padding: 8px 18px;
+            cursor: pointer;
+        }
+        .btn-mfooter-cancel:hover { background: #f8f9fa; }
+        .btn-mfooter-warn {
+            background: #d97706; color: #fff; border: none;
+            border-radius: 8px; font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem; font-weight: 700; padding: 8px 20px;
+            cursor: pointer;
+        }
+        .btn-mfooter-warn:hover { background: #92400e; }
 
         @media (max-width: 991.98px) {
             .sidebar { transform: translateX(-100%); }
@@ -247,13 +283,14 @@
     <div class="navbar-center">
         <img src="{% static 'images/BAGONG_PILIPINAS_LOGO.png' %}" alt="Bagong Pilipinas">
         <img src="{% static 'images/DOH_LOGO.png' %}" alt="DOH Logo">
+        <div class="navbar-vdivider"></div>
         <div class="navbar-text-block">
             <div class="navbar-top-row">
                 <span class="navbar-republic">Republic of the Philippines</span>
                 <span class="navbar-dot">·</span>
                 <span class="navbar-dept">Department of Health</span>
             </div>
-            <div class="navbar-divider-line"></div>
+            <!-- NO divider line -->
             <span class="navbar-chd">Calabarzon Center for Health Development</span>
         </div>
     </div>
@@ -346,6 +383,38 @@
     {% endif %}
 </div>
 
+<!-- Logout Modal -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+            <div class="tkt-modal-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-box-arrow-right text-white fs-4"></i>
+                    <div>
+                        <div style="font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; font-family:'Montserrat',sans-serif; color:rgba(255,255,255,0.75);">
+                            Security
+                        </div>
+                        <h5 class="text-white mb-0 fw-bold" style="font-family:'Montserrat',sans-serif; font-size:1.1rem;">
+                            Confirm Logout
+                        </h5>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="font-family:'Open Sans',sans-serif; font-size:0.95rem; color:#2c3e50; background:#f8fafd;">
+                <p class="mb-1">Are you sure you want to logout from the system?</p>
+                <p class="text-muted mb-0" style="font-size:0.88rem;">You will need to log in again to access the admin panel.</p>
+            </div>
+            <div class="tkt-modal-footer">
+                <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">No, Cancel</button>
+                <a href="{% url 'admin_logout' %}" class="btn-mfooter-warn" style="text-decoration:none;">
+                    <i class="bi bi-box-arrow-right me-2"></i>Yes, Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Confirm Complete Modal -->
 <div class="modal fade" id="confirmCompleteModal" tabindex="-1" aria-labelledby="confirmCompleteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -368,27 +437,11 @@
     {% block content %}{% endblock %}
 </div>
 
-<!-- Logout Modal -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">Are you sure you want to logout?</div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <a href="{% url 'admin_logout' %}" class="btn btn-danger">Yes, Logout</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-/* ── Sidebar toggle ── */
 document.addEventListener('DOMContentLoaded', function () {
+
+    /* Sidebar Toggle */
     const body = document.body;
     const hamburger = document.getElementById('sidebarToggle');
     if (hamburger) {
@@ -396,28 +449,22 @@ document.addEventListener('DOMContentLoaded', function () {
             body.classList.toggle('sidebar-hidden');
         });
     }
-});
 
-/* ── ✅ THE REAL FIX: relocate ALL modals to <body> directly.
-   Modals buried inside .page-content inherit its stacking context
-   and get clipped by the right panel. Moving them to <body> root
-   makes them render at the true top level, above everything. ── */
-document.addEventListener('DOMContentLoaded', function () {
+    /* Move all modals to body root */
     document.querySelectorAll('.modal').forEach(function (modal) {
         if (modal.parentElement !== document.body) {
             document.body.appendChild(modal);
         }
     });
-});
 
-/* ── Mark as Completed ── */
-let currentCompleteFormId = null;
-document.addEventListener('DOMContentLoaded', function () {
+    /* Mark as Completed */
+    let currentCompleteFormId = null;
     document.querySelectorAll('.complete-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             currentCompleteFormId = 'completeForm' + this.getAttribute('data-ticket-id');
         });
     });
+
     const confirmBtn = document.getElementById('confirmCompleteBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
@@ -429,37 +476,31 @@ document.addEventListener('DOMContentLoaded', function () {
             if (modal) modal.hide();
         });
     }
-});
 
-/* ── Elapsed timer ── */
-function updateAssistingTimers() {
-    document.querySelectorAll('.timer').forEach(timerEl => {
-        const assistedAtStr = timerEl.dataset.assistedAt;
-        if (!assistedAtStr) return;
-        const assistedAt = new Date(assistedAtStr);
-        const now = new Date();
-        const diffSeconds = Math.floor((now - assistedAt) / 1000);
-        const seconds = diffSeconds % 60;
-        const minutes = Math.floor(diffSeconds / 60) % 60;
-        const hours   = Math.floor(diffSeconds / 3600) % 24;
-        const days    = Math.floor(diffSeconds / 86400);
-        let display, colorClass;
-        if (days >= 1) {
-            display = `${days}d${hours > 0 ? ` ${hours}h` : ''}`; colorClass = 'text-danger fw-bold';
-        } else if (hours >= 1) {
-            display = `${hours}h ${minutes}m`; colorClass = 'text-danger fw-bold';
-        } else if (minutes >= 10) {
-            display = `${minutes}m ${seconds}s`; colorClass = 'text-danger fw-bold';
-        } else if (minutes >= 5) {
-            display = `${minutes}m ${seconds}s`; colorClass = 'text-warning fw-bold';
-        } else {
-            display = `${minutes}m ${seconds}s`; colorClass = 'text-success';
-        }
-        timerEl.innerHTML = `<span class="${colorClass}">${display}</span>`;
-    });
-}
-setInterval(updateAssistingTimers, 1000);
-updateAssistingTimers();
+    /* Elapsed Timer */
+    function updateAssistingTimers() {
+        document.querySelectorAll('.timer').forEach(timerEl => {
+            const assistedAtStr = timerEl.dataset.assistedAt;
+            if (!assistedAtStr) return;
+            const assistedAt = new Date(assistedAtStr);
+            const now = new Date();
+            const diffSeconds = Math.floor((now - assistedAt) / 1000);
+            const seconds = diffSeconds % 60;
+            const minutes = Math.floor(diffSeconds / 60) % 60;
+            const hours   = Math.floor(diffSeconds / 3600) % 24;
+            const days    = Math.floor(diffSeconds / 86400);
+
+            let display = '';
+            if (days >= 1) display = `${days}d ${hours}h`;
+            else if (hours >= 1) display = `${hours}h ${minutes}m`;
+            else display = `${minutes}m ${seconds}s`;
+
+            timerEl.innerHTML = `<span class="text-danger fw-bold">${display}</span>`;
+        });
+    }
+    setInterval(updateAssistingTimers, 1000);
+    updateAssistingTimers();
+});
 </script>
 
 {% block extra_js %}{% endblock %}

@@ -23,57 +23,54 @@
             background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
             border-bottom: 3px solid #f9c900;
             padding: 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+
         .doh-header .container-fluid {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 24px;
         }
+
         .header-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .header-left img {
             height: 52px;
             width: 52px;
             object-fit: contain;
             flex-shrink: 0;
         }
+
+        .header-vdivider {
+            width: 1.5px;
+            height: 40px;
+            background: rgba(255,255,255,0.45);
+            flex-shrink: 0;
+            margin: 0 4px;
+        }
+
         .header-text-block {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 0;
         }
+
         .header-top-row {
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-        .header-republic {
             font-family: 'Open Sans', sans-serif;
             font-size: 0.68rem;
             color: rgba(255,255,255,0.85);
             letter-spacing: 0.04em;
+            margin-bottom: 2px;
         }
-        .header-dot {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.68rem;
-        }
-        .header-dept {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.68rem;
-            color: rgba(255,255,255,0.85);
-            letter-spacing: 0.04em;
-        }
-        .header-divider {
-            width: 500px;
-            height: 2px;
-            background: rgba(255,255,255,0.45);
-            margin: 3px 0;
-        }
+
         .header-chd {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.95rem;
@@ -83,11 +80,36 @@
             text-transform: uppercase;
             line-height: 1.2;
         }
+
         .header-right img {
             height: 52px;
             width: 52px;
             object-fit: contain;
             flex-shrink: 0;
+        }
+
+        /* Shimmer Bar */
+        .nav-shimmer-bar {
+            height: 4px;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-shimmer-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -60%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(249, 201, 0, 0.9), transparent);
+            animation: travelLine 3s linear infinite;
+        }
+
+        @keyframes travelLine {
+            0% { left: -60%; }
+            100% { left: 160%; }
         }
 
         /* ── MAIN ── */
@@ -100,18 +122,15 @@
             background: linear-gradient(135deg, #ddeeff 0%, #eaf2ff 50%, #d6e8fb 100%);
             position: relative;
         }
-        .main-wrapper::before { display: none; }
-        .main-wrapper::after { display: none; }
 
-        /* ── CARD ── */
         .login-card {
             display: flex;
             width: 100%;
-            max-width: 780px;
-            min-height: 420px;
-            border-radius: 16px;
+            max-width: 860px;
+            min-height: 480px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(21, 101, 192, 0.18), 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 32px 80px rgba(10,35,81,0.15), 0 0 0 1px rgba(200,219,244,0.5);
             position: relative;
             z-index: 1;
         }
@@ -119,92 +138,86 @@
         /* ── LEFT PANEL ── */
         .card-left {
             flex: 1.1;
-            background: linear-gradient(145deg, #1565c0 0%, #1e88e5 55%, #42a5f5 100%);
-            padding: 48px 40px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 40%, #0057a8 100%);
+            padding: 36px 48px 36px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            align-items: center;
+            justify-content: flex-start;
             position: relative;
             overflow: hidden;
         }
-        .card-left::before {
+
+        .card-left::before, .card-left::after {
             content: '';
             position: absolute;
-            top: -60px;
-            right: -60px;
-            width: 220px;
-            height: 220px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.12);
         }
-        .card-left::after {
-            content: '';
-            position: absolute;
-            bottom: -80px;
-            left: -40px;
-            width: 260px;
-            height: 260px;
+        .card-left::before { top: -120px; right: -100px; width: 350px; height: 350px; }
+        .card-left::after { bottom: -60px; left: 30%; width: 200px; height: 200px; }
+
+        .left-logo {
+            position: relative; z-index: 2;
+            width: 160px; height: 160px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.35);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            margin-bottom: 24px;
         }
-        .card-left .circle-mid {
-            position: absolute;
-            bottom: 40px;
-            right: -30px;
-            width: 150px;
-            height: 150px;
+        .left-logo img {
+            width: 100%; height: 100%;
+            object-fit: cover;
             border-radius: 50%;
-            background: rgba(255,255,255,0.07);
         }
+
+        .welcome-block {
+            position: relative; z-index: 2;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            margin-top: 10px;
+        }
+
         .left-system-label {
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            letter-spacing: 0.18em;
-            color: rgba(255,255,255,0.75);
+            letter-spacing: 0.12em;
+            color: #bae6fd;
             text-transform: uppercase;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 20px;
         }
+
         .left-welcome {
             font-family: 'Montserrat', sans-serif;
-            font-size: 3rem;
+            font-size: 4rem;
             font-weight: 900;
             color: #ffffff;
-            line-height: 1.05;
-            margin-bottom: 8px;
-            position: relative;
-            z-index: 1;
+            line-height: 0.95;
+            letter-spacing: -0.02em;
+            margin-bottom: 18px;
         }
-        .left-welcome span { color: #f9c900; }
+        .left-welcome span { color: #00d4ff; }
 
-        /* animated moving line below Welcome - no visible track */
         .welcome-underline {
-            height: 2px;
-            background: transparent;
+            width: 60%; height: 3px;
+            background: rgb(72 127 180 / 10%);
+            position: relative; overflow: hidden;
             border-radius: 2px;
             margin-bottom: 18px;
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 260px;
-            overflow: hidden;
         }
         .welcome-underline::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -40%;
-            width: 40%;
-            height: 100%;
-            background: #4dd9f0;
-            border-radius: 2px;
-            animation: move-line 2.4s linear infinite;
-        }
-        @keyframes move-line {
-            0%   { left: -40%; }
-            100% { left: 110%; }
+            content: ''; position: absolute;
+            top: 0; left: -30%; width: 30%; height: 100%;
+            background: linear-gradient(90deg, transparent, #00d4ff, #ffffff, #38bdf8, transparent);
+            animation: travelLine 1.5s linear infinite;
         }
 
         .left-desc {
@@ -212,80 +225,106 @@
             font-size: 0.82rem;
             color: rgba(255,255,255,0.75);
             line-height: 1.6;
-            position: relative;
-            z-index: 1;
             max-width: 240px;
+            text-align: center;
+        }
+
+        .left-footer {
+            position: relative; z-index: 2;
+            width: 100%;
+            text-align: left;
+            font-size: 0.82rem;
+            color: rgba(186,230,253,0.75);
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.5;
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.12);
         }
 
         /* ── RIGHT PANEL ── */
         .card-right {
-            flex: 1;
+            width: 380px; min-width: 380px;
             background: #ffffff;
-            padding: 48px 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 44px;
+            position: relative; overflow: hidden;
+            border: 2px solid #bae6fd;
         }
+        .card-right::after {
+            content: ''; position: absolute;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: #e0f7ff;
+            bottom: -80px; right: -80px;
+        }
+
         .secure-label {
+            align-self: flex-start;
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            color: #1565c0;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: #38bdf8;
             margin-bottom: 6px;
+            display: flex; align-items: center; gap: 7px;
         }
         .secure-label::before {
-            content: '—';
-            color: #1565c0;
+            content: ''; display: block;
+            width: 14px; height: 2px;
+            background: #00d4ff; border-radius: 2px;
         }
+
         .sign-in-title {
+            align-self: flex-start;
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: #1a1a2e;
+            font-size: 1.75rem; font-weight: 900;
+            color: #0c2340;
             margin-bottom: 28px;
         }
-        .form-label-custom {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #555;
-            margin-bottom: 6px;
-            display: block;
+
+        .alert-login {
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            color: #c0392b;
+            margin-bottom: 20px;
+            width: 100%;
         }
+
+        .form-label-custom {
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 0.05em; text-transform: uppercase;
+            color: #1e6091;
+            margin-bottom: 7px; display: block;
+        }
+
         .form-control-custom {
             width: 100%;
-            border: 1.5px solid #dde3ed;
-            border-radius: 8px;
-            padding: 11px 14px;
+            border: 1.5px solid #bae6fd;
+            border-radius: 10px;
+            padding: 11px 16px;
             font-family: 'Open Sans', sans-serif;
-            font-size: 0.9rem;
-            color: #1a1a2e;
-            background: #f7f9fc;
+            font-size: 0.88rem;
+            color: #0c2340;
+            background: #f0faff;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
             margin-bottom: 18px;
         }
         .form-control-custom:focus {
-            border-color: #1565c0;
-            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(61,139,253,0.15);
             background: #fff;
         }
-        .form-control-custom::placeholder {
-            color: #b0bac8;
-            font-size: 0.85rem;
-        }
 
-        /* ── PASSWORD TOGGLE ── */
         .password-wrapper {
             position: relative;
             margin-bottom: 18px;
+            width: 100%;
         }
         .password-wrapper .form-control-custom {
             margin-bottom: 0;
@@ -293,141 +332,69 @@
         }
         .toggle-pw {
             position: absolute;
-            right: 12px;
-            top: 50%;
+            right: 12px; top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            color: #b0bac8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-            line-height: 1;
+            background: none; border: none;
+            cursor: pointer; padding: 4px;
+            color: #b0c4d8;
         }
-        .toggle-pw:hover { color: #1565c0; }
-        .toggle-pw svg { width: 18px; height: 18px; display: block; }
 
         .btn-signin {
             width: 100%;
-            background: linear-gradient(90deg, #1565c0, #1e88e5);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 13px;
+            padding: 12px;
+            background: linear-gradient(135deg, #0057a8, #0ea5e9);
+            border: none; border-radius: 10px;
+            color: #fff; font-size: 0.9rem; font-weight: 700;
+            letter-spacing: 0.06em; cursor: pointer;
+            margin-top: 4px; margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(26,86,219,0.35);
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-            margin-top: 4px;
         }
-        .btn-signin:hover { opacity: 0.92; transform: translateY(-1px); }
-        .btn-signin:active { transform: translateY(0); }
 
         .auth-note {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.72rem;
-            color: #999;
-            text-align: center;
-            margin-top: 18px;
-            line-height: 1.6;
-        }
-        .alert-login {
-            background: #fff0f0;
-            border: 1px solid #ffcccc;
-            border-radius: 6px;
-            padding: 10px 14px;
-            font-size: 0.82rem;
-            color: #c0392b;
-            margin-bottom: 16px;
+            text-align: center; font-size: 11px;
+            color: #64a4c4; line-height: 1.65;
+            width: 100%;
         }
 
         /* ── FOOTER ── */
         .doh-footer {
+            flex-shrink: 0;
+            height: 40px;
             background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 100%);
             border-top: 3px solid #f9c900;
-            padding: 12px 0;
-        }
-        .doh-footer .container-fluid {
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
-            flex-wrap: wrap;
-            gap: 6px;
+            padding: 0 28px;
         }
+
         .footer-left {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.8);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.78rem; font-weight: 700;
+            color: #fff; letter-spacing: 0.03em;
         }
-        .footer-left strong { color: #ffffff; }
+        .footer-left span { font-weight: 400; color: rgba(255,255,255,0.6); }
+
         .footer-right {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.55);
-            text-align: right;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.72rem; font-weight: 400;
+            color: rgba(255,255,255,0.55); letter-spacing: 0.02em;
         }
 
-        /* ── FLOATING BACKGROUND CIRCLES ── */
-        .bg-circle {
-            position: fixed;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
+        /* Background Circles */
+        .bg-circle { 
+            position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; 
         }
-        .bg-circle-1 {
-            top: 5%;
-            left: -110px;
-            width: 380px;
-            height: 380px;
-            background: rgba(21, 101, 192, 0.1);
-        }
-        .bg-circle-2 {
-            bottom: 3%;
-            right: -80px;
-            width: 300px;
-            height: 300px;
-            background: rgba(21, 101, 192, 0.09);
-        }
+        .bg-circle-1 { top: 5%; left: -110px; width: 380px; height: 380px; background: rgba(21,101,192,0.1); }
+        .bg-circle-2 { bottom: 3%; right: -80px; width: 300px; height: 300px; background: rgba(21,101,192,0.09); }
 
-        /* ── RESPONSIVE: TABLET (641px – 991px) ── */
-        @media (max-width: 991px) and (min-width: 641px) {
-            .login-card { max-width: 680px; }
-            .left-welcome { font-size: 2.3rem; }
-            .card-left { padding: 40px 30px; flex: 1; }
-            .card-right { padding: 40px 30px; }
-            .header-chd { font-size: 0.88rem; }
-            .header-left img, .header-right img { height: 44px; width: 44px; }
-            .sign-in-title { font-size: 1.6rem; }
-        }
-
-        /* ── RESPONSIVE: MOBILE (max 640px) ── */
-        @media (max-width: 640px) {
-            .login-card {
-                flex-direction: column;
-                max-width: 95vw;
-                min-height: unset;
-                border-radius: 14px;
-            }
-            .card-left { padding: 28px 28px 24px; flex: unset; }
-            .left-welcome { font-size: 2.2rem; }
-            .left-desc { max-width: 100%; }
-            .card-right { padding: 28px 28px 32px; }
-            .sign-in-title { font-size: 1.5rem; margin-bottom: 20px; }
-            .doh-header .container-fluid { padding: 0 12px; gap: 8px; }
-            .header-chd { font-size: 0.72rem; }
-            .header-republic, .header-dept { font-size: 0.58rem; }
-            .header-left img, .header-right img { height: 36px; width: 36px; }
-            .header-left { gap: 8px; }
-            .header-divider { width: 100%; }
-            .main-wrapper { padding: 20px 12px; align-items: flex-start; }
-            .doh-footer .container-fluid { justify-content: center; text-align: center; }
-            .footer-right { text-align: center; width: 100%; }
+        /* Responsive */
+        @media (max-width: 680px) {
+            .login-card { flex-direction: column; height: auto; max-width: 95vw; }
+            .card-left { padding: 32px 24px; align-items: center; }
+            .card-right { width: 100%; min-width: unset; padding: 32px 24px; }
+            .left-welcome { font-size: 2.8rem; }
+            .header-vdivider { height: 28px; }
         }
     </style>
 </head>
@@ -439,14 +406,12 @@
             <div class="header-left">
                 <img src="{% static 'images/BAGONG_PILIPINAS_LOGO.png' %}" alt="Bagong Pilipinas">
                 <img src="{% static 'images/DOH_LOGO.png' %}" alt="DOH Logo">
+                <div class="header-vdivider"></div>
                 <div class="header-text-block">
                     <div class="header-top-row">
-                        <span class="header-republic">Republic of the Philippines</span>
-                        <span class="header-dot">·</span>
-                        <span class="header-dept">Department of Health</span>
+                        Republic of the Philippines &nbsp;·&nbsp; Department of Health
                     </div>
-                    <div class="header-divider"></div>
-                    <span class="header-chd">Calabarzon Center for Health Development</span>
+                    <span class="header-chd">CALABARZON CENTER FOR HEALTH DEVELOPMENT</span>
                 </div>
             </div>
             <div class="header-right">
@@ -455,25 +420,40 @@
         </div>
     </header>
 
+    <!-- Shimmer Bar -->
+    <div class="nav-shimmer-bar"></div>
+
     <!-- MAIN -->
     <div class="main-wrapper">
         <div class="bg-circle bg-circle-1"></div>
         <div class="bg-circle bg-circle-2"></div>
+
         <div class="login-card">
 
-            <!-- LEFT -->
+            <!-- LEFT PANEL -->
             <div class="card-left">
-                <div class="circle-mid"></div>
-                <p class="left-system-label">CHD-Calabarzon IT Request System</p>
-                <h1 class="left-welcome">Welcome<span>.</span></h1>
-                <div class="welcome-underline"></div>
-                <p class="left-desc">DOH CHD CALABARZON IT Request System. Authorized personnel only.</p>
+                <div class="welcome-block">
+                    <p class="left-system-label">CHD-CALABARZON IT REQUEST SYSTEM</p>
+
+                    <div class="left-logo">
+                        <img src="{% static 'images/CHD4A.png' %}" alt="CHD CALABARZON">
+                    </div>
+
+                    <h1 class="left-welcome">Welcome</h1>
+                    <div class="welcome-underline"></div>
+                    <p class="left-desc">Super Admin Portal<br> IT Helpdesk System</p>
+                </div>
+
+                <div class="left-footer">
+                    Authorized Personnel Only.<br>
+                    Super Administrator Access
+                </div>
             </div>
 
-            <!-- RIGHT -->
+            <!-- RIGHT PANEL -->
             <div class="card-right">
-                <p class="secure-label">Secure Access</p>
-                <h2 class="sign-in-title">Super Admin Login</h2>
+                <p class="secure-label">— SECURE ACCESS</p>
+                <h2 class="sign-in-title">Sign In</h2>
 
                 {% if form.errors %}
                 <div class="alert-login">
@@ -487,24 +467,22 @@
                     {% endfor %}
                 {% endif %}
 
-                <form method="post">
+                <form method="post" style="width:100%;position:relative;z-index:1;">
                     {% csrf_token %}
 
-                    <label class="form-label-custom" for="id_username">Username</label>
-                    <input type="text" name="username" required
+                    <label class="form-label-custom" for="id_username">USERNAME</label>
+                    <input type="text" name="username" id="id_username"
                            class="form-control-custom"
-                           id="id_username"
                            placeholder="Enter username"
-                           autocomplete="username">
+                           autocomplete="username" required>
 
-                    <label class="form-label-custom" for="id_password">Password</label>
+                    <label class="form-label-custom" for="id_password">PASSWORD</label>
                     <div class="password-wrapper">
-                        <input type="password" name="password" required
+                        <input type="password" name="password" id="id_password"
                                class="form-control-custom"
-                               id="id_password"
-                               placeholder="••••••••"
-                               autocomplete="current-password">
-                        <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
+                               placeholder="••••••••••••"
+                               autocomplete="current-password" required>
+                        <button type="button" class="toggle-pw" id="togglePw">
                             <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -519,8 +497,8 @@
                 </form>
 
                 <p class="auth-note">
-                    <strong>Authorized Personnel Only.</strong><br>
-                    This system is for DOH CHD CALABARZON staff. Unauthorized access is strictly prohibited.
+                    <strong>Super Administrator Access Only.</strong><br>
+                    This system is restricted to DOH CHD CALABARZON authorized personnel.
                 </p>
             </div>
 
@@ -529,14 +507,8 @@
 
     <!-- FOOTER -->
     <footer class="doh-footer">
-        <div class="container-fluid">
-            <div class="footer-left">
-                <strong>DOH CHD CALABARZON</strong> — IT Helpdesk System
-            </div>
-            <div class="footer-right">
-                © {% now "Y" %} Department of Health · For official use only. All rights reserved.
-            </div>
-        </div>
+        <div class="footer-left">DOH CHD CALABARZON <span>— IT Helpdesk System</span></div>
+        <div class="footer-right">© {% now "Y" %} Department of Health · For official use only. All rights reserved.</div>
     </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -548,10 +520,9 @@
 
     togglePw.addEventListener('click', function () {
         const isHidden = pwInput.type === 'password';
-        pwInput.type             = isHidden ? 'text'    : 'password';
-        iconEye.style.display    = isHidden ? 'none'    : 'block';
-        iconEyeOff.style.display = isHidden ? 'block'   : 'none';
-        this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+        pwInput.type = isHidden ? 'text' : 'password';
+        iconEye.style.display = isHidden ? 'none' : 'block';
+        iconEyeOff.style.display = isHidden ? 'block' : 'none';
     });
 </script>
 </body>

@@ -1,31 +1,41 @@
 {% extends "super_admin_base.html" %}
 {% block title %}Reports — DOH IT Helpdesk{% endblock %}
 
-{% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{# ── Tell the base to remove padding/overflow so our flex layout fills the container ── #}
+{% block page_content_class %}page-flush{% endblock %}
+
+{% block extra_css %}
 <style>
     /* ── Page Layout ── */
-    .rep-wrap { background: #f0f4f8; min-height: 100vh; }
+    /* rep-wrap fills the page-content container exactly — no min-height:100vh which fights the fixed parent */
+    .rep-wrap {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #f0f4f8;
+        overflow: hidden; /* children handle their own scroll */
+    }
 
-    /* ── Top Bar ── */
+    /* ── Top Bar ──
+       Removed position:sticky (broken inside fixed page-content).
+       It sits at the top naturally since rep-wrap is a flex column. */
     .rep-topbar {
         background: #fff;
         border-bottom: 1px solid #e2eaf4;
-        padding: 0 28px;
+        padding: 0 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
         flex-wrap: wrap;
-        min-height: 56px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
+        min-height: 52px;
+        flex-shrink: 0; /* never squish */
+        z-index: 10;
     }
     .rep-tabs { display: flex; gap: 0; align-items: center; }
     .rep-tab {
-        padding: 16px 18px;
-        font-size: 0.8rem;
+        padding: 14px 16px;
+        font-size: 0.78rem;
         font-weight: 600;
         color: #8a9bb0;
         cursor: pointer;
@@ -42,99 +52,96 @@
     }
     .rep-tab:hover { color: #1565c0; }
     .rep-tab.active { color: #1565c0; border-bottom-color: #1565c0; background: #f0f6ff; }
-    .rep-export-btns { display: flex; gap: 8px; align-items: center; }
+    .rep-export-btns { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
     .btn-export-pdf {
         background: #c0392b; color: #fff; border: none;
-        padding: 7px 16px; border-radius: 6px; font-size: 0.78rem;
+        padding: 7px 14px; border-radius: 6px; font-size: 0.76rem;
         font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
         transition: background 0.15s; text-decoration: none;
     }
     .btn-export-pdf:hover { background: #a93226; color: #fff; }
     .btn-export-excel {
         background: #1a7a4a; color: #fff; border: none;
-        padding: 7px 16px; border-radius: 6px; font-size: 0.78rem;
+        padding: 7px 14px; border-radius: 6px; font-size: 0.76rem;
         font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
         transition: background 0.15s; text-decoration: none;
     }
     .btn-export-excel:hover { background: #155f3a; color: #fff; }
-    .btn-export-print {
-        background: #fff; color: #495057; border: 1px solid #dee2e6;
-        padding: 7px 16px; border-radius: 6px; font-size: 0.78rem;
-        font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
-        transition: all 0.15s;
-    }
-    .btn-export-print:hover { background: #f0f4f8; }
 
-    /* ── Filter Bar ── */
+    /* ── Filter Bar ──
+       Also flex-shrink:0 so it never collapses. */
     .rep-filters {
         background: #fff;
         border-bottom: 1px solid #e2eaf4;
-        padding: 12px 28px;
+        padding: 10px 24px;
         display: flex;
         align-items: flex-end;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
+        flex-shrink: 0;
     }
     .rep-filter-group { display: flex; flex-direction: column; gap: 4px; }
-    .rep-filter-label { font-size: 0.65rem; font-weight: 700; color: #8a9bb0; text-transform: uppercase; letter-spacing: 0.08em; }
+    .rep-filter-label {
+        font-size: 0.62rem; font-weight: 700; color: #8a9bb0;
+        text-transform: uppercase; letter-spacing: 0.08em;
+    }
     .rep-filter-group input,
     .rep-filter-group select {
         border: 1px solid #dee2e6; border-radius: 6px;
-        padding: 7px 12px; font-size: 0.82rem; color: #343a40;
+        padding: 6px 10px; font-size: 0.8rem; color: #343a40;
         background: #fff; outline: none; transition: border 0.15s;
-        min-width: 140px;
+        min-width: 130px;
     }
     .rep-filter-group input:focus,
     .rep-filter-group select:focus { border-color: #1565c0; }
     .btn-generate {
         background: linear-gradient(135deg, #1565c0, #1e88e5);
-        color: #fff; border: none; padding: 8px 20px;
-        border-radius: 6px; font-size: 0.82rem; font-weight: 700;
+        color: #fff; border: none; padding: 7px 18px;
+        border-radius: 6px; font-size: 0.8rem; font-weight: 700;
         cursor: pointer; transition: opacity 0.15s; align-self: flex-end;
         display: flex; align-items: center; gap: 6px;
     }
     .btn-generate:hover { opacity: 0.9; }
-    .btn-clear {
+    .btn-clear, .btn-reset {
         background: #fff; color: #6c757d;
-        border: 1px solid #dee2e6; padding: 8px 14px;
-        border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+        border: 1px solid #dee2e6; padding: 7px 12px;
+        border-radius: 6px; font-size: 0.76rem; font-weight: 600;
         cursor: pointer; transition: all 0.15s; align-self: flex-end;
     }
-    .btn-clear:hover { background: #f0f4f8; }
-    .btn-reset {
-        background: #fff; color: #6c757d;
-        border: 1px solid #dee2e6; padding: 8px 14px;
-        border-radius: 6px; font-size: 0.78rem; font-weight: 600;
-        cursor: pointer; transition: all 0.15s; align-self: flex-end;
-    }
-    .btn-reset:hover { background: #f0f4f8; }
+    .btn-clear:hover, .btn-reset:hover { background: #f0f4f8; }
 
-    /* ── Content ── */
-    .rep-content { padding: 24px 28px; }
+    /* ── Scrollable content area ──
+       This is the ONLY part that scrolls. Everything above is fixed-height. */
+    .rep-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 24px;
+    }
 
     /* ── Report Header ── */
-    .rep-heading { margin-bottom: 20px; }
-    .rep-heading h2 { font-size: 1.3rem; font-weight: 800; color: #1a2a3a; margin-bottom: 3px; }
-    .rep-heading p { font-size: 0.82rem; color: #8a9bb0; margin: 0; }
+    .rep-heading { margin-bottom: 18px; }
+    .rep-heading h2 { font-size: 1.2rem; font-weight: 800; color: #1a2a3a; margin-bottom: 3px; }
+    .rep-heading p { font-size: 0.8rem; color: #8a9bb0; margin: 0; }
     .rep-heading-row { display: flex; justify-content: space-between; align-items: flex-start; }
     .rep-period-badge {
-        font-size: 0.72rem; color: #8a9bb0; font-weight: 600;
+        font-size: 0.7rem; color: #8a9bb0; font-weight: 600;
         padding: 4px 10px; border-radius: 20px;
         background: #f0f4f8; border: 1px solid #e2eaf4;
+        white-space: nowrap;
     }
 
     /* ── KPI Cards ── */
     .rep-kpi-grid {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 12px;
+        margin-bottom: 18px;
     }
     .rep-kpi-card {
         background: #fff;
         border-radius: 10px;
         border: 1px solid #e8f0fa;
-        padding: 16px 18px;
+        padding: 14px 16px;
         border-top: 3px solid #e8f0fa;
         transition: box-shadow 0.15s;
     }
@@ -145,46 +152,38 @@
     .rep-kpi-card.orange { border-top-color: #d97706; }
     .rep-kpi-card.red    { border-top-color: #c0392b; }
     .rep-kpi-card.gold   { border-top-color: #f9c900; }
-    .rep-kpi-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9bb0; margin-bottom: 6px; }
-    .rep-kpi-val { font-size: 1.9rem; font-weight: 900; color: #1a2a3a; line-height: 1; margin-bottom: 4px; }
-    .rep-kpi-sub { font-size: 0.7rem; color: #adb5bd; }
+    .rep-kpi-label { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9bb0; margin-bottom: 6px; }
+    .rep-kpi-val { font-size: 1.7rem; font-weight: 900; color: #1a2a3a; line-height: 1; margin-bottom: 4px; }
+    .rep-kpi-sub { font-size: 0.67rem; color: #adb5bd; }
 
     /* ── Chart Cards ── */
-    .rep-chart-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 20px; }
+    .rep-chart-row { display: grid; grid-template-columns: 1fr 320px; gap: 14px; margin-bottom: 18px; }
     .rep-card {
         background: #fff; border-radius: 10px; border: 1px solid #e8f0fa;
-        padding: 20px; overflow: hidden;
+        padding: 18px; overflow: hidden;
     }
     .rep-card-title {
-        font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em;
+        font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
         text-transform: uppercase; color: #5a7a9a;
-        margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+        margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
     }
     .rep-card-title i { color: #1565c0; }
 
     /* ── Division Bars ── */
-    .div-bar-row {
-        display: flex; align-items: center; gap: 10px;
-        margin-bottom: 10px;
-    }
-    .div-bar-label { font-size: 0.78rem; font-weight: 600; color: #343a40; min-width: 130px; }
-    .div-bar-track { flex: 1; background: #f0f4f8; border-radius: 20px; height: 14px; overflow: hidden; }
+    .div-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .div-bar-label { font-size: 0.78rem; font-weight: 600; color: #343a40; min-width: 160px; }
+    .div-bar-track { flex: 1; background: #f0f4f8; border-radius: 20px; height: 14px; overflow: hidden; position: relative; }
     .div-bar-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
-    .div-bar-count {
-        font-size: 0.72rem; font-weight: 700; color: #fff;
-        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    }
-    .div-bar-track { position: relative; }
     .div-bar-pct { font-size: 0.72rem; color: #8a9bb0; min-width: 36px; text-align: right; }
 
     /* ── Equipment Table ── */
     .equip-table { width: 100%; border-collapse: collapse; }
     .equip-table thead th {
-        font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em;
+        font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em;
         text-transform: uppercase; color: #8a9bb0; padding: 8px 12px;
         border-bottom: 2px solid #e8f0fa; text-align: left;
     }
-    .equip-table tbody td { padding: 10px 12px; font-size: 0.82rem; color: #343a40; border-bottom: 1px solid #f5f8ff; }
+    .equip-table tbody td { padding: 9px 12px; font-size: 0.8rem; color: #343a40; border-bottom: 1px solid #f5f8ff; }
     .equip-table tbody tr:last-child td { border-bottom: none; }
     .equip-table tbody tr:hover td { background: #f8faff; }
     .rank-badge {
@@ -203,61 +202,57 @@
     /* ── Admin Performance ── */
     .admin-perf-table { width: 100%; border-collapse: collapse; }
     .admin-perf-table thead th {
-        font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em;
+        font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em;
         text-transform: uppercase; color: #8a9bb0; padding: 8px 12px;
         border-bottom: 2px solid #e8f0fa; text-align: left;
     }
-    .admin-perf-table tbody td { padding: 12px 12px; font-size: 0.82rem; color: #343a40; border-bottom: 1px solid #f5f8ff; }
+    .admin-perf-table tbody td { padding: 10px 12px; font-size: 0.8rem; color: #343a40; border-bottom: 1px solid #f5f8ff; }
     .admin-perf-table tbody tr:last-child td { border-bottom: none; }
     .admin-perf-table tbody tr:hover td { background: #f8faff; }
     .admin-username { font-weight: 700; color: #1a2a3a; }
-    .admin-id { font-size: 0.7rem; color: #adb5bd; }
-    .perf-bar-track { width: 120px; height: 6px; background: #f0f4f8; border-radius: 3px; display: inline-block; vertical-align: middle; }
+    .admin-id { font-size: 0.68rem; color: #adb5bd; }
+    .perf-bar-track { width: 100px; height: 6px; background: #f0f4f8; border-radius: 3px; display: inline-block; vertical-align: middle; }
     .perf-bar-fill { height: 100%; background: #1565c0; border-radius: 3px; }
     .avg-time-chip {
         display: inline-flex; align-items: center; gap: 4px;
         background: #f0f4f8; border-radius: 20px;
-        padding: 3px 10px; font-size: 0.72rem; font-weight: 600; color: #5a7a9a;
+        padding: 3px 10px; font-size: 0.7rem; font-weight: 600; color: #5a7a9a;
     }
 
     /* ── Response Time ── */
-    .resp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .resp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .resp-card {
         background: #fff; border-radius: 10px; border: 1px solid #e8f0fa;
-        padding: 18px; border-top: 3px solid #e8f0fa;
+        padding: 16px; border-top: 3px solid #e8f0fa;
     }
     .resp-card.fast   { border-top-color: #1a7a4a; }
     .resp-card.avg    { border-top-color: #1565c0; }
     .resp-card.slow   { border-top-color: #c0392b; }
     .resp-card.sla    { border-top-color: #f9c900; }
-    .resp-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9bb0; margin-bottom: 6px; }
-    .resp-val { font-size: 1.8rem; font-weight: 900; color: #1a2a3a; margin-bottom: 4px; }
-    .resp-sub { font-size: 0.7rem; color: #adb5bd; }
+    .resp-label { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #8a9bb0; margin-bottom: 6px; }
+    .resp-val { font-size: 1.6rem; font-weight: 900; color: #1a2a3a; margin-bottom: 4px; }
+    .resp-sub { font-size: 0.68rem; color: #adb5bd; }
 
     /* ── Section Title ── */
-    .sec-title {
-        display: flex; align-items: center; gap: 10px;
-        margin-bottom: 16px;
-    }
-    .sec-title h3 { font-size: 1rem; font-weight: 800; color: #1a2a3a; margin: 0; }
+    .sec-title { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .sec-title h3 { font-size: 0.95rem; font-weight: 800; color: #1a2a3a; margin: 0; }
     .sec-title .badge {
         background: #e8f0fa; color: #1565c0;
-        font-size: 0.7rem; font-weight: 700; padding: 3px 10px;
-        border-radius: 20px;
+        font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
     }
 
-    /* Donut legend */
-    .donut-legend { margin-top: 16px; }
+    /* ── Donut Legend ── */
+    .donut-legend { margin-top: 14px; }
     .donut-legend-row {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 6px 0; border-bottom: 1px solid #f5f8ff; font-size: 0.8rem;
+        padding: 5px 0; border-bottom: 1px solid #f5f8ff; font-size: 0.78rem;
     }
     .donut-legend-row:last-child { border-bottom: none; }
     .donut-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     .donut-legend-left { display: flex; align-items: center; color: #343a40; }
     .donut-legend-right { font-weight: 700; color: #1a2a3a; }
 
-    /* Bar colors cycle */
+    /* ── Bar color palette ── */
     .bar-c-0 { background: #1565c0; }
     .bar-c-1 { background: #1a7a4a; }
     .bar-c-2 { background: #f9c900; }
@@ -267,14 +262,20 @@
     .bar-c-6 { background: #e74c3c; }
     .bar-c-7 { background: #2ecc71; }
 
-    /* Tab content panes */
+    /* ── Tab panes ── */
     .rep-pane { display: none; }
     .rep-pane.active { display: block; }
 
-    @media (max-width: 1200px) {
+    /* ── Spacing helpers ── */
+    .mb-section { margin-bottom: 18px; }
+
+    @media (max-width: 1300px) {
         .rep-kpi-grid { grid-template-columns: repeat(3, 1fr); }
         .rep-chart-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
         .resp-grid { grid-template-columns: repeat(2, 1fr); }
+        .rep-kpi-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media print {
         .rep-topbar, .rep-filters { position: static; }
@@ -289,20 +290,19 @@
     <!-- ── Top Bar ── -->
     <div class="rep-topbar">
         <div class="rep-tabs">
-            <span class="rep-label" style="font-size:0.72rem;font-weight:700;color:#8a9bb0;margin-right:12px;white-space:nowrap;">REPORT TYPE:</span>
-            <button class="rep-tab" data-tab="daily" onclick="switchTab('daily',this)">📅 Daily Summary</button>
-            <button class="rep-tab" data-tab="weekly" onclick="switchTab('weekly',this)">📊 Weekly Performance</button>
-            <button class="rep-tab active" data-tab="monthly" onclick="switchTab('monthly',this)">📈 Monthly Analytics</button>
-            <button class="rep-tab" data-tab="annual" onclick="switchTab('annual',this)">🗓️ Annual Overview</button>
+            <span style="font-size:0.7rem;font-weight:700;color:#8a9bb0;margin-right:10px;white-space:nowrap;">REPORT TYPE:</span>
+            <button class="rep-tab" data-tab="daily"   onclick="switchTab('daily',this)">📅 Daily</button>
+            <button class="rep-tab" data-tab="weekly"  onclick="switchTab('weekly',this)">📊 Weekly</button>
+            <button class="rep-tab active" data-tab="monthly" onclick="switchTab('monthly',this)">📈 Monthly</button>
+            <button class="rep-tab" data-tab="annual"  onclick="switchTab('annual',this)">🗓️ Annual</button>
         </div>
         <div class="rep-export-btns">
             <a href="?export=pdf&date_from={{ date_from }}&date_to={{ date_to }}&division={{ selected_division }}&status={{ selected_status }}&admin_filter={{ selected_admin }}" class="btn-export-pdf">
-                <i class="bi bi-file-earmark-pdf-fill"></i> Export PDF
+                <i class="bi bi-file-earmark-pdf-fill"></i> PDF
             </a>
             <a href="?export=excel&date_from={{ date_from }}&date_to={{ date_to }}&division={{ selected_division }}&status={{ selected_status }}&admin_filter={{ selected_admin }}" class="btn-export-excel">
-                <i class="bi bi-file-earmark-excel-fill"></i> Export Excel
+                <i class="bi bi-file-earmark-excel-fill"></i> Excel
             </a>
-
         </div>
     </div>
 
@@ -363,38 +363,41 @@
         </div>
     </form>
 
-    <!-- ── Main Content ── -->
+    <!-- ── Scrollable Content ── -->
     <div class="rep-content">
 
         {% if selected_admin_obj %}
-        <!-- Selected Admin Banner -->
-        <div style="background:linear-gradient(135deg,#0d2353,#1565c0);border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;border-left:4px solid #f9c900;">
-            <div style="width:42px;height:42px;border-radius:50%;background:rgba(249,201,0,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#f9c900;flex-shrink:0;">
+        <!-- Admin Banner -->
+        <div style="background:linear-gradient(135deg,#0d2353,#1565c0);border-radius:10px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;border-left:4px solid #f9c900;">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(249,201,0,0.2);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#f9c900;flex-shrink:0;">
                 {{ selected_admin_obj.get_full_name|default:selected_admin_obj.username|slice:":1"|upper }}
             </div>
             <div>
-                <div style="font-size:0.65rem;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;font-weight:700;">Viewing Report For</div>
-                <div style="font-size:1rem;font-weight:800;color:#fff;">{{ selected_admin_obj.get_full_name|default:selected_admin_obj.username }} <span style="color:rgba(255,255,255,0.5);font-weight:400;font-size:0.85rem;">@{{ selected_admin_obj.username }}</span></div>
+                <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;font-weight:700;">Viewing Report For</div>
+                <div style="font-size:0.95rem;font-weight:800;color:#fff;">
+                    {{ selected_admin_obj.get_full_name|default:selected_admin_obj.username }}
+                    <span style="color:rgba(255,255,255,0.5);font-weight:400;font-size:0.82rem;">@{{ selected_admin_obj.username }}</span>
+                </div>
             </div>
             <div style="margin-left:auto;display:flex;gap:20px;">
                 <div style="text-align:center;">
-                    <div style="font-size:1.4rem;font-weight:900;color:#f9c900;">{{ admin_total_handled }}</div>
-                    <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Tickets Handled</div>
+                    <div style="font-size:1.3rem;font-weight:900;color:#f9c900;">{{ admin_total_handled }}</div>
+                    <div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Handled</div>
                 </div>
                 <div style="text-align:center;">
-                    <div style="font-size:1.4rem;font-weight:900;color:#2ecc71;">{{ admin_total_completed }}</div>
-                    <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Completed</div>
+                    <div style="font-size:1.3rem;font-weight:900;color:#2ecc71;">{{ admin_total_completed }}</div>
+                    <div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Completed</div>
                 </div>
                 <div style="text-align:center;">
-                    <div style="font-size:1.4rem;font-weight:900;color:#fff;">{{ admin_perf_rate }}%</div>
-                    <div style="font-size:0.62rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Performance</div>
+                    <div style="font-size:1.3rem;font-weight:900;color:#fff;">{{ admin_perf_rate }}%</div>
+                    <div style="font-size:0.6rem;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;">Performance</div>
                 </div>
             </div>
-            <a href="?" style="color:rgba(255,255,255,0.5);font-size:0.75rem;text-decoration:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.2);padding:4px 12px;border-radius:20px;">✕ Clear</a>
+            <a href="?" style="color:rgba(255,255,255,0.5);font-size:0.72rem;text-decoration:none;flex-shrink:0;border:1px solid rgba(255,255,255,0.2);padding:4px 12px;border-radius:20px;">✕ Clear</a>
         </div>
         {% endif %}
 
-        <!-- MONTHLY TAB (default) -->
+        <!-- ══ MONTHLY TAB (default active) ══ -->
         <div class="rep-pane active" id="pane-monthly">
             <div class="rep-heading">
                 <div class="rep-heading-row">
@@ -446,11 +449,11 @@
             <div class="rep-chart-row">
                 <div class="rep-card">
                     <div class="rep-card-title"><i class="bi bi-calendar3"></i> TICKETS OVER TIME</div>
-                    <canvas id="ticketsChart" height="120"></canvas>
+                    <canvas id="ticketsChart" height="110"></canvas>
                 </div>
                 <div class="rep-card">
                     <div class="rep-card-title"><i class="bi bi-pie-chart-fill"></i> STATUS BREAKDOWN</div>
-                    <canvas id="donutChart" height="160"></canvas>
+                    <canvas id="donutChart" height="150"></canvas>
                     <div class="donut-legend">
                         <div class="donut-legend-row">
                             <span class="donut-legend-left"><span class="donut-dot" style="background:#d97706"></span>New</span>
@@ -473,37 +476,29 @@
             </div>
 
             <!-- Requests by Division -->
-            <div class="rep-card" style="margin-bottom:20px;">
+            <div class="rep-card mb-section">
                 <div class="rep-card-title"><i class="bi bi-bar-chart-fill"></i> REQUESTS BY DIVISION / SECTION</div>
                 {% if division_data %}
                     {% for row in division_data %}
                     <div class="div-bar-row">
-                        <div class="div-bar-label" style="font-size:0.8rem;min-width:160px;">{{ row.division }}</div>
-                        <div class="div-bar-track" style="flex:1;">
-                            <div class="div-bar-fill bar-c-{{ forloop.counter0|divisibleby:8 }}"
-                                 style="width:{{ row.pct }}%;background:{{ row.color }};height:14px;border-radius:20px;">
-                            </div>
+                        <div class="div-bar-label">{{ row.division }}</div>
+                        <div class="div-bar-track">
+                            <div class="div-bar-fill" style="width:{{ row.pct }}%;background:{{ row.color }};height:14px;border-radius:20px;"></div>
                         </div>
-                        <span style="font-size:0.75rem;font-weight:700;color:#fff;background:{{ row.color }};padding:1px 8px;border-radius:20px;min-width:28px;text-align:center;">{{ row.count }}</span>
+                        <span style="font-size:0.72rem;font-weight:700;color:#fff;background:{{ row.color }};padding:1px 8px;border-radius:20px;min-width:26px;text-align:center;">{{ row.count }}</span>
                         <span class="div-bar-pct">{{ row.pct }}%</span>
                     </div>
                     {% endfor %}
                 {% else %}
-                    {% if tickets_over_time.labels %}
-                    <div id="divBarsContainer"></div>
-                    {% else %}
-                    <p style="color:#adb5bd;font-size:0.82rem;text-align:center;padding:20px 0;">No division data available.</p>
-                    {% endif %}
+                    <p style="color:#adb5bd;font-size:0.8rem;text-align:center;padding:16px 0;">No division data available.</p>
                 {% endif %}
             </div>
 
             <!-- Equipment Type Analysis -->
-            <div class="rep-card" style="margin-bottom:20px;">
+            <div class="rep-card mb-section">
                 <div class="sec-title">
                     <h3>🖥️ Equipment Type Analysis</h3>
-                    {% if equipment_analysis %}
-                    <span class="badge">{{ equipment_analysis|length }} types</span>
-                    {% endif %}
+                    {% if equipment_analysis %}<span class="badge">{{ equipment_analysis|length }} types</span>{% endif %}
                 </div>
                 <table class="equip-table">
                     <thead>
@@ -532,14 +527,10 @@
                                         <div style="flex:1;background:#f0f4f8;border-radius:3px;height:6px;min-width:80px;">
                                             <div class="equip-bar" style="width:{{ eq.pct }}%;"></div>
                                         </div>
-                                        <span style="font-size:0.72rem;color:#8a9bb0;min-width:30px;">{{ eq.pct }}%</span>
+                                        <span style="font-size:0.7rem;color:#8a9bb0;min-width:30px;">{{ eq.pct }}%</span>
                                     </div>
                                 </td>
-                                <td>
-                                    {% if eq.urgent > 0 %}
-                                    <span class="urgent-count">⚠ {{ eq.urgent }}</span>
-                                    {% else %}—{% endif %}
-                                </td>
+                                <td>{% if eq.urgent > 0 %}<span class="urgent-count">⚠ {{ eq.urgent }}</span>{% else %}—{% endif %}</td>
                                 <td><span class="completed-count">{{ eq.completed }}</span></td>
                             </tr>
                             {% endfor %}
@@ -551,12 +542,10 @@
             </div>
 
             <!-- Admin Performance Stats -->
-            <div class="rep-card" style="margin-bottom:20px;">
+            <div class="rep-card mb-section">
                 <div class="sec-title">
                     <h3>👤 Admin Performance Stats</h3>
-                    {% if admin_performance %}
-                    <span class="badge">{{ admin_performance|length }} admin{% if admin_performance|length != 1 %}s{% endif %}</span>
-                    {% endif %}
+                    {% if admin_performance %}<span class="badge">{{ admin_performance|length }} admin{% if admin_performance|length != 1 %}s{% endif %}</span>{% endif %}
                 </div>
                 <table class="admin-perf-table">
                     <thead>
@@ -584,17 +573,11 @@
                                 </td>
                                 <td>{{ admin.handled }}</td>
                                 <td style="color:#1a7a4a;font-weight:700;">{{ admin.completed }}</td>
-                                <td>
-                                    <span class="avg-time-chip">
-                                        <i class="bi bi-clock"></i> {{ admin.avg_time }}
-                                    </span>
-                                </td>
+                                <td><span class="avg-time-chip"><i class="bi bi-clock"></i> {{ admin.avg_time }}</span></td>
                                 <td>
                                     <div style="display:flex;align-items:center;gap:8px;">
-                                        <div class="perf-bar-track">
-                                            <div class="perf-bar-fill" style="width:{{ admin.perf_pct }}%;"></div>
-                                        </div>
-                                        <span style="font-size:0.75rem;color:#8a9bb0;">{{ admin.perf_pct }}%</span>
+                                        <div class="perf-bar-track"><div class="perf-bar-fill" style="width:{{ admin.perf_pct }}%;"></div></div>
+                                        <span style="font-size:0.72rem;color:#8a9bb0;">{{ admin.perf_pct }}%</span>
                                     </div>
                                 </td>
                             </tr>
@@ -607,7 +590,7 @@
             </div>
 
             <!-- Response Time Metrics -->
-            <div style="margin-bottom:20px;">
+            <div class="mb-section">
                 <div class="sec-title"><h3>⏱ Response Time Metrics</h3></div>
                 <div class="resp-grid">
                     <div class="resp-card fast">
@@ -635,47 +618,47 @@
 
             <!-- Detailed Tickets Table -->
             {% if show_table %}
-            <div class="rep-card">
+            <div class="rep-card mb-section">
                 <div class="rep-card-title"><i class="bi bi-table"></i> DETAILED TICKET RECORDS</div>
                 <div style="overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
                         <thead>
                             <tr style="background:#1a3a6b;color:#fff;">
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Control No.</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Requested By</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Division</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Status</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Priority</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Date Filed</th>
-                                <th style="padding:10px 12px;text-align:left;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Nature of Request</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Control No.</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Requested By</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Division</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Status</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Priority</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Date Filed</th>
+                                <th style="padding:10px 12px;text-align:left;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Nature of Request</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for ticket in filtered_tickets %}
                             <tr style="border-bottom:1px solid #f0f4f8;{% if forloop.counter|divisibleby:2 %}background:#f8faff;{% endif %}">
-                                <td style="padding:9px 12px;font-weight:700;color:#1565c0;">{{ ticket.control_no }}</td>
-                                <td style="padding:9px 12px;">{{ ticket.requested_by|default:"N/A" }}</td>
-                                <td style="padding:9px 12px;font-size:0.75rem;">{{ ticket.department_division|default:"N/A" }}</td>
-                                <td style="padding:9px 12px;">
+                                <td style="padding:8px 12px;font-weight:700;color:#1565c0;">{{ ticket.control_no }}</td>
+                                <td style="padding:8px 12px;">{{ ticket.requested_by|default:"N/A" }}</td>
+                                <td style="padding:8px 12px;font-size:0.72rem;">{{ ticket.department_division|default:"N/A" }}</td>
+                                <td style="padding:8px 12px;">
                                     {% if ticket.status == 'completed' %}
-                                        <span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">Completed</span>
+                                        <span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;">Completed</span>
                                     {% elif ticket.status == 'assisting' %}
-                                        <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">Assisting</span>
+                                        <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;">Assisting</span>
                                     {% elif ticket.status == 'accepted' %}
-                                        <span style="background:#cffafe;color:#155e75;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">Accepted</span>
+                                        <span style="background:#cffafe;color:#155e75;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;">Accepted</span>
                                     {% else %}
-                                        <span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">Pending</span>
+                                        <span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;">Pending</span>
                                     {% endif %}
                                 </td>
-                                <td style="padding:9px 12px;">
+                                <td style="padding:8px 12px;">
                                     {% if ticket.is_urgent %}
-                                        <span style="color:#c0392b;font-weight:700;font-size:0.75rem;">⚠ URGENT</span>
+                                        <span style="color:#c0392b;font-weight:700;font-size:0.72rem;">⚠ URGENT</span>
                                     {% else %}
-                                        <span style="color:#adb5bd;font-size:0.75rem;">Normal</span>
+                                        <span style="color:#adb5bd;font-size:0.72rem;">Normal</span>
                                     {% endif %}
                                 </td>
-                                <td style="padding:9px 12px;font-size:0.75rem;color:#6c757d;">{{ ticket.created_at|date:"m/d/Y H:i" }}</td>
-                                <td style="padding:9px 12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ ticket.request_complaint }}">{{ ticket.request_complaint|truncatechars:80 }}</td>
+                                <td style="padding:8px 12px;font-size:0.72rem;color:#6c757d;">{{ ticket.created_at|date:"m/d/Y H:i" }}</td>
+                                <td style="padding:8px 12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ ticket.request_complaint }}">{{ ticket.request_complaint|truncatechars:80 }}</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="7" style="text-align:center;padding:20px;color:#adb5bd;">No tickets found.</td></tr>
@@ -687,7 +670,7 @@
             {% endif %}
         </div>
 
-        <!-- DAILY TAB -->
+        <!-- ══ DAILY TAB ══ -->
         <div class="rep-pane" id="pane-daily">
             <div class="rep-heading">
                 <h2>📅 Daily Summary Report</h2>
@@ -707,7 +690,7 @@
             </div>
         </div>
 
-        <!-- WEEKLY TAB -->
+        <!-- ══ WEEKLY TAB ══ -->
         <div class="rep-pane" id="pane-weekly">
             <div class="rep-heading">
                 <h2>📊 Weekly Performance Report</h2>
@@ -727,7 +710,7 @@
             </div>
         </div>
 
-        <!-- ANNUAL TAB -->
+        <!-- ══ ANNUAL TAB ══ -->
         <div class="rep-pane" id="pane-annual">
             <div class="rep-heading">
                 <h2>🗓️ Annual Overview Report</h2>
@@ -747,13 +730,13 @@
             </div>
         </div>
 
-    </div><!-- /rep-content -->
+    </div><!-- /rep-content (scrollable) -->
 </div><!-- /rep-wrap -->
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// ── Chart data from Django ──
 const chartLabels = {{ tickets_over_time.labels|safe }};
 const chartData   = {{ tickets_over_time.data|safe }};
 const statusData  = {
@@ -763,22 +746,14 @@ const statusData  = {
     urgent:    {{ status_breakdown.urgent }},
 };
 
-// ── Tickets Over Time (Line) ──
+// ── Tickets Over Time (Bar) ──
 const ctx1 = document.getElementById('ticketsChart');
 if (ctx1) {
     new Chart(ctx1, {
         type: 'bar',
         data: {
             labels: chartLabels,
-            datasets: [{
-                label: 'Tickets',
-                data: chartData,
-                backgroundColor: 'rgba(21,101,192,0.15)',
-                borderColor: '#1565c0',
-                borderWidth: 2,
-                borderRadius: 4,
-                fill: true,
-            }]
+            datasets: [{ label: 'Tickets', data: chartData, backgroundColor: 'rgba(21,101,192,0.18)', borderColor: '#1565c0', borderWidth: 2, borderRadius: 4 }]
         },
         options: {
             responsive: true,
@@ -798,38 +773,23 @@ if (ctx2) {
         type: 'doughnut',
         data: {
             labels: ['New', 'Accepted', 'Completed', 'Urgent'],
-            datasets: [{
-                data: [statusData.new, statusData.accepted, statusData.completed, statusData.urgent],
-                backgroundColor: ['#d97706','#0891b2','#1a7a4a','#c0392b'],
-                borderWidth: 0,
-                hoverOffset: 6,
-            }]
+            datasets: [{ data: [statusData.new, statusData.accepted, statusData.completed, statusData.urgent], backgroundColor: ['#d97706','#0891b2','#1a7a4a','#c0392b'], borderWidth: 0, hoverOffset: 6 }]
         },
         options: {
-            responsive: true,
-            cutout: '65%',
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: {
-                    label: (ctx) => ` ${ctx.label}: ${ctx.raw}`
-                }}
-            }
+            responsive: true, cutout: '65%',
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.raw}` } } }
         },
         plugins: [{
             id: 'centerText',
             afterDraw(chart) {
                 const { ctx, chartArea: { left, right, top, bottom } } = chart;
-                const cx = (left + right) / 2;
-                const cy = (top + bottom) / 2;
+                const cx = (left + right) / 2, cy = (top + bottom) / 2;
                 const total = statusData.new + statusData.accepted + statusData.completed + statusData.urgent;
                 ctx.save();
-                ctx.font = 'bold 22px Open Sans';
-                ctx.fillStyle = '#1a2a3a';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.font = 'bold 20px Open Sans'; ctx.fillStyle = '#1a2a3a';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(total, cx, cy - 6);
-                ctx.font = '10px Open Sans';
-                ctx.fillStyle = '#8a9bb0';
+                ctx.font = '10px Open Sans'; ctx.fillStyle = '#8a9bb0';
                 ctx.fillText('Total', cx, cy + 12);
                 ctx.restore();
             }
@@ -839,33 +799,15 @@ if (ctx2) {
 
 // ── Daily Chart ──
 const ctx3 = document.getElementById('dailyChart');
-if (ctx3) {
-    new Chart(ctx3, {
-        type: 'bar',
-        data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, backgroundColor: '#1565c0', borderRadius: 4 }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
-    });
-}
+if (ctx3) new Chart(ctx3, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, backgroundColor: '#1565c0', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } } });
 
 // ── Weekly Chart ──
 const ctx4 = document.getElementById('weeklyChart');
-if (ctx4) {
-    new Chart(ctx4, {
-        type: 'line',
-        data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, borderColor: '#1a7a4a', backgroundColor: 'rgba(26,122,74,0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#1a7a4a' }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
-    });
-}
+if (ctx4) new Chart(ctx4, { type: 'line', data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, borderColor: '#1a7a4a', backgroundColor: 'rgba(26,122,74,0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#1a7a4a' }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } } });
 
 // ── Annual Chart ──
 const ctx5 = document.getElementById('annualChart');
-if (ctx5) {
-    new Chart(ctx5, {
-        type: 'bar',
-        data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, backgroundColor: '#f9c900', borderRadius: 4 }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
-    });
-}
+if (ctx5) new Chart(ctx5, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Tickets', data: chartData, backgroundColor: '#f9c900', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } } });
 
 // ── Tab switching ──
 function switchTab(tab, el) {

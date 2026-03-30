@@ -41,16 +41,23 @@
             object-fit: contain;
             flex-shrink: 0;
         }
+        .header-vdivider {
+            width: 1.5px;
+            height: 40px;
+            background: rgba(255,255,255,0.45);
+            flex-shrink: 0;
+            margin: 0 4px;
+        }
         .header-text-block {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 0;
         }
         .header-top-row {
             display: flex;
             align-items: center;
             gap: 6px;
+            margin-bottom: 2px;
         }
         .header-republic {
             font-family: 'Open Sans', sans-serif;
@@ -67,12 +74,6 @@
             font-size: 0.68rem;
             color: rgba(255,255,255,0.85);
             letter-spacing: 0.04em;
-        }
-        .header-divider {
-            width: 500px;
-            height: 2px;
-            background: rgba(255,255,255,0.45);
-            margin: 3px 0;
         }
         .header-chd {
             font-family: 'Montserrat', sans-serif;
@@ -126,6 +127,7 @@
         @media (max-width: 991px) and (min-width: 641px) {
             .header-left img, .header-right img { height: 44px; width: 44px; }
             .header-chd { font-size: 0.88rem; }
+            .header-vdivider { height: 34px; }
         }
 
         /* ── RESPONSIVE: MOBILE (max 640px) ── */
@@ -133,9 +135,9 @@
             .doh-header .container-fluid { padding: 0 12px; gap: 8px; }
             .header-left { gap: 8px; }
             .header-left img, .header-right img { height: 36px; width: 36px; }
+            .header-vdivider { height: 28px; }
             .header-republic, .header-dept { font-size: 0.58rem; }
             .header-chd { font-size: 0.72rem; }
-            .header-divider { width: 100%; }
             .doh-footer .container-fluid { justify-content: center; text-align: center; }
             .footer-right { text-align: center; width: 100%; }
         }
@@ -158,13 +160,13 @@
             <div class="header-left">
                 <img src="{% static 'images/BAGONG_PILIPINAS_LOGO.png' %}" alt="Bagong Pilipinas">
                 <img src="{% static 'images/DOH_LOGO.png' %}" alt="DOH Logo">
+                <div class="header-vdivider"></div>
                 <div class="header-text-block">
                     <div class="header-top-row">
                         <span class="header-republic">Republic of the Philippines</span>
                         <span class="header-dot">·</span>
                         <span class="header-dept">Department of Health</span>
                     </div>
-                    <div class="header-divider"></div>
                     <span class="header-chd">Center for Health Development - CALABARZON</span>
                 </div>
             </div>
