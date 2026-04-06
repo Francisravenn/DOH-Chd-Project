@@ -9,8 +9,9 @@ class AdminActivityMiddleware:
 
         # Only track admins visiting admin/super pages, not public pages
         if (request.user.is_authenticated and 
-            (request.user.is_staff or request.user.is_superuser) and
-            (request.path.startswith('/staff/') or request.path.startswith('/super/'))):
+            request.user.is_staff and
+            not request.user.is_superuser and  # ← exclude superadmin
+            request.path.startswith('/staff/')):
             
             from .models import AdminOnlineStatus
             AdminOnlineStatus.objects.update_or_create(

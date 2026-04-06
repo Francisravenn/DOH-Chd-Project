@@ -35,6 +35,9 @@ urlpatterns = [
     path('archive/save-action-taken/', views.save_action_taken, name='save_action_taken'),
     path('add-action-taken-option/', views.add_action_taken_option, name='add_action_taken_option'),
     path('super/reports/', views.superadmin_reports, name='superadmin_reports'),
+    path('poll-notifications/', views.poll_notifications, name='poll_notifications'),
+    path('poll-assisting/', views.poll_assisting, name='poll_assisting'),
+    path('heartbeat/', views.heartbeat, name='heartbeat'),
 
 
     

@@ -501,6 +501,131 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateAssistingTimers, 1000);
     updateAssistingTimers();
 });
+
+
+// ── LIVE RIGHT PANEL POLLING ──
+function pollAssisting() {
+    fetch('/poll-assisting/')
+        .then(r => r.json())
+        .then(data => {
+            updateRightPanel(data.tickets);
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollAssisting, 3000);
+        });
+}
+
+function updateRightPanel(tickets) {
+    const panel = document.querySelector('.right-panel');
+    if (!panel) return;
+
+    const title = panel.querySelector('.rp-title');
+
+    if (tickets.length === 0) {
+        // Remove all ticket cards, show empty state
+        panel.innerHTML = '';
+        panel.appendChild(title);
+        panel.innerHTML += `
+            <div class="rp-empty">
+                <i class="bi bi-ticket-perforated"></i>
+                <p>No active<br>tickets.</p>
+            </div>`;
+        return;
+    }
+
+    // Get currently rendered ticket PKs
+    const currentPks = new Set(
+        [...panel.querySelectorAll('.rp-ticket')].map(el => el.dataset.pk)
+    );
+    const newPks = new Set(tickets.map(t => String(t.pk)));
+
+    // Remove tickets that are no longer assisting
+    panel.querySelectorAll('.rp-ticket').forEach(el => {
+        if (!newPks.has(el.dataset.pk)) {
+            el.remove();
+            // Also remove its hidden form
+            const form = document.getElementById('completeForm' + el.dataset.pk);
+            if (form) form.remove();
+        }
+    });
+
+    // Remove empty state if tickets exist
+    const emptyState = panel.querySelector('.rp-empty');
+    if (emptyState) emptyState.remove();
+
+    // Add new tickets that aren't rendered yet
+    tickets.forEach(t => {
+        if (!currentPks.has(String(t.pk))) {
+            const card = document.createElement('div');
+            card.className = 'rp-ticket';
+            card.dataset.pk = t.pk;
+            card.innerHTML = `
+                <div class="rp-ticket-header">
+                    <span class="rp-ticket-number">${t.control_no}</span>
+                    <span class="rp-online-dot"></span>
+                </div>
+                <div class="rp-ticket-agent">
+                    <div class="rp-agent-label">Assisted by</div>
+                    <div class="rp-agent-row">
+                        <div class="rp-avatar">${t.assisted_by_initial}</div>
+                        <span class="rp-agent-name">${t.assisted_by_name}</span>
+                    </div>
+                </div>
+                <div class="rp-ticket-timer">
+                    <span class="rp-timer-label">⏱ Elapsed</span>
+                    <div class="timer fw-bold" id="timer-${t.pk}"
+                         data-assisted-at="${t.assisted_at || ''}"
+                         style="font-size:0.88rem;">...</div>
+                </div>
+                <div style="padding:0.5rem 0.65rem;background:#f8f9fa;border-top:1px solid #e9ecef;">
+                    <button type="button" class="btn btn-success btn-sm w-100 complete-btn"
+                            data-ticket-id="${t.pk}"
+                            data-bs-toggle="modal" data-bs-target="#confirmCompleteModal"
+                            style="font-size:0.72rem;font-weight:600;padding:0.35rem 0.5rem;border-radius:5px;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
+                    </button>
+                </div>`;
+            panel.appendChild(card);
+
+            // Add hidden form
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = `/complete-ticket/${t.pk}/`;
+            form.id = 'completeForm' + t.pk;
+            form.className = 'd-none';
+            form.innerHTML = `
+                <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                <input type="hidden" name="tab" value="accepted">`;
+            document.body.appendChild(form);
+
+            // Re-attach click handler for new complete button
+            card.querySelector('.complete-btn').addEventListener('click', function() {
+                currentCompleteFormId = 'completeForm' + this.getAttribute('data-ticket-id');
+            });
+        }
+    });
+}
+
+function getCsrfToken() {
+    return document.cookie.split(';')
+        .find(c => c.trim().startsWith('csrftoken='))
+        ?.split('=')[1] || '';
+}
+
+// ── HEARTBEAT — keeps AdminOnlineStatus alive every 60 seconds ──
+function sendHeartbeat() {
+    fetch('/heartbeat/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).catch(() => {});
+}
+sendHeartbeat(); // send immediately on page load
+setInterval(sendHeartbeat, 60000); // then every 60 seconds
+
 </script>
 
 {% block extra_js %}{% endblock %}

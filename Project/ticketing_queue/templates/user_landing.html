@@ -890,31 +890,30 @@ function buildSingleTicket(t, collapsible = false, index = 0) {
         <div class="modal-tracker" style="${collapsible?'padding:14px 24px;':''}">
             <div class="tracker-label">Ticket Progress</div>
             ${buildTrackerHTML(t.status)}
-            ${t.status === 'pending' && t.online_count !== undefined ? `
-            <div style="margin-top:14px; padding:10px 14px; border-radius:10px;
+            ${t.online_count !== undefined ? `
+
+            <div id="staffOnlineBadge" style="margin-top:14px; padding:10px 14px; border-radius:10px;
                         background:${t.available_count > 0 ? '#f0faf4' : '#fff8f0'};
                         border:1px solid ${t.available_count > 0 ? '#a8d5b5' : '#f0c080'};">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                    <span style="width:8px; height:8px; border-radius:50%;
-                                 background:${t.online_count > 0 ? '#2ecc71' : '#bdc3c7'};
-                                 display:inline-block; flex-shrink:0;
-                                 ${t.online_count > 0 ? 'box-shadow:0 0 0 3px rgba(46,204,113,0.2);' : ''}"></span>
-                    <span style="font-family:'Montserrat',sans-serif; font-size:0.7rem; font-weight:700;
-                                 color:${t.online_count > 0 ? '#1a7a4a' : '#8a9ab5'};">
+                    <span class="staff-dot" style="width:8px; height:8px; border-radius:50%;
+                                background:${t.online_count > 0 ? '#2ecc71' : '#bdc3c7'};
+                                display:inline-block; flex-shrink:0;
+                                ${t.online_count > 0 ? 'box-shadow:0 0 0 3px rgba(46,204,113,0.2);' : ''}"></span>
+                    <span class="staff-title" style="font-family:'Montserrat',sans-serif; font-size:0.7rem; font-weight:700;
+                                color:${t.online_count > 0 ? '#1a7a4a' : '#8a9ab5'};">
                         ${t.online_count > 0
                             ? `${t.online_count} IT Staff Online`
                             : 'No IT Staff Currently Online'}
                     </span>
                 </div>
-                ${t.online_count > 0 ? `
-                <div style="font-family:'Open Sans',sans-serif; font-size:0.7rem; color:#5a7a9a; padding-left:16px;">
-                    ${t.available_count > 0
-                        ? `<span style="color:#1a7a4a; font-weight:600;">${t.available_count} available</span> · ${t.online_count - t.available_count} currently assisting — your request will be attended to shortly.`
-                        : `All ${t.online_count} staff are currently assisting other requests. Your ticket is queued.`}
-                </div>` : `
-                <div style="font-family:'Open Sans',sans-serif; font-size:0.7rem; color:#8a9ab5; padding-left:16px;">
-                    Your request has been recorded and will be reviewed once staff is available.
-                </div>`}
+                <div class="staff-subtitle" style="font-family:'Open Sans',sans-serif; font-size:0.7rem; color:#5a7a9a; padding-left:16px;">
+                    ${t.online_count > 0
+                        ? (t.available_count > 0
+                            ? `<span style="color:#1a7a4a;font-weight:600;">${t.available_count} available</span> &nbsp;·&nbsp; ${t.online_count - t.available_count} currently assisting`
+                            : `All ${t.online_count} staff are currently assisting other requests.`)
+                        : 'No staff currently online. Your request has been recorded.'}
+                </div>
             </div>` : ''}
         </div>
         <div class="modal-details">
@@ -1097,7 +1096,6 @@ function openFormModal() {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
 
-    // Load form via AJAX
     fetch("{% url 'user_form' %}")
         .then(r => r.text())
         .then(html => {
@@ -1106,15 +1104,75 @@ function openFormModal() {
             const container = doc.querySelector('.doh-container');
             if (container) {
                 body.innerHTML = container.outerHTML;
+
+                // ── Inject staff badge at the TOP of the form ──
+                const badge = document.createElement('div');
+                badge.id = 'formStaffBadge';
+                badge.style.cssText = `
+                    margin: 0 32px 16px;
+                    padding: 10px 14px;
+                    border-radius: 10px;
+                    background: #f0faf4;
+                    border: 1px solid #a8d5b5;
+                `;
+                badge.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <span class="form-staff-dot" style="width:8px;height:8px;border-radius:50%;
+                             background:#bdc3c7;display:inline-block;flex-shrink:0;"></span>
+                        <span class="form-staff-title" style="font-family:'Montserrat',sans-serif;
+                             font-size:0.7rem;font-weight:700;color:#8a9ab5;">
+                            Checking staff availability...
+                        </span>
+                    </div>
+                    <div class="form-staff-subtitle" style="font-family:'Open Sans',sans-serif;
+                         font-size:0.7rem;color:#5a7a9a;padding-left:16px;">
+                        Please wait...
+                    </div>
+                `;
+
+                // Insert badge before the form content
+                const formContainer = body.querySelector('.doh-container');
+                formContainer.insertBefore(badge, formContainer.firstChild);
+
                 initFormScripts();
-                // Intercept form submission
                 attachFormSubmit();
+
+                // Fetch staff count immediately
+                fetchAndUpdateFormBadge();
+
             } else {
                 body.innerHTML = '<div style="padding:24px;">Could not load form. <a href="{% url 'user_form' %}">Click here</a> to open it.</div>';
             }
         })
         .catch(() => {
             body.innerHTML = '<div style="padding:24px;">Error loading form. <a href="{% url 'user_form' %}">Click here</a> to open it.</div>';
+        });
+}
+
+function fetchAndUpdateFormBadge() {
+    // Don't poll if form modal is closed
+    const overlay = document.getElementById('formModalOverlay');
+    if (!overlay.classList.contains('show')) return;
+
+    fetch('/poll-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            updateBadgeElements(
+                document.getElementById('formStaffBadge'),
+                '.form-staff-dot',
+                '.form-staff-title',
+                '.form-staff-subtitle',
+                data.online_count,
+                data.available_count
+            );
+        })
+        .catch(() => {})
+        .finally(() => {
+            // Keep polling every 3 seconds only while form is open
+            const overlay = document.getElementById('formModalOverlay');
+            if (overlay.classList.contains('show')) {
+                setTimeout(fetchAndUpdateFormBadge, 3000);
+            }
         });
 }
 
@@ -1208,6 +1266,23 @@ function showSuccessModal(controlNo, ticketData) {
                 <div style="font-family:'Courier New',monospace; font-size:1.2rem; font-weight:700; color:#1a3a6b;">${controlNo}</div>
                 <div style="font-family:'Open Sans',sans-serif; font-size:0.72rem; color:#8a9ab5; margin-top:4px;">Save this number to track your ticket</div>
             </div>` : ''}
+
+            <div id="formStaffBadge" style="margin:0 auto 20px; padding:10px 14px; border-radius:10px;
+                        background:#f0faf4; border:1px solid #a8d5b5; max-width:320px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span class="form-staff-dot" style="width:8px;height:8px;border-radius:50%;
+                                 background:#2ecc71;display:inline-block;flex-shrink:0;
+                                 box-shadow:0 0 0 3px rgba(46,204,113,0.2);"></span>
+                    <span class="form-staff-title" style="font-family:'Montserrat',sans-serif;
+                                 font-size:0.7rem;font-weight:700;color:#1a7a4a;">
+                        Loading staff info...
+                    </span>
+                </div>
+                <div class="form-staff-subtitle" style="font-family:'Open Sans',sans-serif;
+                             font-size:0.7rem;color:#5a7a9a;padding-left:16px;">
+                    Checking availability...
+                </div>
+            </div>
             <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
                 <button onclick="closeFormModal()" 
                         style="padding:10px 24px; border-radius:8px; border:none; background:#e0e7ef;
@@ -1838,11 +1913,116 @@ function detectLocation() {
     );
 }
 
-// Auto-detect location on page load
 window.addEventListener('load', function() {
     fitContentWrapper();
     detectLocation();
+    pollStaffCount();
 });
+
+// ── LONG POLLING — staff count updates every 3 seconds ──
+function pollStaffCount() {
+    fetch('/poll-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            refreshStaffBadge(data.online_count, data.available_count);
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollStaffCount, 3000);
+        });
+}
+
+function refreshStaffBadge(online_count, available_count) {
+    updateBadgeElements(
+        document.getElementById('staffOnlineBadge'),
+        '.staff-dot', '.staff-title', '.staff-subtitle',
+        online_count, available_count
+    );
+    updateBadgeElements(
+        document.getElementById('formStaffBadge'),
+        '.form-staff-dot', '.form-staff-title', '.form-staff-subtitle',
+        online_count, available_count
+    );
+}
+
+function updateBadgeElements(badge, dotSel, titleSel, subtitleSel, online_count, available_count) {
+    if (!badge) return;
+
+    badge.style.background = available_count > 0 ? '#f0faf4' : '#fff8f0';
+    badge.style.border = '1px solid ' + (available_count > 0 ? '#a8d5b5' : '#f0c080');
+
+    const dot      = badge.querySelector(dotSel);
+    const title    = badge.querySelector(titleSel);
+    const subtitle = badge.querySelector(subtitleSel);
+
+    if (dot) {
+        dot.style.background = online_count > 0 ? '#2ecc71' : '#bdc3c7';
+        dot.style.boxShadow  = online_count > 0 ? '0 0 0 3px rgba(46,204,113,0.2)' : 'none';
+    }
+    if (title) {
+        title.style.color = online_count > 0 ? '#1a7a4a' : '#8a9ab5';
+        title.textContent = online_count > 0
+            ? `${online_count} IT Staff Online`
+            : 'No IT Staff Currently Online';
+    }
+    if (subtitle) {
+        if (online_count > 0) {
+            subtitle.innerHTML = available_count > 0
+                ? `<span style="color:#1a7a4a;font-weight:600;">${available_count} available</span> &nbsp;·&nbsp; ${online_count - available_count} currently assisting`
+                : `All ${online_count} staff are currently assisting other requests.`;
+        } else {
+            subtitle.textContent = 'No staff currently online. Your request has been recorded.';
+        }
+    }
+}
+
+function refreshStaffBadge(online_count, available_count) {
+    // Update ticket modal badge
+    updateBadgeElements(
+        document.getElementById('staffOnlineBadge'),
+        '.staff-dot', '.staff-title', '.staff-subtitle',
+        online_count, available_count
+    );
+
+    // Update form modal badge
+    updateBadgeElements(
+        document.getElementById('formStaffBadge'),
+        '.form-staff-dot', '.form-staff-title', '.form-staff-subtitle',
+        online_count, available_count
+    );
+}
+
+function updateBadgeElements(badge, dotSel, titleSel, subtitleSel, online_count, available_count) {
+    if (!badge) return;
+
+    badge.style.background = available_count > 0 ? '#f0faf4' : '#fff8f0';
+    badge.style.border = '1px solid ' + (available_count > 0 ? '#a8d5b5' : '#f0c080');
+
+    const dot      = badge.querySelector(dotSel);
+    const title    = badge.querySelector(titleSel);
+    const subtitle = badge.querySelector(subtitleSel);
+
+    if (dot) {
+        dot.style.background  = online_count > 0 ? '#2ecc71' : '#bdc3c7';
+        dot.style.boxShadow   = online_count > 0 ? '0 0 0 3px rgba(46,204,113,0.2)' : 'none';
+    }
+    if (title) {
+        title.style.color = online_count > 0 ? '#1a7a4a' : '#8a9ab5';
+        title.textContent = online_count > 0
+            ? `${online_count} IT Staff Online`
+            : 'No IT Staff Currently Online';
+    }
+    if (subtitle) {
+        if (online_count > 0) {
+            subtitle.innerHTML = available_count > 0
+                ? `<span style="color:#1a7a4a;font-weight:600;">${available_count} available</span> &nbsp;·&nbsp; ${online_count - available_count} currently assisting`
+                : `All ${online_count} staff are currently assisting other requests.`;
+        } else {
+            subtitle.textContent = 'No staff currently online. Your request has been recorded.';
+        }
+    }
+}
 </script>
 {% endblock %}
 
+openFormModal()

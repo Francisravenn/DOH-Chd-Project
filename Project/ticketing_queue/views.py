@@ -221,11 +221,11 @@ def search_ticket_api(request):
         }
     
     from datetime import timedelta
-    online_cutoff = timezone.now() - timedelta(minutes=2)
+    online_cutoff = timezone.now() - timedelta(hours=3)
     online_statuses = AdminOnlineStatus.objects.filter(
-        last_seen__gte=online_cutoff
-    ).filter(
-        Q(user__is_staff=True) | Q(user__is_superuser=True)
+        last_seen__gte=online_cutoff,
+        user__is_staff=True,
+        user__is_superuser=False  # ← exclude superadmin
     ).select_related('user')
 
     online_count = online_statuses.count()
@@ -239,13 +239,13 @@ def search_ticket_api(request):
         user_id__in=busy_user_ids
     ).count()
 
-    # 1. Try exact control number match first
+    # 1. Exact control number match
     ticket = Ticket.objects.filter(control_no__iexact=query).first()
     if ticket:
         data = format_ticket(ticket)
-        if ticket.status == 'pending':
-            data['online_count'] = online_count
-            data['available_count'] = available_count
+        # Show for ALL statuses
+        data['online_count'] = online_count
+        data['available_count'] = available_count
         return JsonResponse({'found': True, 'ticket': data})
 
     # 2. Try name search (contains, case-insensitive) — latest first
@@ -382,6 +382,8 @@ def admin_dashboard(request):
         )
     ).order_by('created_at')
 
+    busy_staff_ids = Ticket.objects.filter(status='assisting').values_list('assisted_by_id', flat=True)
+
     # Accepted tab now shows only "being assisted" tickets
     accepted_tickets = get_ordered_qs(all_tickets.filter(status='assisting'))
 
@@ -407,7 +409,7 @@ def admin_dashboard(request):
 
         'staff_users': User.objects.filter(
             username__in=['Morro', 'Rich', 'Tim']
-        ).order_by('username'),
+        ).exclude(id__in=busy_staff_ids).order_by('username'),
 
         'tab': request.GET.get('tab', 'new'),
         'assisting_tickets': accepted_tickets,
@@ -915,6 +917,8 @@ def superadmin_dashboard(request):
         )
     ).order_by('created_at')
 
+    busy_staff_ids = Ticket.objects.filter(status='assisting').values_list('assisted_by_id', flat=True)
+
     context = {
         'new_count': new_tickets.count(),
         'accepted_count': all_tickets.filter(status='assisting').count(),
@@ -939,7 +943,7 @@ def superadmin_dashboard(request):
         'staff_users': User.objects.filter(
             is_staff=True,
             is_superuser=False
-        ).order_by('username'),
+        ).exclude(id__in=busy_staff_ids).order_by('username'),
 
         'recent_activity': recent_activity,
 
@@ -2213,6 +2217,90 @@ def add_action_taken_option(request):
     return JsonResponse({'success': False})
 
 
+def poll_notifications(request):
+    """Polling endpoint — returns online staff count and latest pending ticket."""
+    online_cutoff = timezone.now() - timedelta(hours=3)
+
+    # Only count regular staff — exclude superadmin
+    online_statuses = AdminOnlineStatus.objects.filter(
+        last_seen__gte=online_cutoff,
+        user__is_staff=True,
+        user__is_superuser=False
+    )
+    online_count = online_statuses.count()
+
+    busy_user_ids = Ticket.objects.filter(
+        status='assisting'
+    ).values_list('assisted_by_id', flat=True)
+
+    available_count = online_statuses.exclude(
+        user_id__in=busy_user_ids
+    ).count()
+
+    pending_count = Ticket.objects.filter(status='pending').count()
+
+    latest_ticket = Ticket.objects.filter(
+        status='pending'
+    ).order_by('-created_at').first()
+
+    return JsonResponse({
+        'online_count':        online_count,
+        'available_count':     available_count,
+        'pending_count':       pending_count,
+        'latest_control_no':   latest_ticket.control_no if latest_ticket else '',
+        'latest_requested_by': latest_ticket.requested_by if latest_ticket else '',
+        'latest_is_urgent':    latest_ticket.is_urgent if latest_ticket else False,
+    })
 
 
-search_ticket_api
+def poll_assisting(request):
+    """Returns currently assisting tickets for live right panel update."""
+    tickets = Ticket.objects.filter(
+        status='assisting',
+        assisted_by__isnull=False
+    ).select_related('assisted_by').order_by('-assisted_at')
+
+    data = []
+    for t in tickets:
+        assisted_by_name = t.assisted_by.get_full_name() or t.assisted_by.username
+        assisted_by_initial = (t.assisted_by.first_name or t.assisted_by.username)[0].upper()
+        data.append({
+            'pk':               t.pk,
+            'control_no':       t.control_no,
+            'assisted_by_name': assisted_by_name,
+            'assisted_by_initial': assisted_by_initial,
+            'assisted_at':      t.assisted_at.isoformat() if t.assisted_at else None,
+        })
+
+    # Also return online/available counts for the user-facing badge
+    from datetime import timedelta
+    online_cutoff = timezone.now() - timedelta(hours=3)
+    online_statuses = AdminOnlineStatus.objects.filter(
+        last_seen__gte=online_cutoff,
+        user__is_staff=True,
+        user__is_superuser=False
+    )
+    online_count = online_statuses.count()
+    busy_user_ids = Ticket.objects.filter(
+        status='assisting',
+        assisted_by__isnull=False
+    ).values_list('assisted_by_id', flat=True)
+    available_count = online_statuses.exclude(user_id__in=busy_user_ids).count()
+
+    return JsonResponse({
+        'tickets':         data,
+        'online_count':    online_count,
+        'available_count': available_count,
+    })
+
+
+
+@login_required
+def heartbeat(request):
+    """Updates AdminOnlineStatus last_seen — called every 60s from browser."""
+    if request.method == 'POST':
+        AdminOnlineStatus.objects.update_or_create(
+            user=request.user,
+            defaults={'last_seen': timezone.now()}
+        )
+    return JsonResponse({'ok': True})
