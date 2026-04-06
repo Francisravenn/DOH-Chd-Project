@@ -3,7 +3,7 @@
 {% block title %}DOH IT Job Request Form{% endblock %}
 
 {% block content %}
-
+model_other
 <style>
   body {
     background-color: #ffffff;
@@ -182,8 +182,6 @@
           <option value="LG">LG</option>
           <option value="Others">Others</option>
         </select>
-        <input type="text" name="brand_other" id="brand_other" 
-               class="others-input" placeholder="Please specify brand">
       </div>
     </div>
 
@@ -194,8 +192,7 @@
         <select name="model" id="model_select" style="width:100%; font-size:11pt;">
           <option value="">-- Select Model (optional) --</option>
         </select>
-        <input type="text" name="model" id="model_other" 
-              class="others-input" placeholder="Please specify model (optional)">
+        <input type="text" name="model" id="model_other">
       </div>
     </div>
 

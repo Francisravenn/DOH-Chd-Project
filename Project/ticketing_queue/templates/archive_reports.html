@@ -7,83 +7,97 @@
     /* ─── Layout ─── */
     .arc-layout {
         display: flex;
+        flex-direction: column;
         gap: 0;
         margin: -1.5rem;
     }
 
-    /* ─── Inner Sidebar ─── */
-    .arc-sidebar {
-        width: 160px;
-        min-width: 160px;
-        flex-shrink: 0;
+    /* ─── Month Strip (replaces sidebar) ─── */
+    .arc-month-strip {
         background: #fff;
-        border-right: 1px solid #e3e6ea;
-        padding: 20px 0;
-        min-height: calc(100vh - 56px);
+        border-bottom: 1px solid #e3e6ea;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
     }
-    .arc-sidebar-label {
+    .arc-strip-label {
         font-size: 0.68rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #adb5bd;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        padding: 0 14px 12px;
+        letter-spacing: 0.12em;
+        white-space: nowrap;
+        flex-shrink: 0;
+        margin-right: 2px;
     }
-    .arc-year-row {
-        display: flex;
+    .arc-strip-year {
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 6px 14px;
-        font-size: 0.88rem;
-        font-weight: 600;
+        gap: 5px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 800;
         color: #343a40;
-        cursor: pointer;
-        user-select: none;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
-    .arc-year-row .left {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .arc-year-row .arrow {
+    .arc-strip-year .yr-count {
+        background: #1565c0;
+        color: #fff;
         font-size: 0.65rem;
-        color: #6c757d;
-        transition: transform 0.2s;
-    }
-    .arc-year-row .age-badge {
-        font-size: 0.68rem;
-        background: #e9ecef;
-        color: #6c757d;
+        font-weight: 700;
         padding: 1px 7px;
         border-radius: 20px;
-        font-weight: 600;
     }
-    .arc-month-list {
-        list-style: none;
-        margin: 4px 0 8px;
-        padding: 0;
+    .arc-strip-divider {
+        width: 1px;
+        height: 20px;
+        background: #dee2e6;
+        flex-shrink: 0;
+        margin: 0 4px;
     }
-    .arc-month-list li {
-        display: flex;
+    .arc-month-pill {
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 7px 10px 7px 24px;
+        gap: 5px;
+        padding: 5px 13px;
+        border-radius: 20px;
+        border: 1.5px solid #e9ecef;
+        background: #f8f9fa;
         font-size: 0.83rem;
+        font-weight: 600;
         color: #495057;
         cursor: pointer;
-        border-radius: 0 20px 20px 0;
-        margin-right: 8px;
-        transition: background 0.15s, color 0.15s;
+        transition: all 0.15s;
+        white-space: nowrap;
+        font-family: 'Open Sans', sans-serif;
     }
-    .arc-month-list li:hover { background: #eef2ff; color: #0d6efd; }
-    .arc-month-list li.active { background: #dce8fd; color: #0d6efd; font-weight: 600; }
-    .arc-month-list li .cnt {
-        font-size: 0.7rem; font-weight: 700;
-        background: #adb5bd; color: #fff;
-        padding: 1px 6px; border-radius: 20px;
-        min-width: 20px; text-align: center;
+    .arc-month-pill:hover {
+        background: rgba(21,101,192,0.07);
+        border-color: #1565c0;
+        color: #1565c0;
     }
-    .arc-month-list li.active .cnt { background: #0d6efd; }
+    .arc-month-pill.active {
+        background: #1565c0;
+        border-color: #1565c0;
+        color: #fff;
+        font-weight: 700;
+    }
+    .arc-month-pill .pill-cnt {
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: rgba(0,0,0,0.12);
+        color: inherit;
+        padding: 1px 6px;
+        border-radius: 8px;
+        min-width: 18px;
+        text-align: center;
+    }
+    .arc-month-pill.active .pill-cnt {
+        background: rgba(255,255,255,0.25);
+    }
 
     /* ─── Main Content ─── */
     .arc-main {
@@ -125,18 +139,27 @@
         background: #fff; border-radius: 10px;
         border: 1px solid #e8eaed; overflow: hidden; margin-bottom: 24px;
     }
-    .arc-table { width: 100%; border-collapse: collapse; }
+    .arc-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .arc-table thead tr { border-bottom: 2px solid #e9ecef; }
     .arc-table thead th {
         font-size: 0.72rem; font-weight: 700; color: #adb5bd;
         text-transform: uppercase; letter-spacing: 0.06em;
         padding: 12px 14px; background: #fff; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis;
     }
     .arc-table tbody tr { border-bottom: 1px solid #f5f5f5; transition: background 0.12s; }
     .arc-table tbody tr:last-child { border-bottom: none; }
     .arc-table tbody tr:hover { background: #f8f9ff; }
-    .arc-table tbody td { padding: 12px 14px; font-size: 0.875rem; color: #343a40; vertical-align: middle; }
-    .urgent-label { font-size: 0.68rem; color: #dc3545; font-weight: 700; display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
+    .arc-table tbody td {
+        padding: 6px 14px;
+        font-size: 0.875rem;
+        color: #343a40;
+        vertical-align: middle;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .urgent-label { font-size: 0.68rem; color: #dc3545; font-weight: 700; display: flex; align-items: center; gap: 3px; margin-bottom: 1px; }
     .ctrl-no { font-weight: 700; color: #212529; }
     .done-pill {
         display: inline-flex; align-items: center; gap: 4px;
@@ -144,7 +167,10 @@
         font-size: 0.76rem; font-weight: 600;
         padding: 4px 10px; border-radius: 20px; white-space: nowrap;
     }
-    .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+    .action-cell {
+        display: flex; gap: 6px; align-items: center;
+        flex-wrap: nowrap; white-space: nowrap;
+    }
     .btn-view-details {
         background: #1565c0; color: #fff; border: none;
         padding: 5px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600;
@@ -182,16 +208,12 @@
     .arc-page-btns button:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ════════════════════════════════════════
-       TICKET DETAIL MODAL — matches staff dashboard style
+       TICKET DETAIL MODAL
     ════════════════════════════════════════ */
     #ticketDetailModal .modal-content {
-        border: none;
-        border-radius: 16px;
-        overflow: hidden;
+        border: none; border-radius: 16px; overflow: hidden;
         box-shadow: 0 20px 60px rgba(0,0,0,0.25);
     }
-
-    /* Gradient header — identical to .tkt-modal-header */
     .arc-modal-header {
         background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
         border-bottom: 3px solid #f9c900;
@@ -221,8 +243,6 @@
         line-height: 1; border-radius: 6px; transition: background 0.2s;
     }
     .arc-modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-    /* Status bar — identical to .tkt-status-bar */
     .arc-status-bar {
         background: #f8fafd; border-bottom: 1px solid #e2eaf4;
         padding: 10px 24px; display: flex; align-items: center; justify-content: space-between;
@@ -251,8 +271,6 @@
         padding: 4px 12px; font-size: 0.78rem; font-weight: 600;
         font-family: 'Montserrat', sans-serif;
     }
-
-    /* Body — matches .tkt-info-section */
     #ticketDetailModal .modal-body { background: #f8fafd; padding: 16px; }
     .arc-info-section {
         background: #fff; border-radius: 10px;
@@ -289,8 +307,6 @@
         min-height: 70px; white-space: pre-wrap; word-wrap: break-word;
         line-height: 1.6; font-family: 'Open Sans', sans-serif;
     }
-
-    /* Footer */
     .arc-modal-footer {
         background: #f8fafd; border-top: 1px solid #e2eaf4;
         padding: 12px 20px; display: flex;
@@ -316,29 +332,31 @@
 {% block content %}
 <div class="arc-layout">
 
-    <!-- ── Inner Sidebar ── -->
-    <div class="arc-sidebar">
-        <div class="arc-sidebar-label">By Month</div>
+    <!-- ── Horizontal Month Strip ── -->
+    <div class="arc-month-strip">
+        <span class="arc-strip-label">By Month</span>
 
         {% regroup archived_tickets by completed_at.year as year_list %}
         {% for year_group in year_list %}
-        <div class="arc-year-row" data-year="{{ year_group.grouper }}">
-            <div class="left">
-                <span class="arrow">▾</span>
-                {{ year_group.grouper }}
-            </div>
-            <span class="age-badge">{{ year_group.list|length }}</span>
-        </div>
-        <ul class="arc-month-list" id="yrList{{ year_group.grouper }}">
-            {% regroup year_group.list by completed_at|date:"F" as month_list %}
-            {% for month_group in month_list %}
-            <li class="{% if forloop.parentloop.first and forloop.first %}active{% endif %}"
+
+        {% if not forloop.first %}<div class="arc-strip-divider"></div>{% endif %}
+
+        <span class="arc-strip-year">
+            <i class="bi bi-calendar3" style="font-size:0.75rem;color:#adb5bd;"></i>
+            {{ year_group.grouper }}
+            <span class="yr-count">{{ year_group.list|length }}</span>
+        </span>
+        <div class="arc-strip-divider"></div>
+
+        {% regroup year_group.list by completed_at|date:"F" as month_list %}
+        {% for month_group in month_list %}
+        <button class="arc-month-pill {% if forloop.parentloop.first and forloop.first %}active{% endif %}"
                 data-target="sec-{{ year_group.grouper }}-{{ forloop.counter }}">
-                {{ month_group.grouper }}
-                <span class="cnt">{{ month_group.list|length }}</span>
-            </li>
-            {% endfor %}
-        </ul>
+            {{ month_group.grouper }}
+            <span class="pill-cnt">{{ month_group.list|length }}</span>
+        </button>
+        {% endfor %}
+
         {% endfor %}
     </div>
 
@@ -367,6 +385,14 @@
 
                     <div class="arc-table-wrap">
                         <table class="arc-table" id="tbl-{{ year_group.grouper }}-{{ forloop.counter }}">
+                            <colgroup>
+                                <col style="width:14%">
+                                <col style="width:20%">
+                                <col style="width:15%">
+                                <col style="width:12%">
+                                <col style="width:14%">
+                                <col style="width:25%">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>Control No.</th>
@@ -393,7 +419,7 @@
                                     <td>
                                         <span class="done-pill"><i class="bi bi-patch-check-fill"></i> {{ ticket.completed_at|date:"m/d/Y" }}</span>
                                     </td>
-                                    <td>
+                                    <td style="white-space:nowrap;">
                                         <div class="action-cell">
                                             <button type="button"
                                                     class="btn-view-details view-ticket-btn"
@@ -438,13 +464,12 @@
 </div>
 
 <!-- ════════════════════════════════════════
-     TICKET DETAIL MODAL — DOH branded style
+     TICKET DETAIL MODAL
 ════════════════════════════════════════ -->
 <div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
 
-            <!-- Header -->
             <div class="arc-modal-header">
                 <div class="arc-modal-header-inner">
                     <i class="bi bi-ticket-perforated-fill text-warning fs-5"></i>
@@ -458,7 +483,6 @@
                 <button class="arc-modal-close" data-bs-dismiss="modal" aria-label="Close">✕</button>
             </div>
 
-            <!-- Status bar -->
             <div class="arc-status-bar">
                 <span class="arc-status-label">Current Status</span>
                 <div class="d-flex align-items-center gap-2">
@@ -469,14 +493,11 @@
                 </div>
             </div>
 
-            <!-- Body -->
             <div class="modal-body p-3" style="background:#f8fafd;">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="arc-info-section" style="height:100%;">
-                            <div class="arc-section-label">
-                                <i class="bi bi-person-fill"></i> Request Information
-                            </div>
+                            <div class="arc-section-label"><i class="bi bi-person-fill"></i> Request Information</div>
                             <div class="arc-info-row">
                                 <span class="arc-info-key">Control No.</span>
                                 <span class="arc-info-val fw-bold" id="modal-control-no">—</span>
@@ -505,9 +526,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="arc-info-section" style="height:100%;">
-                            <div class="arc-section-label">
-                                <i class="bi bi-pc-display"></i> Equipment Information
-                            </div>
+                            <div class="arc-section-label"><i class="bi bi-pc-display"></i> Equipment Information</div>
                             <div class="arc-info-row">
                                 <span class="arc-info-key">Equipment</span>
                                 <span class="arc-info-val" id="modal-equipment">—</span>
@@ -524,16 +543,13 @@
                     </div>
                     <div class="col-12">
                         <div class="arc-info-section" style="margin-bottom:0;">
-                            <div class="arc-section-label">
-                                <i class="bi bi-chat-left-text-fill"></i> Nature of Request / Complaint
-                            </div>
+                            <div class="arc-section-label"><i class="bi bi-chat-left-text-fill"></i> Nature of Request / Complaint</div>
                             <div class="arc-complaint-box" id="modal-description">—</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer -->
             <div class="arc-modal-footer">
                 <small class="text-muted" style="font-size:0.78rem;">
                     <i class="bi bi-shield-lock me-1"></i>For official use only — DOH CHD CALABARZON ICT Division
@@ -565,7 +581,7 @@ function initPagination(tableId) {
 
     let currentPage = 1;
 
-    function getAllRows()      { return Array.from(tbody.querySelectorAll('tr.ticket-row')); }
+    function getAllRows()       { return Array.from(tbody.querySelectorAll('tr.ticket-row')); }
     function getFilteredRows() { return getAllRows().filter(r => r.getAttribute('data-filtered') !== 'true'); }
 
     function renderPage() {
@@ -623,30 +639,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ── Sidebar month switching ──
-document.querySelectorAll('.arc-month-list li').forEach(function (li) {
-    li.addEventListener('click', function () {
-        document.querySelectorAll('.arc-month-list li').forEach(el => el.classList.remove('active'));
+// ── Month pill switching ──
+document.querySelectorAll('.arc-month-pill').forEach(function (pill) {
+    pill.addEventListener('click', function () {
+        document.querySelectorAll('.arc-month-pill').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.arc-month-section').forEach(el => el.classList.remove('active'));
         this.classList.add('active');
         const sec = document.getElementById(this.dataset.target);
         if (sec) sec.classList.add('active');
-    });
-});
-
-// ── Year collapse toggle ──
-document.querySelectorAll('.arc-year-row').forEach(function (row) {
-    row.addEventListener('click', function () {
-        const list  = document.getElementById('yrList' + this.dataset.year);
-        const arrow = this.querySelector('.arrow');
-        if (!list) return;
-        if (list.style.display === 'none') {
-            list.style.display = '';
-            arrow.style.transform = '';
-        } else {
-            list.style.display = 'none';
-            arrow.style.transform = 'rotate(-90deg)';
-        }
     });
 });
 
@@ -655,7 +655,7 @@ document.getElementById('archiveSearch')?.addEventListener('input', function () 
     const filter = this.value.toLowerCase().trim();
     document.querySelectorAll('.arc-table').forEach(function (table) {
         table.querySelectorAll('tr.ticket-row').forEach(function (row) {
-            const text  = (row.dataset.search || '').toLowerCase();
+            const text = (row.dataset.search || '').toLowerCase();
             row.setAttribute('data-filtered', text.includes(filter) ? 'false' : 'true');
         });
         if (table._repaginate) table._repaginate();
@@ -668,14 +668,11 @@ document.querySelectorAll('.view-ticket-btn').forEach(function (btn) {
         const controlNo = this.dataset.controlNo || 'N/A';
         const isUrgent  = this.dataset.urgent === 'Yes';
 
-        // Header
         document.getElementById('modal-header-control').textContent = controlNo;
 
-        // Urgent badge in status bar
         const urgentBadge = document.getElementById('modal-urgent-badge');
         urgentBadge.classList.toggle('d-none', !isUrgent);
 
-        // Fields
         document.getElementById('modal-control-no').textContent   = controlNo;
         document.getElementById('modal-requested-by').textContent = this.dataset.requestedBy || 'N/A';
         document.getElementById('modal-division').textContent     = this.dataset.division || 'N/A';
@@ -686,7 +683,6 @@ document.querySelectorAll('.view-ticket-btn').forEach(function (btn) {
         document.getElementById('modal-brand').textContent        = this.dataset.brand || 'N/A';
         document.getElementById('modal-model').textContent        = this.dataset.model || 'N/A';
 
-        // Urgency row value
         const urgencyVal = document.getElementById('modal-urgency-val');
         if (isUrgent) {
             urgencyVal.innerHTML = '<span class="arc-urgent-tag"><i class="bi bi-exclamation-triangle-fill"></i> URGENT</span>';
@@ -694,9 +690,7 @@ document.querySelectorAll('.view-ticket-btn').forEach(function (btn) {
             urgencyVal.innerHTML = '<span class="arc-normal-tag"><i class="bi bi-check-circle"></i> Normal</span>';
         }
 
-        // Print link
-        const printUrl = this.dataset.printUrl || '#';
-        document.getElementById('modal-print-link').href = printUrl;
+        document.getElementById('modal-print-link').href = this.dataset.printUrl || '#';
     });
 });
 </script>

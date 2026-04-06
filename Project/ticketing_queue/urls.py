@@ -38,7 +38,7 @@ urlpatterns = [
     path('poll-notifications/', views.poll_notifications, name='poll_notifications'),
     path('poll-assisting/', views.poll_assisting, name='poll_assisting'),
     path('heartbeat/', views.heartbeat, name='heartbeat'),
-
+    path('super-admin/assist/<int:pk>/', views.super_admin_assist_ticket, name='super_admin_assist_ticket'),
 
     
 ]

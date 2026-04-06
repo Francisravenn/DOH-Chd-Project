@@ -197,13 +197,16 @@
     .ticket-tbl tbody tr:hover { background: #f8f9fc; }
     .ticket-tbl tbody tr.urgent-row { background: rgba(220,53,69,0.04); }
     .ticket-tbl tbody tr.urgent-row:hover { background: rgba(220,53,69,0.08); }
+
+    /* ── FIXED: compact, uniform rows ── */
     .ticket-tbl td {
-        padding: 10px 12px;
+        padding: 6px 12px;
         vertical-align: middle;
         font-size: 0.88rem;
         color: #212529;
         border: none !important;
         word-break: break-word;
+        line-height: 1.3;
     }
 
     /* Control number */
@@ -223,7 +226,7 @@
         font-weight: 700;
         color: #dc3545;
         display: block;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
     }
 
     /* Urgency/status pills */
@@ -476,7 +479,6 @@
     }
     .tkt-modal-footer { background: #f8fafd; border-top: 1px solid #e2eaf4; }
 
-    /* Update modal header */
     .update-modal-header {
         background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
         border-bottom: 3px solid #f9c900; padding: 14px 20px;
@@ -485,7 +487,6 @@
         font-family: 'Montserrat', sans-serif;
         font-size: 0.95rem; font-weight: 800; color: #fff;
     }
-    /* Assign modal header */
     .assign-modal-header {
         background: linear-gradient(90deg, #92400e 0%, #d97706 100%);
         border-bottom: 3px solid #f9c900; padding: 14px 20px;
@@ -494,7 +495,6 @@
         font-family: 'Montserrat', sans-serif;
         font-size: 0.95rem; font-weight: 800; color: #fff;
     }
-    /* Confirm modal header */
     .confirm-modal-header {
         background: linear-gradient(90deg, #146c43 0%, #198754 100%);
         border-bottom: 3px solid #f9c900; padding: 14px 20px;
@@ -512,7 +512,6 @@
         font-size: 0.95rem; font-weight: 800; color: #fff;
     }
 
-    /* Modal form labels */
     .modal .form-label {
         font-family: 'Montserrat', sans-serif;
         font-size: 0.76rem; font-weight: 700; color: #495057;
@@ -530,7 +529,6 @@
         box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
     }
 
-    /* Modal footer shared buttons */
     .btn-mfooter-cancel {
         background: transparent; color: #6c757d;
         border: 1.5px solid #dee2e6; border-radius: 8px;
@@ -560,12 +558,10 @@
         cursor: pointer; transition: background 0.15s;
     }
     .btn-mfooter-warn:hover { background: #92400e; }
-    
-    /* ── Accepted-but-unassigned row ── */
+
     .ticket-tbl tbody tr.accepted-row { background: rgba(21,101,192,0.07); }
     .ticket-tbl tbody tr.accepted-row:hover { background: rgba(21,101,192,0.14); }
-    .accepted-label { font-family:'Montserrat',sans-serif; font-size:0.62rem; font-weight:700; color:#1565c0; display:block; margin-bottom:2px; }
-
+    .accepted-label { font-family:'Montserrat',sans-serif; font-size:0.62rem; font-weight:700; color:#1565c0; display:block; margin-bottom:1px; }
 </style>
 {% endblock %}
 
@@ -637,9 +633,9 @@
          style="{% if request.GET.tab == 'new' or not request.GET.tab %}display:block{% else %}display:none{% endif %}">
         <table class="ticket-tbl">
             <colgroup>
-                <col style="width:14%"><col style="width:21%">
-                <col style="width:17%"><col style="width:9%">
-                <col style="width:13%"><col style="width:11%">
+                <col style="width:13%"><col style="width:20%">
+                <col style="width:16%"><col style="width:8%">
+                <col style="width:12%"><col style="width:16%">
             </colgroup>
             <thead><tr>
                 <th>Control No.</th><th>Division / Section</th>
@@ -658,12 +654,12 @@
                 <td style="color:#495057;font-size:0.86rem;">{{ ticket.request_complaint|truncatewords:8 }}</td>
                 <td>{% if ticket.is_urgent %}<span class="urgent-pill"><i class="bi bi-exclamation-triangle-fill"></i> Yes</span>{% else %}<span class="normal-pill">No</span>{% endif %}</td>
                 <td><span class="elapsed-text">{{ ticket.created_at|timesince }} ago</span></td>
-                <td>
+                <td style="white-space:nowrap;">
                     <button type="button" class="btn-view-det" data-bs-toggle="modal" data-bs-target="#ticketModal{{ ticket.pk }}">
                         <i class="bi bi-eye me-1"></i>View
                     </button>
                     {% if ticket.status == 'accepted' %}
-                    <button type="button" class="btn-action-warn ms-1" data-bs-toggle="modal" data-bs-target="#assistModal{{ ticket.pk }}">
+                    <button type="button" class="btn-action-warn" data-bs-toggle="modal" data-bs-target="#assistModal{{ ticket.pk }}">
                         <i class="bi bi-person-check me-1"></i>Assign
                     </button>
                     {% endif %}
@@ -708,7 +704,7 @@
                         <span class="normal-pill">No</span>
                     {% endif %}
                 </td>
-                <td>
+                <td style="white-space:nowrap;">
                     <button type="button" class="btn-view-det" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.pk }}">
                         <i class="bi bi-eye me-1"></i>View
                     </button>
@@ -774,12 +770,12 @@
                 <td style="font-size:0.86rem;">{{ ticket.requested_by }}</td>
                 <td style="font-size:0.82rem;white-space:nowrap;color:#495057;">{{ ticket.created_at|date:"m/d/Y" }}</td>
                 <td><span class="elapsed-text">{{ ticket.created_at|timesince }} ago</span></td>
-                <td>
+                <td style="white-space:nowrap;">
                     <button type="button" class="btn-view-det" data-bs-toggle="modal" data-bs-target="#ticketModal{{ ticket.pk }}">
                         <i class="bi bi-eye me-1"></i>View
                     </button>
                     {% if ticket.status == 'pending' and ticket.accepted_at is None %}
-                    <button type="button" class="btn-action-warn ms-1 reopen-btn"
+                    <button type="button" class="btn-action-warn reopen-btn"
                             data-bs-toggle="modal" data-bs-target="#reopenConfirmModal"
                             data-ticket-no="{{ ticket.control_no }}"
                             data-form-id="reopenForm{{ ticket.pk }}">
@@ -924,7 +920,7 @@
     </div>
 </div>
 
-<!-- Assign modal for pending -->
+<!-- ── Assign modal for pending tickets ── -->
 <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -935,7 +931,7 @@
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
+            <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'super_admin_assist_ticket' ticket.pk %}">
                 <div class="modal-body p-4">
                     {% csrf_token %}<input type="hidden" name="tab" value="new">
                     <label class="form-label">Select staff to assign</label>
@@ -955,7 +951,7 @@
 {% endfor %}
 
 <!-- ══════════════════════════════════════
-     TICKET MODALS — ACCEPTED
+     TICKET MODALS — ACCEPTED / ASSISTING
 ══════════════════════════════════════ -->
 {% for ticket in accepted_tickets %}
 <div class="modal fade" id="viewModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
@@ -1063,7 +1059,7 @@
     </div>
 </div>
 
-<!-- Assist confirm modal -->
+<!-- ── Assist confirm modal (accepted tab) ── -->
 {% if ticket.status == 'accepted' %}
 <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1075,7 +1071,7 @@
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
+            <form id="assistConfirmForm{{ ticket.pk }}" method="post" action="{% url 'super_admin_assist_ticket' ticket.pk %}">
                 <div class="modal-body p-4">
                     {% csrf_token %}<input type="hidden" name="tab" value="accepted">
                     <label class="form-label">Select staff to assign</label>
@@ -1218,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ── FIXED POLLING - NO MORE LOOP ──
+// ── POLLING ──
 let lastPendingCount = {{ new_count | default:0 }};
 let lastControlNo = '';
 
@@ -1226,29 +1222,24 @@ function pollForUpdates() {
     fetch('/poll-notifications/')
         .then(r => r.json())
         .then(data => {
-            // Update badge only
             const newBadge = document.querySelector('#pill-new .tab-badge');
             if (newBadge) newBadge.textContent = data.pending_count;
 
-            // Show toast ONLY when a genuinely new ticket arrives
-            if (data.pending_count > lastPendingCount && 
-                data.latest_control_no && 
+            if (data.pending_count > lastPendingCount &&
+                data.latest_control_no &&
                 data.latest_control_no !== lastControlNo) {
-                
+
                 lastControlNo = data.latest_control_no;
                 showNewTicketToast(data);
-                
-                // Refresh the New tab AFTER showing toast (once)
-                setTimeout(() => {
-                    location.reload();
-                }, 1200);
+
+                setTimeout(() => { location.reload(); }, 1200);
             }
 
             lastPendingCount = data.pending_count;
         })
         .catch(() => {})
         .finally(() => {
-            setTimeout(pollForUpdates, 5000);   // slower polling = less load
+            setTimeout(pollForUpdates, 5000);
         });
 }
 

@@ -2304,3 +2304,49 @@ def heartbeat(request):
             defaults={'last_seen': timezone.now()}
         )
     return JsonResponse({'ok': True})
+
+
+@login_required
+@user_passes_test(is_superadmin, login_url='staff_login')
+def super_admin_assist_ticket(request, pk):
+    if request.method == 'POST':
+        ticket = get_object_or_404(Ticket, pk=pk)
+
+        if ticket.status != 'accepted':
+            messages.warning(request, f"Cannot assign — ticket {ticket.control_no} status is '{ticket.status}'.")
+            current_tab = request.POST.get('tab', 'new')
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+
+        assisted_by_id = request.POST.get('assisted_by')
+        if not assisted_by_id:
+            messages.error(request, "No staff selected.")
+            current_tab = request.POST.get('tab', 'new')
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+
+        try:
+            assisted_user = User.objects.get(id=assisted_by_id)
+        except User.DoesNotExist:
+            messages.error(request, "Selected staff not found.")
+            current_tab = request.POST.get('tab', 'new')
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+
+        # Success path
+        ticket.status = 'assisting'
+        ticket.assisted_by = assisted_user
+        ticket.save()
+
+        messages.success(request, f"Ticket {ticket.control_no} assigned to {assisted_user.username}.")
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='assisting ticket',
+            details=f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
+            ticket=ticket,
+            ip_address=get_client_ip(request)
+        )
+
+        current_tab = request.POST.get('tab', 'new')
+        return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+
+    # Fallback for GET requests (should not normally happen)
+    return redirect('super_admin_dashboard')
