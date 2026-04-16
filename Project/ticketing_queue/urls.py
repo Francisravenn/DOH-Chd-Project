@@ -39,6 +39,11 @@ urlpatterns = [
     path('poll-assisting/', views.poll_assisting, name='poll_assisting'),
     path('heartbeat/', views.heartbeat, name='heartbeat'),
     path('super-admin/assist/<int:pk>/', views.super_admin_assist_ticket, name='super_admin_assist_ticket'),
+    path('poll-dashboard-state/', views.poll_dashboard_state, name='poll_dashboard_state'),
+    path('poll-my-notifications/', views.poll_my_notifications, name='poll_my_notifications'),
+    path('accept-assignment/<int:pk>/', views.accept_assignment, name='accept_assignment'),
+    path('reject-assignment/<int:pk>/', views.reject_assignment, name='reject_assignment'),
+    path('poll-super-admin-notifications/', views.poll_super_admin_notifications, name='poll_super_admin_notifications'),
 
     
 ]

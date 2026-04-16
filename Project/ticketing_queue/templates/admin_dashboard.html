@@ -406,7 +406,7 @@
     </div>
 </div>
 
-<!-- Assign modal for pending -->
+<!-- Assign modal for pending — self-assign only, no dropdown -->
 <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -419,16 +419,16 @@
             </div>
             <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
                 <div class="modal-body p-4">
-                    {% csrf_token %}<input type="hidden" name="tab" value="new">
-                    <label class="form-label">Select staff to assign</label>
-                    <select name="assisted_by" class="form-select" required>
-                        <option value="">— Choose Staff —</option>
-                        {% for user in staff_users %}<option value="{{ user.id }}">{{ user.username|title }}</option>{% endfor %}
-                    </select>
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="new">
+                    <p style="font-family:'Open Sans',sans-serif;font-size:0.92rem;color:#495057;">
+                        Assign ticket <strong style="color:#1565c0;">{{ ticket.control_no }}</strong> to yourself?<br>
+                        <span style="font-size:0.84rem;color:#adb5bd;">You will be set as the assigned staff for this ticket.</span>
+                    </p>
                 </div>
                 <div class="modal-footer" style="background:#f8fafd;border-top:1px solid #e9ecef;">
                     <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn-mfooter-warn"><i class="bi bi-person-check me-1"></i>Assign</button>
+                    <button type="submit" class="btn-mfooter-warn"><i class="bi bi-person-check me-1"></i>Assign to Me</button>
                 </div>
             </form>
         </div>
@@ -551,7 +551,7 @@
 </div>
 
 {% if ticket.status == 'accepted' %}
-<!-- Assist confirm modal -->
+<!-- Assist confirm modal — self-assign only, no dropdown -->
 <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -562,18 +562,18 @@
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="assistForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
+            <form id="assistConfirmForm{{ ticket.pk }}" method="post" action="{% url 'assist_ticket' ticket.pk %}">
                 <div class="modal-body p-4">
-                    {% csrf_token %}<input type="hidden" name="tab" value="accepted">
-                    <label class="form-label">Select staff to assign</label>
-                    <select name="assisted_by" class="form-select" required>
-                        <option value="">— Choose Staff —</option>
-                        {% for user in staff_users %}<option value="{{ user.id }}">{{ user.username|title }}</option>{% endfor %}
-                    </select>
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="accepted">
+                    <p style="font-family:'Open Sans',sans-serif;font-size:0.92rem;color:#495057;">
+                        Assign ticket <strong style="color:#1565c0;">{{ ticket.control_no }}</strong> to yourself?<br>
+                        <span style="font-size:0.84rem;color:#adb5bd;">You will be set as the assigned staff for this ticket.</span>
+                    </p>
                 </div>
                 <div class="modal-footer" style="background:#f8fafd;border-top:1px solid #e9ecef;">
                     <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn-mfooter-warn"><i class="bi bi-person-check me-1"></i>Assign</button>
+                    <button type="submit" class="btn-mfooter-warn"><i class="bi bi-person-check me-1"></i>Assign to Me</button>
                 </div>
             </form>
         </div>
@@ -645,7 +645,7 @@
     {% if messages %}
     {% for message in messages %}
     {% if 'new_ticket' in message.tags %}
-    <div class="toast show" role="alert" style="background:#1565c0;color:#fff;border-radius:10px;border:none;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+    <div class="toast show" role="alert" style="background:#1565c0;color:#fff;border-radius:10px;border:none;box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index: 100;">
         <div class="toast-header" style="background:#1565c0;color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);border-radius:10px 10px 0 0;">
             <i class="bi bi-bell-fill me-2 text-warning"></i>
             <strong class="me-auto">New Request Alert</strong>
@@ -661,6 +661,7 @@
 {% endblock %}
 
 {% block extra_js %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -701,13 +702,13 @@ document.addEventListener('DOMContentLoaded', function () {
         bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'))?.hide();
     });
 
-    // ── Toasts ──
+    // ── Django message toasts ──
     document.querySelectorAll('.toast').forEach(el => {
         new bootstrap.Toast(el, { autohide: true, delay: 15000 }).show();
     });
 });
 
-// ── WebSocket for live ticket alerts ──
+// ── WebSocket (original — kept as is) ──
 try {
     const socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
     socket.onmessage = function(e) {
@@ -715,62 +716,84 @@ try {
         if (data.type === 'new_ticket') {
             const countEl = document.querySelector('.new-count');
             if (countEl) countEl.textContent = data.count;
-            const toast = document.createElement('div');
-            toast.className = 'toast show position-fixed bottom-0 end-0 m-3';
-            toast.style.cssText = 'background:#1565c0;color:#fff;border-radius:10px;border:none;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;';
-            toast.innerHTML = `
-                <div class="toast-header" style="background:#1565c0;color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);">
-                    <i class="bi bi-bell-fill me-2 text-warning"></i>
-                    <strong class="me-auto">New Ticket</strong>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body" style="font-family:'Open Sans',sans-serif;font-size:0.88rem;">${data.message} — Check dashboard!</div>`;
-            document.body.appendChild(toast);
-            new bootstrap.Toast(toast, { autohide: true, delay: 10000 }).show();
         }
     };
     socket.onclose = () => console.warn('WebSocket closed');
 } catch(e) { console.warn('WebSocket unavailable'); }
 
-// ── LONG POLLING — new ticket notifications ──
-// ── FIXED POLLING - NO MORE LOOP ──
+// ── UNIFIED POLLING ──
 let lastPendingCount = {{ new_count | default:0 }};
-let lastControlNo = '';
+let lastControlNo    = '';
+let lastStateHash    = '';
+let isReloading      = false;
 
-function pollForUpdates() {
-    fetch('/poll-notifications/')
+function pollDashboardState() {
+    if (isReloading) return;
+
+    fetch('/poll-dashboard-state/')
         .then(r => r.json())
         .then(data => {
-            // Update badge only
-            const newBadge = document.querySelector('#pill-new .tab-badge');
-            if (newBadge) newBadge.textContent = data.pending_count;
+            if (isReloading) return;
 
-            // Show toast ONLY when a genuinely new ticket arrives
-            if (data.pending_count > lastPendingCount && 
-                data.latest_control_no && 
-                data.latest_control_no !== lastControlNo) {
-                
+            // ── Update tab badges ──
+            const newBadge       = document.querySelector('#pill-new .tab-badge');
+            const acceptedBadge  = document.querySelector('#pill-accepted .tab-badge');
+            const completedBadge = document.querySelector('#pill-completed .tab-badge');
+            const missingBadge   = document.querySelector('#pill-missing .tab-badge');
+            if (newBadge)       newBadge.textContent       = data.pending_count;
+            if (acceptedBadge)  acceptedBadge.textContent  = data.assisting_count;
+            if (completedBadge) completedBadge.textContent = data.completed_count;
+            if (missingBadge)   missingBadge.textContent   = data.missing_count;
+
+            // ── Update stat card values ──
+            const statValues = document.querySelectorAll('.stat-value');
+            if (statValues[0]) statValues[0].textContent = data.pending_count;
+            if (statValues[1]) statValues[1].textContent = data.assisting_count;
+            if (statValues[2]) statValues[2].textContent = data.completed_count;
+            if (statValues[3]) statValues[3].textContent = data.missing_count;
+
+            const stateChanged     = lastStateHash !== '' && data.state_hash !== lastStateHash;
+            const newTicketArrived = data.pending_count > lastPendingCount
+                                  && data.latest_control_no
+                                  && data.latest_control_no !== lastControlNo;
+
+            if (newTicketArrived) {
                 lastControlNo = data.latest_control_no;
                 showNewTicketToast(data);
-                
-                // Refresh the New tab AFTER showing toast (once)
-                setTimeout(() => {
-                    location.reload();
-                }, 1200);
+                scheduleReload(800);
+            } else if (stateChanged) {
+                showSuperAdminActionToast();
+                scheduleReload(800);
             }
 
             lastPendingCount = data.pending_count;
+            lastStateHash    = data.state_hash;
         })
         .catch(() => {})
         .finally(() => {
-            setTimeout(pollForUpdates, 5000);   // slower polling = less load
+            if (!isReloading) setTimeout(pollDashboardState, 5000);
         });
 }
 
+function scheduleReload(delay) {
+    if (isReloading) return;
+    isReloading = true;
+    setTimeout(() => {
+        const activeTab = document.querySelector('.tab-pill.active')?.id?.replace('pill-', '') || 'new';
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', activeTab);
+        window.location.href = url.toString();
+    }, delay);
+}
+
 function showNewTicketToast(data) {
+    const existing = document.getElementById('newTicketToast');
+    if (existing) existing.remove();
+
     const toast = document.createElement('div');
+    toast.id = 'newTicketToast';
     toast.style.cssText = `
-        position:fixed; bottom:24px; right:24px; z-index:9999;
+        position:fixed; bottom:24px; left:24px; z-index:9999;
         background:linear-gradient(90deg,#1a3a6b,#1565c0);
         color:#fff; border-radius:12px; padding:14px 20px;
         box-shadow:0 8px 32px rgba(21,101,192,0.3);
@@ -778,10 +801,10 @@ function showNewTicketToast(data) {
         border-left:4px solid #f9c900; max-width:320px;
     `;
     toast.innerHTML = `
-        <div style="font-family:'Montserrat',sans-serif; font-weight:700; margin-bottom:4px;">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
             🔔 New Ticket Submitted!
         </div>
-        <div style="opacity:0.85; font-size:0.78rem;">
+        <div style="opacity:0.85;font-size:0.78rem;">
             ${data.latest_requested_by} — ${data.latest_control_no}
             ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
         </div>
@@ -789,35 +812,53 @@ function showNewTicketToast(data) {
             <button onclick="window.location.reload()"
                     style="background:rgba(255,255,255,0.2);border:none;color:#fff;
                            padding:4px 12px;border-radius:6px;cursor:pointer;
-                           font-size:0.75rem;font-weight:600;">
-                View Now
-            </button>
+                           font-size:0.75rem;font-weight:600;">View Now</button>
             <button onclick="this.parentElement.parentElement.remove()"
                     style="background:transparent;border:none;color:rgba(255,255,255,0.6);
-                           padding:4px 8px;cursor:pointer;font-size:0.75rem;margin-left:4px;">
-                Dismiss
-            </button>
-        </div>
-    `;
+                           padding:4px 8px;cursor:pointer;font-size:0.75rem;margin-left:4px;">Dismiss</button>
+        </div>`;
     document.body.appendChild(toast);
 
     try {
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
+        const ctx  = new AudioContext();
+        const osc  = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 520;
-        gain.gain.value = 0.1;
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 520; gain.gain.value = 0.1;
+        osc.start(); osc.stop(ctx.currentTime + 0.15);
     } catch(e) {}
 
     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
 }
 
-pollForUpdates();
-</script>
-{% endblock %}
+function showSuperAdminActionToast() {
+    const existing = document.getElementById('saActionToast');
+    if (existing) existing.remove();
 
+    const toast = document.createElement('div');
+    toast.id = 'saActionToast';
+    toast.style.cssText = `
+        position:fixed; bottom:24px; left:24px; z-index:9999;
+        background:linear-gradient(90deg,#92400e,#d97706);
+        color:#fff; border-radius:12px; padding:14px 20px;
+        box-shadow:0 8px 32px rgba(217,119,6,0.35);
+        font-family:'Open Sans',sans-serif; font-size:0.85rem;
+        border-left:4px solid #f9c900; max-width:320px;
+    `;
+    toast.innerHTML = `
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+            ⚡ Dashboard Updated
+        </div>
+        <div style="opacity:0.9;font-size:0.78rem;">
+            Super Admin made a change — refreshing your view…
+        </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 6000);
+}
+
+
+pollDashboardState();
+</script>
+
+{% endblock %}
 

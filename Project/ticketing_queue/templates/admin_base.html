@@ -173,7 +173,7 @@
             width: var(--right-panel-width); background: #f8f9fa;
             border-left: 1px solid #dee2e6; overflow-y: auto;
             padding: 1rem 0.75rem; box-shadow: -2px 0 8px rgba(0,0,0,0.08);
-            z-index: 1026;
+            z-index: 100;
         }
 
         .rp-title {
@@ -296,6 +296,52 @@
     </div>
     <div class="navbar-right">
         <span class="navbar-logged-in">Logged in as: <strong>{{ request.user.username|upper|default:"STAFF" }}</strong></span>
+
+        <!-- ── Staff Notification Bell ── -->
+        <div style="position:relative;display:inline-block;">
+            <button id="staffNotifBell" onclick="toggleStaffNotifDropdown()"
+                    style="background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);
+                           color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;
+                           position:relative;transition:background 0.2s;font-size:1rem;">
+                <i class="bi bi-bell-fill"></i>
+                <span id="staffNotifBadge"
+                      style="display:none;position:absolute;top:-6px;right:-6px;
+                             background:#dc3545;color:#fff;border-radius:50%;
+                             width:18px;height:18px;font-size:0.6rem;font-weight:800;
+                             font-family:'Montserrat',sans-serif;
+                             align-items:center;justify-content:center;
+                             border:2px solid #1565c0;">0</span>
+            </button>
+            <!-- Dropdown -->
+            <div id="staffNotifDropdown"
+                 style="display:none;position:absolute;top:42px;right:0;
+                        background:#fff;border-radius:10px;min-width:300px;
+                        box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:99999;
+                        border:1px solid #e9ecef;overflow:hidden;">
+                <div style="background:linear-gradient(90deg,#146c43,#198754);
+                            padding:10px 14px;display:flex;align-items:center;
+                            justify-content:space-between;">
+                    <span style="font-family:'Montserrat',sans-serif;font-size:0.78rem;
+                                 font-weight:800;color:#fff;letter-spacing:0.05em;">
+                        📋 PENDING ASSIGNMENTS
+                    </span>
+                    <button onclick="clearStaffNotifs()"
+                            style="background:rgba(255,255,255,0.2);border:none;color:#fff;
+                                   font-size:0.65rem;font-weight:700;padding:2px 8px;
+                                   border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;">
+                        Clear All
+                    </button>
+                </div>
+                <div id="staffNotifList" style="max-height:320px;overflow-y:auto;">
+                    <div id="staffNotifEmpty"
+                         style="padding:20px;text-align:center;color:#adb5bd;font-size:0.82rem;">
+                        <i class="bi bi-check-circle" style="font-size:1.4rem;display:block;margin-bottom:6px;color:#198754;"></i>
+                        No pending assignments
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#logoutModal">LOGOUT</button>
         <img src="{% static 'images/CHD4A.png' %}" alt="CHD4A" class="navbar-right-logo">
     </div>
@@ -346,7 +392,7 @@
     </div>
     {% if assisting_tickets %}
         {% for ticket in assisting_tickets %}
-        <div class="rp-ticket">
+        <div class="rp-ticket" data-pk="{{ ticket.pk }}">
             <div class="rp-ticket-header">
                 <span class="rp-ticket-number">{{ ticket.control_no }}</span>
                 <span class="rp-online-dot"></span>
@@ -363,16 +409,42 @@
                 <div class="timer fw-bold" id="timer-{{ ticket.pk }}" data-assisted-at="{{ ticket.assisted_at|date:'c' }}" style="font-size:0.88rem;">...</div>
             </div>
             <div style="padding:0.5rem 0.65rem;background:#f8f9fa;border-top:1px solid #e9ecef;">
-                <button type="button" class="btn btn-success btn-sm w-100 complete-btn"
-                        data-ticket-id="{{ ticket.pk }}"
-                        data-bs-toggle="modal" data-bs-target="#confirmCompleteModal"
+                <button type="button" class="btn btn-success btn-sm w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#rpCompleteModal{{ ticket.pk }}"
                         style="font-size:0.72rem;font-weight:600;padding:0.35rem 0.5rem;border-radius:5px;">
                     <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
                 </button>
             </div>
         </div>
-        <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="completeForm{{ ticket.pk }}" class="d-none">
+
+        <div class="modal fade" id="rpCompleteModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
+                    <div style="background:linear-gradient(90deg,#146c43 0%,#198754 100%);border-bottom:3px solid #f9c900;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i class="bi bi-patch-check-fill text-warning fs-5"></i>
+                            <h5 style="font-family:'Montserrat',sans-serif;font-size:0.95rem;font-weight:800;color:#fff;margin:0;">Confirm Completion</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4" style="font-family:'Open Sans',sans-serif;font-size:0.92rem;color:#495057;">
+                        Mark ticket <strong style="color:#1565c0;">{{ ticket.control_no }}</strong> as completed?
+                    </div>
+                    <div class="modal-footer" style="background:#f8fafd;border-top:1px solid #e9ecef;">
+                        <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn-mfooter-green"
+                                onclick="document.getElementById('rpCompleteForm{{ ticket.pk }}').submit();">
+                            <i class="bi bi-check-circle me-1"></i>Yes, Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="rpCompleteForm{{ ticket.pk }}" class="d-none">
             {% csrf_token %}
+            <input type="hidden" name="tab" value="accepted">
         </form>
         {% endfor %}
     {% else %}
@@ -512,7 +584,7 @@ function pollAssisting() {
         })
         .catch(() => {})
         .finally(() => {
-            setTimeout(pollAssisting, 3000);
+            setTimeout(pollAssisting, 1500);
         });
 }
 
@@ -591,7 +663,7 @@ function updateRightPanel(tickets) {
             // Add hidden form
             const form = document.createElement('form');
             form.method = 'post';
-            form.action = `/complete-ticket/${t.pk}/`;
+            form.action = `/ticket/${t.pk}/complete/`;
             form.id = 'completeForm' + t.pk;
             form.className = 'd-none';
             form.innerHTML = `
@@ -623,11 +695,395 @@ function sendHeartbeat() {
         }
     }).catch(() => {});
 }
+
 sendHeartbeat(); // send immediately on page load
 setInterval(sendHeartbeat, 60000); // then every 60 seconds
+
+// ── Staff Assignment Notifications — runs on ALL pages ──
+let lastAssignedControlNo = '';
+let staffNotifList = [];
+
+function pollMyNotifications() {
+    fetch('/poll-my-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.assigned && data.control_no !== lastAssignedControlNo) {
+                lastAssignedControlNo = data.control_no;
+                addStaffNotif({ control_no: data.control_no, ticket_pk: data.ticket_pk });
+                showAssignedToast(data.control_no, data.ticket_pk);
+            }
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollMyNotifications, 5000);
+        });
+}
+
+function addStaffNotif(data) {
+    if (staffNotifList.find(n => n.control_no === data.control_no)) return;
+    staffNotifList.push(data);
+    renderStaffNotifList();
+    updateStaffNotifBadge();
+}
+
+function renderStaffNotifList() {
+    const list = document.getElementById('staffNotifList');
+    const empty = document.getElementById('staffNotifEmpty');
+    if (!list) return;
+
+    list.querySelectorAll('.staff-notif-item').forEach(el => el.remove());
+
+    if (staffNotifList.length === 0) {
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    staffNotifList.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'staff-notif-item';
+        div.style.cssText = `
+            padding:12px 14px;border-bottom:1px solid #f2f4f8;background:#fff;
+        `;
+        div.innerHTML = `
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                <div style="flex:1;">
+                    <div style="font-family:'Montserrat',sans-serif;font-size:0.72rem;
+                                font-weight:800;color:#198754;margin-bottom:3px;">
+                        📋 New Assignment
+                    </div>
+                    <div style="font-family:'Courier New',monospace;font-size:0.78rem;
+                                font-weight:700;color:#1565c0;margin-bottom:4px;">
+                        ${item.control_no}
+                    </div>
+                    <div style="font-size:0.74rem;color:#6c757d;">
+                        Super Admin assigned you to this ticket.
+                    </div>
+                </div>
+                <button onclick="removeStaffNotif(${index})"
+                        style="background:none;border:none;color:#adb5bd;
+                               cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:6px;">
+                <button onclick="triggerAssignmentToast('${item.control_no}', ${item.ticket_pk}, ${index})"
+                        style="background:#198754;color:#fff;border:none;
+                               font-family:'Montserrat',sans-serif;font-size:0.68rem;
+                               font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
+                    Accept / Reject
+                </button>
+            </div>`;
+        list.appendChild(div);
+    });
+}
+
+function removeStaffNotif(index) {
+    staffNotifList.splice(index, 1);
+    renderStaffNotifList();
+    updateStaffNotifBadge();
+}
+
+function clearStaffNotifs() {
+    staffNotifList = [];
+    renderStaffNotifList();
+    updateStaffNotifBadge();
+    const dropdown = document.getElementById('staffNotifDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+function updateStaffNotifBadge() {
+    const badge = document.getElementById('staffNotifBadge');
+    if (!badge) return;
+    if (staffNotifList.length > 0) {
+        badge.textContent = staffNotifList.length;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function toggleStaffNotifDropdown() {
+    const dropdown = document.getElementById('staffNotifDropdown');
+    if (dropdown) dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+    const bell = document.getElementById('staffNotifBell');
+    const dropdown = document.getElementById('staffNotifDropdown');
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+function triggerAssignmentToast(controlNo, ticketPk, notifIndex) {
+    const dropdown = document.getElementById('staffNotifDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    staffNotifList.splice(notifIndex, 1);
+    renderStaffNotifList();
+    updateStaffNotifBadge();
+    showAssignedToast(controlNo, ticketPk);
+}
+
+function showAssignedToast(controlNo, ticketPk) {
+    const existing = document.getElementById('assignmentToast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'assignmentToast';
+    toast.style.cssText = `
+        position:fixed; bottom:24px; right:24px; z-index:9999;
+        background:linear-gradient(90deg,#146c43,#198754);
+        color:#fff; border-radius:12px; padding:14px 20px;
+        box-shadow:0 8px 32px rgba(25,135,84,0.35);
+        font-family:'Open Sans',sans-serif; font-size:0.85rem;
+        border-left:4px solid #f9c900; max-width:340px;
+        transition: all 0.3s ease;
+    `;
+    toast.innerHTML = `
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:6px;font-size:0.9rem;">
+            📋 You've Been Assigned!
+        </div>
+        <div style="opacity:0.9;font-size:0.82rem;margin-bottom:10px;">
+            Super Admin assigned you to ticket <strong>${controlNo}</strong>.
+            Do you accept this assignment?
+        </div>
+        <div id="assignToastButtons-${ticketPk}" style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button onclick="handleAcceptAssignment(${ticketPk}, '${controlNo}')"
+                    style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.6);
+                           color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;
+                           font-size:0.78rem;font-weight:700;font-family:'Montserrat',sans-serif;">
+                ✅ Accept
+            </button>
+            <button onclick="showRejectInput(${ticketPk})"
+                    style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);
+                           color:rgba(255,255,255,0.85);padding:5px 14px;border-radius:6px;cursor:pointer;
+                           font-size:0.78rem;font-weight:700;font-family:'Montserrat',sans-serif;">
+                ❌ Reject
+            </button>
+        </div>
+        <div id="rejectInput-${ticketPk}" style="display:none;margin-top:10px;">
+            <textarea id="rejectReason-${ticketPk}" placeholder="Enter reason for rejection..."
+                      style="width:100%;border-radius:7px;border:1.5px solid rgba(255,255,255,0.4);
+                             background:rgba(0,0,0,0.2);color:#fff;padding:8px 10px;
+                             font-family:'Open Sans',sans-serif;font-size:0.8rem;
+                             resize:none;outline:none;box-sizing:border-box;"
+                      rows="3"></textarea>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+                <button onclick="handleRejectAssignment(${ticketPk}, '${controlNo}')"
+                        style="background:#dc3545;border:none;color:#fff;
+                               padding:5px 14px;border-radius:6px;cursor:pointer;
+                               font-size:0.78rem;font-weight:700;font-family:'Montserrat',sans-serif;flex:1;">
+                    Submit Rejection
+                </button>
+                <button onclick="showAssignButtons(${ticketPk})"
+                        style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);
+                               color:rgba(255,255,255,0.7);padding:5px 10px;border-radius:6px;
+                               cursor:pointer;font-size:0.78rem;font-family:'Montserrat',sans-serif;">
+                    Back
+                </button>
+            </div>
+        </div>`;
+    document.body.appendChild(toast);
+
+    try {
+        const ctx  = new AudioContext();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 640; gain.gain.value = 0.1;
+        osc.start(); osc.stop(ctx.currentTime + 0.2);
+    } catch(e) {}
+
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300000);
+}
+
+function showRejectInput(ticketPk) {
+    document.getElementById('assignToastButtons-' + ticketPk).style.display = 'none';
+    document.getElementById('rejectInput-' + ticketPk).style.display = 'block';
+    document.getElementById('rejectReason-' + ticketPk).focus();
+}
+
+function showAssignButtons(ticketPk) {
+    document.getElementById('rejectInput-' + ticketPk).style.display = 'none';
+    document.getElementById('assignToastButtons-' + ticketPk).style.display = 'flex';
+}
+
+function handleAcceptAssignment(ticketPk, controlNo) {
+    fetch(`/accept-assignment/${ticketPk}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const toast = document.getElementById('assignmentToast');
+            if (toast) {
+                toast.innerHTML = `
+                    <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+                        ✅ Assignment Accepted
+                    </div>
+                    <div style="opacity:0.9;font-size:0.78rem;">
+                        You are now assigned to ticket <strong>${controlNo}</strong>.
+                    </div>`;
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+            }
+            // Remove from bell list
+            staffNotifList = staffNotifList.filter(n => n.control_no !== controlNo);
+            renderStaffNotifList();
+            updateStaffNotifBadge();
+        }
+    })
+    .catch(() => {});
+}
+
+function handleRejectAssignment(ticketPk, controlNo) {
+    const reason = document.getElementById('rejectReason-' + ticketPk)?.value?.trim();
+    if (!reason) {
+        document.getElementById('rejectReason-' + ticketPk).style.borderColor = '#dc3545';
+        document.getElementById('rejectReason-' + ticketPk).placeholder = 'Please enter a reason before submitting.';
+        return;
+    }
+
+    fetch(`/reject-assignment/${ticketPk}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const toast = document.getElementById('assignmentToast');
+            if (toast) {
+                toast.style.background = 'linear-gradient(90deg,#7f1d1d,#dc3545)';
+                toast.innerHTML = `
+                    <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+                        ❌ Assignment Rejected
+                    </div>
+                    <div style="opacity:0.9;font-size:0.78rem;">
+                        You rejected ticket <strong>${controlNo}</strong>. Super Admin has been notified.
+                    </div>`;
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
+            }
+            // Remove from bell list
+            staffNotifList = staffNotifList.filter(n => n.control_no !== controlNo);
+            renderStaffNotifList();
+            updateStaffNotifBadge();
+            lastAssignedControlNo = '';
+        }
+    })
+    .catch(() => {});
+}
+
+
+// ── New ticket polling — runs on ALL pages ──
+// ── New ticket polling — runs on ALL pages ──
+let lastNewTicketCount = -1;
+let lastNewControlNo = '';
+let newTicketFirstPoll = true;
+
+function pollNewTickets() {
+    // Skip on dashboard — dashboard has its own full polling with auto-reload
+    const path = window.location.pathname;
+    if (path.includes('staff/dashboard') || path.includes('staff_dashboard')) {
+        setTimeout(pollNewTickets, 5000);
+        return;
+    }
+
+    fetch('/poll-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            // On first poll, just record current state — don't show toast
+            if (newTicketFirstPoll) {
+                newTicketFirstPoll = false;
+                lastNewTicketCount = data.pending_count;
+                lastNewControlNo = data.latest_control_no;
+                return;
+            }
+
+            if (data.pending_count > lastNewTicketCount &&
+                data.latest_control_no &&
+                data.latest_control_no !== lastNewControlNo) {
+
+                lastNewControlNo = data.latest_control_no;
+                showNewTicketToastBase(data);
+            }
+            lastNewTicketCount = data.pending_count;
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollNewTickets, 5000);
+        });
+}
+
+pollAssisting();
+pollMyNotifications();
+pollNewTickets();
+
+
+function showNewTicketToastBase(data) {
+    const existing = document.getElementById('newTicketToastBase');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'newTicketToastBase';
+    toast.style.cssText = `
+        position:fixed; bottom:24px; left:24px; z-index:9999;
+        background:linear-gradient(90deg,#1a3a6b,#1565c0);
+        color:#fff; border-radius:12px; padding:14px 20px;
+        box-shadow:0 8px 32px rgba(21,101,192,0.3);
+        font-family:'Open Sans',sans-serif; font-size:0.85rem;
+        border-left:4px solid #f9c900; max-width:320px;
+    `;
+    toast.innerHTML = `
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+            🔔 New Ticket Submitted!
+        </div>
+        <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
+            ${data.latest_requested_by} — ${data.latest_control_no}
+            ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
+        </div>
+        <div style="display:flex;gap:6px;">
+            <a href="/staff/dashboard/?tab=new"
+               style="background:rgba(255,255,255,0.2);border:none;color:#fff;
+                      padding:4px 12px;border-radius:6px;cursor:pointer;
+                      font-size:0.75rem;font-weight:600;text-decoration:none;">
+                View Now
+            </a>
+            <button onclick="this.parentElement.parentElement.remove()"
+                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
+                           padding:4px 8px;cursor:pointer;font-size:0.75rem;">
+                Dismiss
+            </button>
+        </div>`;
+    document.body.appendChild(toast);
+
+    try {
+        const ctx  = new AudioContext();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 520; gain.gain.value = 0.1;
+        osc.start(); osc.stop(ctx.currentTime + 0.15);
+    } catch(e) {}
+
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
+}
+
+
 
 </script>
 
 {% block extra_js %}{% endblock %}
 </body>
 </html>
+
+
+

@@ -159,7 +159,7 @@
             width: var(--right-panel-width); background: #f8f9fa;
             border-left: 1px solid #dee2e6; overflow-y: auto;
             padding: 1rem 0.75rem; box-shadow: -2px 0 8px rgba(0,0,0,0.08);
-            z-index: 1026;
+            z-index: 100;
         }
 
         .rp-title {
@@ -172,6 +172,54 @@
             width: 7px; height: 7px; background: #dc3545;
             border-radius: 50%; animation: rp-blink 1.4s infinite;
         }
+        /* ── RIGHT PANEL TICKET CARDS ── */
+        .rp-ticket {
+            background: #fff; border-radius: 8px; margin-bottom: 0.75rem;
+            overflow: hidden; border: 1px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+        }
+        .rp-ticket-header {
+            background-color: #212529; padding: 0.5rem 0.65rem;
+            display: flex; align-items: center; justify-content: space-between; gap: 0.3rem;
+        }
+        .rp-ticket-number {
+            color: #fff; font-family: 'Courier New', monospace;
+            font-size: 0.78rem; font-weight: 700; word-break: break-all;
+            line-height: 1.4; flex: 1;
+        }
+        .rp-online-dot {
+            width: 7px; height: 7px; min-width: 7px; background: #2ecc71;
+            border-radius: 50%; animation: rp-blink 1.2s infinite; flex-shrink: 0;
+        }
+        .rp-ticket-agent {
+            padding: 0.55rem 0.65rem; border-bottom: 1px dashed #e9ecef;
+        }
+        .rp-agent-label {
+            font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: #adb5bd; margin-bottom: 0.3rem;
+        }
+        .rp-agent-row { display: flex; align-items: center; gap: 0.4rem; }
+        .rp-avatar {
+            width: 24px; height: 24px; min-width: 24px; border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #6ea8fe); color: #fff;
+            font-size: 0.62rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .rp-agent-name {
+            font-size: 0.75rem; font-weight: 700; color: #0d6efd;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .rp-ticket-timer {
+            padding: 0.45rem 0.65rem; background: #fffaf4;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .rp-timer-label {
+            font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.07em; color: #adb5bd;
+        }
+        .rp-empty { text-align: center; padding: 2rem 0.5rem; color: #adb5bd; }
+        .rp-empty i { font-size: 1.8rem; display: block; margin-bottom: 0.5rem; }
+        .rp-empty p { font-size: 0.75rem; margin: 0; line-height: 1.5; }
         @keyframes rp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         /* Modal Styles - Consistent with Ticket Details */
@@ -230,6 +278,53 @@
     </div>
     <div class="navbar-right">
         <span class="navbar-logged-in">Logged in as: <strong>{{ request.user.username|upper|default:"SUPER ADMIN" }}</strong></span>
+
+        <!-- ── Super Admin Notification Bell ── -->
+        <div style="position:relative;display:inline-block;">
+            <button id="saNotifBell" onclick="toggleSANotifDropdown()"
+                    style="background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);
+                           color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;
+                           position:relative;transition:background 0.2s;font-size:1rem;">
+                <i class="bi bi-bell-fill"></i>
+                <span id="saNotifBadge"
+                      style="display:none;position:absolute;top:-6px;right:-6px;
+                             background:#dc3545;color:#fff;border-radius:50%;
+                             width:18px;height:18px;font-size:0.6rem;font-weight:800;
+                             font-family:'Montserrat',sans-serif;
+                             display:none;align-items:center;justify-content:center;
+                             border:2px solid #1565c0;">0</span>
+            </button>
+            <!-- Dropdown -->
+            <div id="saNotifDropdown"
+                 style="display:none;position:absolute;top:42px;right:0;
+                        background:#fff;border-radius:10px;min-width:300px;
+                        box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:99999;
+                        border:1px solid #e9ecef;overflow:hidden;">
+                <div style="background:linear-gradient(90deg,#7f1d1d,#dc3545);
+                            padding:10px 14px;display:flex;align-items:center;
+                            justify-content:space-between;">
+                    <span style="font-family:'Montserrat',sans-serif;font-size:0.78rem;
+                                 font-weight:800;color:#fff;letter-spacing:0.05em;">
+                        ⚠️ REJECTED ASSIGNMENTS
+                    </span>
+                    <button onclick="clearSANotifs()"
+                            style="background:rgba(255,255,255,0.2);border:none;color:#fff;
+                                   font-size:0.65rem;font-weight:700;padding:2px 8px;
+                                   border-radius:4px;cursor:pointer;font-family:'Montserrat',sans-serif;">
+                        Clear All
+                    </button>
+                </div>
+                <div id="saNotifList"
+                     style="max-height:320px;overflow-y:auto;">
+                    <div id="saNotifEmpty"
+                         style="padding:20px;text-align:center;color:#adb5bd;font-size:0.82rem;">
+                        <i class="bi bi-check-circle" style="font-size:1.4rem;display:block;margin-bottom:6px;color:#198754;"></i>
+                        No rejected assignments
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#logoutModal">LOGOUT</button>
         <img src="{% static 'images/CHD4A.png' %}" alt="CHD4A" class="navbar-right-logo">
     </div>
@@ -299,7 +394,7 @@
     </div>
     {% if assisting_tickets %}
         {% for ticket in assisting_tickets %}
-        <div class="rp-ticket">
+        <div class="rp-ticket" data-pk="{{ ticket.pk }}">
             <div class="rp-ticket-header">
                 <span class="rp-ticket-number">{{ ticket.control_no }}</span>
                 <span class="rp-online-dot"></span>
@@ -316,17 +411,43 @@
                 <div class="timer fw-bold" id="timer-{{ ticket.pk }}" data-assisted-at="{{ ticket.assisted_at|date:'c' }}" style="font-size:0.88rem;">...</div>
             </div>
             <div style="padding:0.5rem 0.65rem;background:#f8f9fa;border-top:1px solid #e9ecef;">
-                <button type="button" class="btn btn-success btn-sm w-100 complete-btn"
-                        data-ticket-id="{{ ticket.pk }}"
-                        data-bs-toggle="modal" data-bs-target="#confirmCompleteModal"
+                <button type="button" class="btn btn-success btn-sm w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#rpCompleteModal{{ ticket.pk }}"
                         style="font-size:0.72rem;font-weight:600;padding:0.35rem 0.5rem;border-radius:5px;">
                     <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
                 </button>
             </div>
         </div>
-        <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="completeForm{{ ticket.pk }}" class="d-none">
+
+        <div class="modal fade" id="rpCompleteModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
+                    <div style="background:linear-gradient(90deg,#146c43 0%,#198754 100%);border-bottom:3px solid #f9c900;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i class="bi bi-patch-check-fill text-warning fs-5"></i>
+                            <h5 style="font-family:'Montserrat',sans-serif;font-size:0.95rem;font-weight:800;color:#fff;margin:0;">Confirm Completion</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4" style="font-family:'Open Sans',sans-serif;font-size:0.92rem;color:#495057;">
+                        Mark ticket <strong style="color:#1565c0;">{{ ticket.control_no }}</strong> as completed?
+                    </div>
+                    <div class="modal-footer" style="background:#f8fafd;border-top:1px solid #e9ecef;">
+                        <button type="button" class="btn-mfooter-cancel" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn-mfooter-green"
+                                onclick="document.getElementById('rpCompleteForm{{ ticket.pk }}').submit();">
+                            <i class="bi bi-check-circle me-1"></i>Yes, Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'complete_ticket' ticket.pk %}" id="rpCompleteForm{{ ticket.pk }}" class="d-none">
             {% csrf_token %}
             <input type="hidden" name="from_super_admin" value="1">
+            <input type="hidden" name="tab" value="accepted">
         </form>
         {% endfor %}
     {% else %}
@@ -465,7 +586,7 @@ function pollAssisting() {
         })
         .catch(() => {})
         .finally(() => {
-            setTimeout(pollAssisting, 3000);
+            setTimeout(pollAssisting, 1500);
         });
 }
 
@@ -579,8 +700,306 @@ function sendHeartbeat() {
 sendHeartbeat(); // send immediately on page load
 setInterval(sendHeartbeat, 60000); // then every 60 seconds
 
+
+// ── Super Admin Notification Bell ──
+let saNotifList = [];
+let lastRejectedControlNo = '';
+
+function toggleSANotifDropdown() {
+    const dropdown = document.getElementById('saNotifDropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const bell = document.getElementById('saNotifBell');
+    const dropdown = document.getElementById('saNotifDropdown');
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+function addSANotif(data) {
+    // Avoid duplicates
+    if (saNotifList.find(n => n.control_no === data.control_no && n.rejected_by === data.rejected_by)) return;
+
+    saNotifList.push(data);
+    renderSANotifList();
+    updateSANotifBadge();
+}
+
+function renderSANotifList() {
+    const list = document.getElementById('saNotifList');
+    const empty = document.getElementById('saNotifEmpty');
+    if (!list) return;
+
+    // Remove old notif items (keep empty state)
+    list.querySelectorAll('.sa-notif-item').forEach(el => el.remove());
+
+    if (saNotifList.length === 0) {
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    saNotifList.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'sa-notif-item';
+        div.style.cssText = `
+            padding:12px 14px;border-bottom:1px solid #f2f4f8;
+            background:#fff;transition:background 0.1s;
+        `;
+        div.innerHTML = `
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                <div style="flex:1;">
+                    <div style="font-family:'Montserrat',sans-serif;font-size:0.75rem;
+                                font-weight:800;color:#dc3545;margin-bottom:3px;">
+                        ❌ ${item.rejected_by} rejected
+                    </div>
+                    <div style="font-family:'Courier New',monospace;font-size:0.78rem;
+                                font-weight:700;color:#1565c0;margin-bottom:4px;">
+                        ${item.control_no}
+                    </div>
+                    <div style="font-size:0.75rem;color:#6c757d;font-style:italic;
+                                background:#f8f9fa;padding:4px 8px;border-radius:4px;
+                                border-left:3px solid #dc3545;">
+                        "${item.reason}"
+                    </div>
+                </div>
+                <button onclick="removeSANotif(${index})"
+                        style="background:none;border:none;color:#adb5bd;
+                               cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div style="margin-top:8px;">
+                <button onclick="reassignTicket('${item.control_no}'); document.getElementById('saNotifDropdown').style.display='none';"
+                        style="background:#1565c0;color:#fff;border:none;
+                            font-family:'Montserrat',sans-serif;font-size:0.68rem;
+                            font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
+                    Reassign Now
+                </button>
+            </div>`;
+        list.appendChild(div);
+    });
+}
+
+function removeSANotif(index) {
+    saNotifList.splice(index, 1);
+    renderSANotifList();
+    updateSANotifBadge();
+}
+
+function clearSANotifs() {
+    saNotifList = [];
+    renderSANotifList();
+    updateSANotifBadge();
+    document.getElementById('saNotifDropdown').style.display = 'none';
+}
+
+function updateSANotifBadge() {
+    const badge = document.getElementById('saNotifBadge');
+    if (!badge) return;
+    if (saNotifList.length > 0) {
+        badge.textContent = saNotifList.length;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// ── Poll for staff rejection notifications ──
+function pollSuperAdminNotifications() {
+    fetch('/poll-super-admin-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.rejected && data.control_no !== lastRejectedControlNo) {
+                lastRejectedControlNo = data.control_no;
+                addSANotif(data);
+                showRejectionToast(data);
+            }
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollSuperAdminNotifications, 2000);
+        });
+}
+
+function showRejectionToast(data) {
+    const existing = document.getElementById('rejectionToast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'rejectionToast';
+    toast.style.cssText = `
+        position:fixed; bottom:24px; right:24px; z-index:9999;
+        background:linear-gradient(90deg,#7f1d1d,#dc3545);
+        color:#fff; border-radius:12px; padding:14px 20px;
+        box-shadow:0 8px 32px rgba(220,53,69,0.35);
+        font-family:'Open Sans',sans-serif; font-size:0.85rem;
+        border-left:4px solid #f9c900; max-width:340px;
+    `;
+    toast.innerHTML = `
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:6px;font-size:0.9rem;">
+            ⚠️ Assignment Rejected!
+        </div>
+        <div style="opacity:0.9;font-size:0.82rem;margin-bottom:4px;">
+            <strong>${data.rejected_by}</strong> rejected ticket <strong>${data.control_no}</strong>.
+        </div>
+        <div style="background:rgba(0,0,0,0.2);border-radius:6px;padding:8px 10px;
+                    font-size:0.78rem;opacity:0.9;margin-bottom:10px;font-style:italic;">
+            "${data.reason}"
+        </div>
+        <div style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;">
+            Ticket has been returned to the Assigned tab for reassignment.
+        </div>
+        <div style="display:flex;gap:6px;">
+            <button onclick="reassignTicket('${data.control_no}')"
+                    style="background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.5);
+                           color:#fff;padding:5px 14px;border-radius:6px;cursor:pointer;
+                           font-size:0.75rem;font-weight:700;font-family:'Montserrat',sans-serif;">
+                Reassign Now
+            </button>
+            <button onclick="this.parentElement.parentElement.remove()"
+                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
+                           padding:5px 8px;cursor:pointer;font-size:0.75rem;">
+                Dismiss
+            </button>
+        </div>`;
+    document.body.appendChild(toast);
+
+    try {
+        const ctx  = new AudioContext();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 380; gain.gain.value = 0.12;
+        osc.start(); osc.stop(ctx.currentTime + 0.25);
+    } catch(e) {}
+
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 60000);
+}
+
+
+function reassignTicket(controlNo) {
+    // Close any open dropdowns
+    document.getElementById('saNotifDropdown').style.display = 'none';
+
+    // If already on super admin dashboard, find and open the assign modal
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('super') && currentPath.includes('dashboard')) {
+        // Find the assign modal for this ticket by searching assist modal buttons
+        let found = false;
+        document.querySelectorAll('[data-bs-target^="#assistModal"]').forEach(btn => {
+            const modal = document.querySelector(btn.getAttribute('data-bs-target'));
+            if (modal && modal.innerHTML.includes(controlNo)) {
+                found = true;
+                // Switch to new tab first
+                if (typeof switchTab === 'function') switchTab('new');
+                setTimeout(() => {
+                    new bootstrap.Modal(modal).show();
+                }, 300);
+            }
+        });
+        if (!found) {
+            // Ticket might be in accepted tab
+            if (typeof switchTab === 'function') switchTab('new');
+        }
+    } else {
+        // Navigate to super admin dashboard new tab
+        window.location.href = '/super/dashboard/?tab=new';
+    }
+}
+
+pollAssisting();
+pollSuperAdminNotifications();
+
+// ── New ticket polling — runs on ALL pages ──
+let lastSANewTicketCount = -1;
+let lastSANewControlNo = '';
+let saNewTicketFirstPoll = true;
+
+function pollSANewTickets() {
+    fetch('/poll-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            // On first poll, just record current state — don't show toast
+            if (saNewTicketFirstPoll) {
+                saNewTicketFirstPoll = false;
+                lastSANewTicketCount = data.pending_count;
+                lastSANewControlNo = data.latest_control_no;
+                return;
+            }
+
+            if (data.pending_count > lastSANewTicketCount &&
+                data.latest_control_no &&
+                data.latest_control_no !== lastSANewControlNo) {
+
+                lastSANewControlNo = data.latest_control_no;
+                showSANewTicketToast(data);
+            }
+            lastSANewTicketCount = data.pending_count;
+        })
+        .catch(() => {})
+        .finally(() => {
+            setTimeout(pollSANewTickets, 5000);
+        });
+}
+
+function showSANewTicketToast(data) {
+    const existing = document.getElementById('saNewTicketToast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'saNewTicketToast';
+    toast.style.cssText = `
+        position:fixed; bottom:24px; left:24px; z-index:9999;
+        background:linear-gradient(90deg,#1a3a6b,#1565c0);
+        color:#fff; border-radius:12px; padding:14px 20px;
+        box-shadow:0 8px 32px rgba(21,101,192,0.3);
+        font-family:'Open Sans',sans-serif; font-size:0.85rem;
+        border-left:4px solid #f9c900; max-width:320px;
+    `;
+    toast.innerHTML = `
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+            🔔 New Ticket Submitted!
+        </div>
+        <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
+            ${data.latest_requested_by} — ${data.latest_control_no}
+            ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
+        </div>
+        <div style="display:flex;gap:6px;">
+            <a href="/super/dashboard/?tab=new"
+               style="background:rgba(255,255,255,0.2);border:none;color:#fff;
+                      padding:4px 12px;border-radius:6px;cursor:pointer;
+                      font-size:0.75rem;font-weight:600;text-decoration:none;">
+                View Now
+            </a>
+            <button onclick="this.parentElement.parentElement.remove()"
+                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
+                           padding:4px 8px;cursor:pointer;font-size:0.75rem;">
+                Dismiss
+            </button>
+        </div>`;
+    document.body.appendChild(toast);
+
+    try {
+        const ctx  = new AudioContext();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 520; gain.gain.value = 0.1;
+        osc.start(); osc.stop(ctx.currentTime + 0.15);
+    } catch(e) {}
+
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
+}
+
+pollSANewTickets();
+
 </script>
 
 {% block extra_js %}{% endblock %}
 </body>
 </html>
+

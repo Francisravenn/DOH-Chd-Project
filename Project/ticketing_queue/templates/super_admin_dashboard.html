@@ -578,19 +578,19 @@
             <span class="stat-label">New Requests</span>
             <span class="stat-value">{{ new_count }}</span>
             <span class="stat-desc">Pending for review</span>
-            <a href="#new-content" class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('new')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card yellow">
             <span class="stat-label">Assigned / Assisting</span>
             <span class="stat-value">{{ accepted_count }}</span>
             <span class="stat-desc">In progress / Assigned</span>
-            <a href="#accepted-content" class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('accepted')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card green">
             <span class="stat-label">Completed</span>
             <span class="stat-value">{{ completed_count }}</span>
             <span class="stat-desc">Resolved requests</span>
-            <a href="#completed-content" class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('completed')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card red">
             <span class="stat-label">Missing Tasks</span>
@@ -1293,5 +1293,48 @@ function showNewTicketToast(data) {
 }
 
 pollForUpdates();
+
+// ── Poll for dashboard state changes (completions, assignments, etc.) ──
+let lastSAStateHash = '';
+let isSAReloading = false;
+
+function pollSADashboardState() {
+    if (isSAReloading) return;
+
+    fetch('/poll-dashboard-state/')
+        .then(r => r.json())
+        .then(data => {
+            if (isSAReloading) return;
+
+            // Update tab badges
+            const newBadge       = document.querySelector('#pill-new .tab-badge');
+            const acceptedBadge  = document.querySelector('#pill-accepted .tab-badge');
+            const completedBadge = document.querySelector('#pill-completed .tab-badge');
+            const missingBadge   = document.querySelector('#pill-missing .tab-badge');
+            if (newBadge)       newBadge.textContent       = data.pending_count;
+            if (acceptedBadge)  acceptedBadge.textContent  = data.assisting_count;
+            if (completedBadge) completedBadge.textContent = data.completed_count;
+            if (missingBadge)   missingBadge.textContent   = data.missing_count;
+
+            // Detect state change and reload
+            if (lastSAStateHash !== '' && data.state_hash !== lastSAStateHash) {
+                isSAReloading = true;
+                const activeTab = document.querySelector('.tab-pill.active')?.id?.replace('pill-', '') || 'new';
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', activeTab);
+                setTimeout(() => { window.location.href = url.toString(); }, 1500);
+            }
+
+            lastSAStateHash = data.state_hash;
+        })
+        .catch(() => {})
+        .finally(() => {
+            if (!isSAReloading) setTimeout(pollSADashboardState, 5000);
+        });
+}
+
+pollSADashboardState();
 </script>
 {% endblock %}
+
+

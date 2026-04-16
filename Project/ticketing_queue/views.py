@@ -483,6 +483,8 @@ def accept_ticket(request, pk):
         )
 
     current_tab = request.POST.get('tab', 'new')
+    if request.user.is_superuser:
+        return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
     return redirect(f"{reverse('staff_dashboard')}?tab={current_tab}")
 
 
@@ -494,10 +496,8 @@ def assist_ticket(request, pk):
             messages.warning(request, f"Cannot assist — status is {ticket.status}")
             return redirect('staff_dashboard')
 
-        assisted_by_id = request.POST.get('assisted_by')
-        if not assisted_by_id:
-            messages.error(request, "No staff selected.")
-            return redirect('staff_dashboard')
+        # ── If no assisted_by sent (staff self-assign), default to request.user ──
+        assisted_by_id = request.POST.get('assisted_by') or request.user.id
 
         try:
             assisted_user = User.objects.get(id=assisted_by_id)
@@ -511,12 +511,14 @@ def assist_ticket(request, pk):
 
         messages.success(request, f"Ticket {ticket.control_no} assigned to {assisted_user.username}")
 
-        AuditLog.objects.create(
-            user=request.user,
-            action='assisting ticket',
-            details=f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
+        AuditLog.objects.update_or_create(
             ticket=ticket,
-            ip_address=get_client_ip(request)
+            action='assisting ticket',
+            defaults={
+                'user': request.user,
+                'details': f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
+                'ip_address': get_client_ip(request)
+            }
         )
     
         current_tab = request.POST.get('tab', 'new')
@@ -525,62 +527,56 @@ def assist_ticket(request, pk):
 
 @login_required
 def complete_ticket(request, pk):
-    if request.method == 'POST':
-        ticket = get_object_or_404(Ticket, pk=pk)
-        
-        current_tab = request.POST.get('tab', 'accepted')
-        
-        if ticket.status != 'assisting':
-            messages.warning(request, f"Cannot complete ticket {ticket.control_no} — status is '{ticket.status}'.")
-            if request.POST.get('from_super_admin') or request.user.is_superuser:
-                return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
-            return redirect(f"{reverse('staff_dashboard')}?tab={current_tab}")
-        
-        now = timezone.now()
-        ticket.status = 'completed'
-        ticket.completed_at = now
-        ticket.save()
+    if request.method != 'POST':
+        if request.user.is_superuser:
+            return redirect('super_admin_dashboard')
+        return redirect('staff_dashboard')
 
-        completed_by = ticket.assisted_by if ticket.assisted_by else request.user
+    ticket = get_object_or_404(Ticket, pk=pk)
+    current_tab = request.POST.get('tab', 'accepted')
+    from_super_admin = request.POST.get('from_super_admin') or request.user.is_superuser
 
-        AuditLog.objects.create(
-            user=completed_by,
-            action='completed ticket',
-            details=f'Ticket {ticket.control_no} completed by {completed_by.username}',
-            ticket=ticket,
-            ip_address=get_client_ip(request)
-        )
-        
-        # Archive - make it very robust
-        try:
-            completed_by_user = ticket.assisted_by if ticket.assisted_by else request.user  # who really finished it
+    if ticket.status not in ('assisting', 'accepted'):
+        messages.warning(request, f"Cannot complete ticket {ticket.control_no} — status is '{ticket.status}'.")
+        if from_super_admin:
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+        return redirect(f"{reverse('staff_dashboard')}?tab={current_tab}")
 
-            if not ArchivedTicket.objects.filter(control_no=ticket.control_no).exists():
-                ArchivedTicket.objects.create(
-                    control_no       = ticket.control_no,
-                    requested_by     = ticket.requested_by or "Unknown",
-                    division         = ticket.department_division or ticket.section_unit or "N/A",
-                    description      = ticket.request_complaint or "(no description)",
-                    is_urgent        = ticket.is_urgent,
-                    created_at       = ticket.created_at,
-                    assisted_at      = ticket.assisted_at,                                      # <--- copy this for 8/9
-                    assisted_by      = ticket.assisted_by.username if ticket.assisted_by else "N/A",  # <--- fallback
-                    completed_at     = ticket.completed_at,
-                    completed_by     = completed_by_user.username,                               # <--- copy real username for 11
-                )
-                print(f"[ARCHIVE FULL] Created for {ticket.control_no} | assisted_at={ticket.assisted_at} | completed_by={completed_by_user.username}")
-            else:
-                print(f"[ARCHIVE] Skipped - already exists for {ticket.control_no}")
+    now = timezone.now()
+    ticket.status = 'completed'
+    ticket.completed_at = now
+    ticket.save()
 
-        except Exception as e:
-            print(f"[ARCHIVE ERROR] {type(e).__name__}: {str(e)}")
-            messages.error(request, f"Could not archive ticket: {str(e)}")
-        
-        messages.success(request, f"Ticket {ticket.control_no} marked as completed!")
-    
-    
-    referer = request.META.get('HTTP_REFERER', '')
-    if 'super' in referer or request.user.is_superuser:
+    completed_by = ticket.assisted_by if ticket.assisted_by else request.user
+
+    AuditLog.objects.create(
+        user=completed_by,
+        action='completed ticket',
+        details=f'Ticket {ticket.control_no} completed by {completed_by.username}',
+        ticket=ticket,
+        ip_address=get_client_ip(request)
+    )
+
+    try:
+        if not ArchivedTicket.objects.filter(control_no=ticket.control_no).exists():
+            ArchivedTicket.objects.create(
+                control_no   = ticket.control_no,
+                requested_by = ticket.requested_by or "Unknown",
+                division     = ticket.department_division or ticket.section_unit or "N/A",
+                description  = ticket.request_complaint or "(no description)",
+                is_urgent    = ticket.is_urgent,
+                created_at   = ticket.created_at,
+                assisted_at  = ticket.assisted_at,
+                assisted_by  = ticket.assisted_by.username if ticket.assisted_by else "N/A",
+                completed_at = ticket.completed_at,
+                completed_by = completed_by.username,
+            )
+    except Exception as e:
+        messages.error(request, f"Could not archive ticket: {str(e)}")
+
+    messages.success(request, f"Ticket {ticket.control_no} marked as completed!")
+
+    if from_super_admin:
         return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
     return redirect(f"{reverse('staff_dashboard')}?tab={current_tab}")
 
@@ -940,9 +936,9 @@ def superadmin_dashboard(request):
 
         'assisting_tickets': get_ordered_qs(all_tickets.filter(status='assisting')),
 
+        # REPLACE this line in superadmin_dashboard:
         'staff_users': User.objects.filter(
-            is_staff=True,
-            is_superuser=False
+            Q(is_staff=True, is_superuser=False) | Q(id=request.user.id)
         ).exclude(id__in=busy_staff_ids).order_by('username'),
 
         'recent_activity': recent_activity,
@@ -1446,7 +1442,7 @@ def superadmin_reports(request):
     BAR_COLORS = ['#1565c0','#1a7a4a','#f9c900','#9b59b6','#0891b2','#d97706','#e74c3c','#2ecc71']
     division_qs = (
         queryset.exclude(department_division__isnull=True).exclude(department_division='')
-                .values('department_division').annotate(count=Count('id')).order_by('-count')
+            .values('department_division').annotate(count=Count('id')).order_by('-count')
     )
     max_div = division_qs[0]['count'] if division_qs else 1
     division_data = []
@@ -1461,9 +1457,9 @@ def superadmin_reports(request):
 
     equipment_qs = (
         queryset.exclude(equipment__isnull=True).exclude(equipment='')
-                .values('equipment')
-                .annotate(count=Count('id'), urgent=Count('id', filter=Q(is_urgent=True)), completed=Count('id', filter=Q(status='completed')))
-                .order_by('-count')
+            .values('equipment')
+            .annotate(count=Count('id'), urgent=Count('id', filter=Q(is_urgent=True)), completed=Count('id', filter=Q(status='completed')))
+            .order_by('-count')
     )
     total_eq = sum(e['count'] for e in equipment_qs) or 1
     equipment_analysis = [{
@@ -1798,9 +1794,9 @@ def reports(request):
 
     # Chart data (HTML only)
     daily_data = queryset.annotate(day=TruncDay('created_at')) \
-                         .values('day') \
-                         .annotate(count=Count('id')) \
-                         .order_by('day')
+        .values('day') \
+        .annotate(count=Count('id')) \
+        .order_by('day')
     chart_labels = [d['day'].strftime('%Y-%m-%d') for d in daily_data] if daily_data else []
     chart_data   = [d['count'] for d in daily_data] if daily_data else []
 
@@ -1813,7 +1809,7 @@ def reports(request):
     }
 
     divisions_qs = Ticket.objects.values_list('department_division', flat=True)\
-                                 .distinct().exclude(department_division__isnull=True).order_by('department_division')
+        .distinct().exclude(department_division__isnull=True).order_by('department_division')
 
     filtered_tickets = queryset.order_by('-created_at')[:500]
 
@@ -2305,7 +2301,6 @@ def heartbeat(request):
         )
     return JsonResponse({'ok': True})
 
-
 @login_required
 @user_passes_test(is_superadmin, login_url='staff_login')
 def super_admin_assist_ticket(request, pk):
@@ -2330,23 +2325,181 @@ def super_admin_assist_ticket(request, pk):
             current_tab = request.POST.get('tab', 'new')
             return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
 
-        # Success path
         ticket.status = 'assisting'
         ticket.assisted_by = assisted_user
+        ticket.assisted_at = timezone.now() 
         ticket.save()
 
         messages.success(request, f"Ticket {ticket.control_no} assigned to {assisted_user.username}.")
 
-        AuditLog.objects.create(
-            user=request.user,
-            action='assisting ticket',
-            details=f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
+        # ── Keep 'assigned to {username}' in details so poll_my_notifications can detect it ──
+        AuditLog.objects.update_or_create(
             ticket=ticket,
-            ip_address=get_client_ip(request)
+            action='assisting ticket',
+            defaults={
+                'user': request.user,
+                'details': f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
+                'ip_address': get_client_ip(request)
+            }
         )
 
         current_tab = request.POST.get('tab', 'new')
         return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
 
-    # Fallback for GET requests (should not normally happen)
     return redirect('super_admin_dashboard')
+
+def poll_dashboard_state(request):
+    """
+    Lightweight endpoint polled by the staff dashboard.
+    Returns ticket counts + a state hash so the dashboard can detect
+    when a super admin has accepted or assigned a ticket.
+    """
+    pending_count   = Ticket.objects.filter(status='pending').count()
+    assisting_count = Ticket.objects.filter(status='assisting').count()
+    completed_count = Ticket.objects.filter(
+        status='completed',
+        completed_at__gte=timezone.now() - timedelta(days=7)
+    ).count()
+    missing_count = Ticket.objects.filter(
+        status__in=['pending', 'accepted'],
+        created_at__lt=timezone.now() - timedelta(hours=24)
+    ).count()
+
+    # Build a simple state string: sorted list of "pk:status" pairs
+    # This changes any time a super admin accepts or assigns a ticket
+    tickets_state = list(
+        Ticket.objects.filter(
+            status__in=['pending', 'accepted', 'assisting']
+        ).order_by('pk').values_list('pk', 'status')
+    )
+    import hashlib, json
+    state_hash = hashlib.md5(
+        json.dumps(tickets_state).encode()
+    ).hexdigest()[:12]
+
+    latest_ticket = Ticket.objects.filter(
+        status='pending'
+    ).order_by('-created_at').first()
+
+    return JsonResponse({
+        'pending_count':   pending_count,
+        'assisting_count': assisting_count,
+        'completed_count': completed_count,
+        'missing_count':   missing_count,
+        'state_hash':      state_hash,
+        'latest_control_no':   latest_ticket.control_no if latest_ticket else '',
+        'latest_requested_by': latest_ticket.requested_by if latest_ticket else '',
+        'latest_is_urgent':    latest_ticket.is_urgent if latest_ticket else False,
+    })
+
+def poll_my_notifications(request):
+    """
+    Polled by logged-in staff to check if super admin assigned them to a ticket.
+    Checks if there are any accepted tickets currently assigned to this user.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'assigned': False})
+
+    # Direct DB check — find any ticket in 'accepted' status assigned to this user
+    # This is more reliable than checking AuditLog timestamps
+    assigned_ticket = Ticket.objects.filter(
+        status='accepted',
+        assisted_by=request.user
+    ).order_by('-created_at').first()
+
+    if assigned_ticket:
+        return JsonResponse({
+            'assigned': True,
+            'ticket_pk': assigned_ticket.pk,
+            'control_no': assigned_ticket.control_no,
+        })
+
+    return JsonResponse({'assigned': False})
+
+@login_required
+@require_POST
+def accept_assignment(request, pk):
+    """Staff accepts their assignment — ticket moves to assisting."""
+    ticket = get_object_or_404(Ticket, pk=pk)
+
+    ticket.status = 'assisting'
+    ticket.assisted_at = timezone.now()
+    ticket.save()
+
+    AuditLog.objects.update_or_create(
+        ticket=ticket,
+        action='assisting ticket',
+        defaults={
+            'user': request.user,
+            'details': f'Ticket {ticket.control_no} assigned to {request.user.username} — accepted by {request.user.username}',
+            'ip_address': get_client_ip(request)
+        }
+    )
+
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def reject_assignment(request, pk):
+    """Staff rejects their assignment — ticket reverts to accepted, super admin notified."""
+    ticket = get_object_or_404(Ticket, pk=pk)
+    
+    try:
+        data = json.loads(request.body)
+        reason = data.get('reason', '').strip()
+    except:
+        reason = request.POST.get('reason', '').strip()
+    
+    if not reason:
+        return JsonResponse({'success': False, 'error': 'Reason is required.'})
+    
+    # Revert ticket back to accepted
+    ticket.status = 'accepted'
+    ticket.assisted_by = None
+    ticket.assisted_at = None
+    ticket.save()
+    
+    AuditLog.objects.create(
+        user=request.user,
+        action='rejected assignment',
+        details=f'{request.user.username} rejected assignment for ticket {ticket.control_no}. Reason: {reason}',
+        ticket=ticket,
+        ip_address=get_client_ip(request)
+    )
+    
+    return JsonResponse({'success': True})
+
+
+def poll_super_admin_notifications(request):
+    """
+    Polled by super admin to check if any staff rejected their assignment.
+    Returns the latest rejection in the last 30 seconds.
+    """
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'rejected': False})
+    
+    cutoff = timezone.now() - timedelta(seconds=30)
+    
+    recent_log = AuditLog.objects.filter(
+        action='rejected assignment',
+        timestamp__gte=cutoff
+    ).select_related('ticket', 'user').order_by('-timestamp').first()
+    
+    if recent_log and recent_log.ticket:
+        # Extract reason from details
+        reason = ''
+        if 'Reason:' in recent_log.details:
+            reason = recent_log.details.split('Reason:', 1)[1].strip()
+        
+        return JsonResponse({
+            'rejected': True,
+            'control_no': recent_log.ticket.control_no,
+            'rejected_by': recent_log.user.username if recent_log.user else 'Unknown',
+            'reason': reason,
+        })
+    
+    return JsonResponse({'rejected': False})
+
+
+superadmin_dashboard
