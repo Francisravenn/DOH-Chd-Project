@@ -2393,28 +2393,39 @@ def poll_dashboard_state(request):
     })
 
 def poll_my_notifications(request):
-    """
-    Polled by logged-in staff to check if super admin assigned them to a ticket.
-    Checks if there are any accepted tickets currently assigned to this user.
-    """
+    """Called by staff to check for new assignments AND new pending tickets."""
     if not request.user.is_authenticated:
-        return JsonResponse({'assigned': False})
+        return JsonResponse({'assigned': False, 'new_tickets': []})
 
-    # Direct DB check — find any ticket in 'accepted' status assigned to this user
-    # This is more reliable than checking AuditLog timestamps
+    # 1. Check for assignment from Super Admin
     assigned_ticket = Ticket.objects.filter(
         status='accepted',
         assisted_by=request.user
-    ).order_by('-created_at').first()
+    ).first()
 
-    if assigned_ticket:
-        return JsonResponse({
-            'assigned': True,
-            'ticket_pk': assigned_ticket.pk,
-            'control_no': assigned_ticket.control_no,
-        })
+    response = {
+        'assigned': bool(assigned_ticket),
+        'ticket_pk': assigned_ticket.pk if assigned_ticket else None,
+        'control_no': assigned_ticket.control_no if assigned_ticket else None,
+        'new_tickets': []
+    }
 
-    return JsonResponse({'assigned': False})
+    # 2. Return recent new pending tickets (last 5 minutes)
+    recent_pending = Ticket.objects.filter(
+        status='pending',
+        created_at__gte=timezone.now() - timedelta(minutes=5)
+    ).order_by('-created_at')[:5]
+
+    response['new_tickets'] = [
+        {
+            'pk': t.pk,
+            'control_no': t.control_no,
+            'requested_by': t.requested_by,
+            'is_urgent': t.is_urgent,
+        } for t in recent_pending
+    ]
+
+    return JsonResponse(response)
 
 @login_required
 @require_POST

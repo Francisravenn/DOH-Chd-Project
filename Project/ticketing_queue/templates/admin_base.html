@@ -66,8 +66,6 @@
         }
         .navbar-dot { color: rgba(255,255,255,0.5); font-size: 0.62rem; }
 
-        /* REMOVED: .navbar-divider-line — no horizontal line */
-
         .navbar-chd {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.82rem; font-weight: 800; color: #fff;
@@ -263,6 +261,32 @@
         }
         .btn-mfooter-warn:hover { background: #92400e; }
 
+        /* ── TOAST BASE STYLES ──
+           All toasts anchor bottom-left, offset from sidebar.
+           Right-panel (220px) is on the right, so left-side toasts
+           are always fully visible regardless of right panel.
+        ── */
+        .toast-base {
+            position: fixed;
+            bottom: 24px;
+            left: calc(var(--sidebar-width) + 16px);
+            right: auto;
+            z-index: 99999;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.85rem;
+            border-left: 4px solid #f9c900;
+            /* Cap width so it never reaches the right panel */
+            max-width: calc(100vw - var(--sidebar-width) - var(--right-panel-width) - 48px);
+            pointer-events: all;
+            transition: left 0.3s ease, max-width 0.3s ease;
+        }
+        .sidebar-hidden .toast-base {
+            left: calc(var(--sidebar-collapsed-width) + 16px);
+            max-width: calc(100vw - var(--sidebar-collapsed-width) - var(--right-panel-width) - 48px);
+        }
+
         @media (max-width: 991.98px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar-visible .sidebar { transform: translateX(0); }
@@ -270,6 +294,7 @@
             .right-panel { transform: translateX(100%); }
             .navbar-center { display: none; }
             .navbar { left: 0; }
+            .toast-base { left: 16px !important; right: 16px; max-width: none; }
         }
     </style>
 
@@ -290,7 +315,6 @@
                 <span class="navbar-dot">·</span>
                 <span class="navbar-dept">Department of Health</span>
             </div>
-            <!-- NO divider line -->
             <span class="navbar-chd">Calabarzon Center for Health Development</span>
         </div>
     </div>
@@ -575,6 +599,44 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// ── Helper: get current sidebar left offset for toast positioning ──
+function getToastLeft() {
+    const isSidebarHidden = document.body.classList.contains('sidebar-hidden');
+    const sidebarW = isSidebarHidden ? 56 : 220;
+    return (sidebarW + 16) + 'px';
+}
+
+// ── Helper: compute safe max-width for toasts (never reaches right panel) ──
+function getToastMaxWidth() {
+    const isSidebarHidden = document.body.classList.contains('sidebar-hidden');
+    const sidebarW = isSidebarHidden ? 56 : 220;
+    const rightPanelW = 220;
+    const gap = 48; // breathing room on each side
+    return Math.min(340, window.innerWidth - sidebarW - rightPanelW - gap) + 'px';
+}
+
+// ── Shared toast style builder ──
+function buildToastStyle(gradientCss) {
+    return `
+        position: fixed;
+        bottom: 24px;
+        left: ${getToastLeft()};
+        right: auto;
+        z-index: 99999;
+        background: ${gradientCss};
+        color: #fff;
+        border-radius: 12px;
+        padding: 14px 20px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 0.85rem;
+        border-left: 4px solid #f9c900;
+        max-width: ${getToastMaxWidth()};
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        transition: left 0.3s ease, max-width 0.3s ease;
+    `;
+}
+
+
 // ── LIVE RIGHT PANEL POLLING ──
 function pollAssisting() {
     fetch('/poll-assisting/')
@@ -595,7 +657,6 @@ function updateRightPanel(tickets) {
     const title = panel.querySelector('.rp-title');
 
     if (tickets.length === 0) {
-        // Remove all ticket cards, show empty state
         panel.innerHTML = '';
         panel.appendChild(title);
         panel.innerHTML += `
@@ -606,27 +667,22 @@ function updateRightPanel(tickets) {
         return;
     }
 
-    // Get currently rendered ticket PKs
     const currentPks = new Set(
         [...panel.querySelectorAll('.rp-ticket')].map(el => el.dataset.pk)
     );
     const newPks = new Set(tickets.map(t => String(t.pk)));
 
-    // Remove tickets that are no longer assisting
     panel.querySelectorAll('.rp-ticket').forEach(el => {
         if (!newPks.has(el.dataset.pk)) {
             el.remove();
-            // Also remove its hidden form
             const form = document.getElementById('completeForm' + el.dataset.pk);
             if (form) form.remove();
         }
     });
 
-    // Remove empty state if tickets exist
     const emptyState = panel.querySelector('.rp-empty');
     if (emptyState) emptyState.remove();
 
-    // Add new tickets that aren't rendered yet
     tickets.forEach(t => {
         if (!currentPks.has(String(t.pk))) {
             const card = document.createElement('div');
@@ -660,7 +716,6 @@ function updateRightPanel(tickets) {
                 </div>`;
             panel.appendChild(card);
 
-            // Add hidden form
             const form = document.createElement('form');
             form.method = 'post';
             form.action = `/ticket/${t.pk}/complete/`;
@@ -671,7 +726,6 @@ function updateRightPanel(tickets) {
                 <input type="hidden" name="tab" value="accepted">`;
             document.body.appendChild(form);
 
-            // Re-attach click handler for new complete button
             card.querySelector('.complete-btn').addEventListener('click', function() {
                 currentCompleteFormId = 'completeForm' + this.getAttribute('data-ticket-id');
             });
@@ -685,7 +739,7 @@ function getCsrfToken() {
         ?.split('=')[1] || '';
 }
 
-// ── HEARTBEAT — keeps AdminOnlineStatus alive every 60 seconds ──
+// ── HEARTBEAT ──
 function sendHeartbeat() {
     fetch('/heartbeat/', {
         method: 'POST',
@@ -696,10 +750,10 @@ function sendHeartbeat() {
     }).catch(() => {});
 }
 
-sendHeartbeat(); // send immediately on page load
-setInterval(sendHeartbeat, 60000); // then every 60 seconds
+sendHeartbeat();
+setInterval(sendHeartbeat, 60000);
 
-// ── Staff Assignment Notifications — runs on ALL pages ──
+// ── Staff Assignment Notifications ──
 let lastAssignedControlNo = '';
 let staffNotifList = [];
 
@@ -707,10 +761,30 @@ function pollMyNotifications() {
     fetch('/poll-my-notifications/')
         .then(r => r.json())
         .then(data => {
+            // Handle assignment from Super Admin
             if (data.assigned && data.control_no !== lastAssignedControlNo) {
                 lastAssignedControlNo = data.control_no;
-                addStaffNotif({ control_no: data.control_no, ticket_pk: data.ticket_pk });
+                addStaffNotif({ 
+                    control_no: data.control_no, 
+                    ticket_pk: data.ticket_pk,
+                    type: 'assignment'
+                });
                 showAssignedToast(data.control_no, data.ticket_pk);
+            }
+
+            // NEW: Show new tickets in the notification bell
+            if (data.new_tickets && data.new_tickets.length > 0) {
+                data.new_tickets.forEach(ticket => {
+                    if (!staffNotifList.find(n => n.control_no === ticket.control_no)) {
+                        addStaffNotif({
+                            control_no: ticket.control_no,
+                            ticket_pk: ticket.pk,
+                            type: 'new_ticket',
+                            requested_by: ticket.requested_by,
+                            is_urgent: ticket.is_urgent
+                        });
+                    }
+                });
             }
         })
         .catch(() => {})
@@ -718,7 +792,6 @@ function pollMyNotifications() {
             setTimeout(pollMyNotifications, 5000);
         });
 }
-
 function addStaffNotif(data) {
     if (staffNotifList.find(n => n.control_no === data.control_no)) return;
     staffNotifList.push(data);
@@ -742,38 +815,63 @@ function renderStaffNotifList() {
     staffNotifList.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'staff-notif-item';
-        div.style.cssText = `
-            padding:12px 14px;border-bottom:1px solid #f2f4f8;background:#fff;
-        `;
-        div.innerHTML = `
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-                <div style="flex:1;">
-                    <div style="font-family:'Montserrat',sans-serif;font-size:0.72rem;
-                                font-weight:800;color:#198754;margin-bottom:3px;">
-                        📋 New Assignment
+        div.style.cssText = `padding:12px 14px;border-bottom:1px solid #f2f4f8;background:#fff;`;
+
+        if (item.type === 'assignment') {
+            // Assignment from Super Admin
+            div.innerHTML = `
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-family:'Montserrat',sans-serif;font-size:0.72rem;font-weight:800;color:#198754;margin-bottom:3px;">
+                            📋 New Assignment
+                        </div>
+                        <div style="font-family:'Courier New',monospace;font-size:0.78rem;font-weight:700;color:#1565c0;margin-bottom:4px;">
+                            ${item.control_no}
+                        </div>
+                        <div style="font-size:0.74rem;color:#6c757d;">
+                            Super Admin assigned you to this ticket.
+                        </div>
                     </div>
-                    <div style="font-family:'Courier New',monospace;font-size:0.78rem;
-                                font-weight:700;color:#1565c0;margin-bottom:4px;">
-                        ${item.control_no}
-                    </div>
-                    <div style="font-size:0.74rem;color:#6c757d;">
-                        Super Admin assigned you to this ticket.
-                    </div>
+                    <button onclick="removeStaffNotif(${index})" style="background:none;border:none;color:#adb5bd;cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
-                <button onclick="removeStaffNotif(${index})"
-                        style="background:none;border:none;color:#adb5bd;
-                               cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div style="margin-top:8px;display:flex;gap:6px;">
-                <button onclick="triggerAssignmentToast('${item.control_no}', ${item.ticket_pk}, ${index})"
-                        style="background:#198754;color:#fff;border:none;
-                               font-family:'Montserrat',sans-serif;font-size:0.68rem;
-                               font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
-                    Accept / Reject
-                </button>
-            </div>`;
+                <div style="margin-top:8px;display:flex;gap:6px;">
+                    <button onclick="triggerAssignmentToast('${item.control_no}', ${item.ticket_pk}, ${index})"
+                            style="background:#198754;color:#fff;border:none;font-family:'Montserrat',sans-serif;font-size:0.68rem;font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
+                        Accept / Reject
+                    </button>
+                </div>`;
+        } else {
+            // New Ticket Notification
+            const urgentBadge = item.is_urgent ? 
+                `<span style="background:#dc3545;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;">URGENT</span>` : '';
+
+            div.innerHTML = `
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-family:'Montserrat',sans-serif;font-size:0.72rem;font-weight:800;color:#1a3a6b;margin-bottom:3px;">
+                            🔔 New Ticket Submitted
+                        </div>
+                        <div style="font-family:'Courier New',monospace;font-size:0.78rem;font-weight:700;color:#1565c0;margin-bottom:4px;">
+                            ${item.control_no}
+                        </div>
+                        <div style="font-size:0.74rem;color:#6c757d;">
+                            ${item.requested_by || 'Someone'} ${urgentBadge}
+                        </div>
+                    </div>
+                    <button onclick="removeStaffNotif(${index})" style="background:none;border:none;color:#adb5bd;cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div style="margin-top:8px;">
+                    <a href="/staff/dashboard/?tab=new" 
+                       onclick="removeStaffNotif(${index});"
+                       style="background:#1565c0;color:#fff;border:none;font-family:'Montserrat',sans-serif;font-size:0.68rem;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none;display:inline-block;">
+                        View in New Requests
+                    </a>
+                </div>`;
+        }
         list.appendChild(div);
     });
 }
@@ -825,21 +923,16 @@ function triggerAssignmentToast(controlNo, ticketPk, notifIndex) {
     showAssignedToast(controlNo, ticketPk);
 }
 
+// ── Assignment toast ──
 function showAssignedToast(controlNo, ticketPk) {
     const existing = document.getElementById('assignmentToast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
     toast.id = 'assignmentToast';
-    toast.style.cssText = `
-        position:fixed; bottom:24px; right:24px; z-index:9999;
-        background:linear-gradient(90deg,#146c43,#198754);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(25,135,84,0.35);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:340px;
-        transition: all 0.3s ease;
-    `;
+    toast.style.cssText = buildToastStyle('linear-gradient(90deg, #146c43, #198754)');
+    toast.style.boxShadow = '0 8px 32px rgba(25,135,84,0.35)';
+
     toast.innerHTML = `
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:6px;font-size:0.9rem;">
             📋 You've Been Assigned!
@@ -931,7 +1024,6 @@ function handleAcceptAssignment(ticketPk, controlNo) {
                     </div>`;
                 setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
             }
-            // Remove from bell list
             staffNotifList = staffNotifList.filter(n => n.control_no !== controlNo);
             renderStaffNotifList();
             updateStaffNotifBadge();
@@ -972,7 +1064,6 @@ function handleRejectAssignment(ticketPk, controlNo) {
                     </div>`;
                 setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
             }
-            // Remove from bell list
             staffNotifList = staffNotifList.filter(n => n.control_no !== controlNo);
             renderStaffNotifList();
             updateStaffNotifBadge();
@@ -983,14 +1074,12 @@ function handleRejectAssignment(ticketPk, controlNo) {
 }
 
 
-// ── New ticket polling — runs on ALL pages ──
-// ── New ticket polling — runs on ALL pages ──
+// ── New ticket polling ──
 let lastNewTicketCount = -1;
 let lastNewControlNo = '';
 let newTicketFirstPoll = true;
 
 function pollNewTickets() {
-    // Skip on dashboard — dashboard has its own full polling with auto-reload
     const path = window.location.pathname;
     if (path.includes('staff/dashboard') || path.includes('staff_dashboard')) {
         setTimeout(pollNewTickets, 5000);
@@ -1000,7 +1089,6 @@ function pollNewTickets() {
     fetch('/poll-notifications/')
         .then(r => r.json())
         .then(data => {
-            // On first poll, just record current state — don't show toast
             if (newTicketFirstPoll) {
                 newTicketFirstPoll = false;
                 lastNewTicketCount = data.pending_count;
@@ -1028,20 +1116,16 @@ pollMyNotifications();
 pollNewTickets();
 
 
+// ── New ticket toast (base — used outside staff dashboard) ──
 function showNewTicketToastBase(data) {
     const existing = document.getElementById('newTicketToastBase');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
     toast.id = 'newTicketToastBase';
-    toast.style.cssText = `
-        position:fixed; bottom:24px; left:24px; z-index:9999;
-        background:linear-gradient(90deg,#1a3a6b,#1565c0);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(21,101,192,0.3);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:320px;
-    `;
+    toast.style.cssText = buildToastStyle('linear-gradient(90deg, #1a3a6b, #1565c0)');
+    toast.style.boxShadow = '0 8px 32px rgba(21,101,192,0.3)';
+
     toast.innerHTML = `
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
             🔔 New Ticket Submitted!
@@ -1078,12 +1162,29 @@ function showNewTicketToastBase(data) {
 }
 
 
+// ── Keep all toasts left/width in sync when sidebar is toggled ──
+document.addEventListener('DOMContentLoaded', function () {
+    const hamburger = document.getElementById('sidebarToggle');
+    if (hamburger) {
+        hamburger.addEventListener('click', function () {
+            // Small delay so body class has toggled
+            setTimeout(() => {
+                const newLeft = getToastLeft();
+                const newMaxWidth = getToastMaxWidth();
+                ['newTicketToastBase', 'assignmentToast', 'newTicketToast', 'saActionToast'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.left = newLeft;
+                        el.style.maxWidth = newMaxWidth;
+                    }
+                });
+            }, 10);
+        });
+    }
+});
 
 </script>
 
 {% block extra_js %}{% endblock %}
 </body>
 </html>
-
-
-

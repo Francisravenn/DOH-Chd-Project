@@ -62,6 +62,7 @@
         background: #1565c0; color: #fff; border: none; border-radius: 8px;
         font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700;
         padding: 8px 22px; cursor: pointer; transition: background 0.15s;
+        white-space: nowrap;
     }
     .btn-generate:hover { background: #1a3a6b; }
     .btn-reset {
@@ -69,7 +70,7 @@
         border-radius: 8px; font-family: 'Montserrat', sans-serif;
         font-size: 0.8rem; font-weight: 700; padding: 8px 18px;
         cursor: pointer; transition: all 0.15s; text-decoration: none;
-        display: inline-block;
+        display: inline-block; white-space: nowrap;
     }
     .btn-reset:hover { background: #f8f9fa; color: #495057; }
 
@@ -243,6 +244,21 @@
     }
     .empty-table i { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
     .empty-table p { font-size: 0.88rem; margin: 0; }
+
+    /* ── Filter button row fix ── */
+    .filter-btn-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+    .filter-btn-group .btn-generate {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .filter-btn-group .btn-reset {
+        flex: 0 0 auto;
+    }
 </style>
 {% endblock %}
 

@@ -406,7 +406,7 @@
     </div>
 </div>
 
-<!-- Assign modal for pending — self-assign only, no dropdown -->
+<!-- Assign modal for pending -->
 <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -551,7 +551,7 @@
 </div>
 
 {% if ticket.status == 'accepted' %}
-<!-- Assist confirm modal — self-assign only, no dropdown -->
+<!-- Assist confirm modal -->
 <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -640,13 +640,24 @@
     </div>
 </div>
 
-<!-- Toast notifications -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index:1050;max-width:350px;">
+<!--
+    Django messages toasts — moved to bottom-LEFT to avoid right panel overlap.
+    Uses the same left offset as all other toasts (sidebar-aware).
+-->
+<div id="djangoToastContainer"
+     style="position:fixed;bottom:24px;left:calc(var(--sidebar-width) + 16px);
+            z-index:99998;max-width:340px;display:flex;flex-direction:column;gap:8px;
+            transition:left 0.3s ease;">
     {% if messages %}
     {% for message in messages %}
     {% if 'new_ticket' in message.tags %}
-    <div class="toast show" role="alert" style="background:#1565c0;color:#fff;border-radius:10px;border:none;box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index: 100;">
-        <div class="toast-header" style="background:#1565c0;color:#fff;border-bottom:1px solid rgba(255,255,255,0.2);border-radius:10px 10px 0 0;">
+    <div class="toast show django-toast" role="alert"
+         style="background:linear-gradient(90deg,#1a3a6b,#1565c0);color:#fff;
+                border-radius:10px;border:none;border-left:4px solid #f9c900;
+                box-shadow:0 4px 20px rgba(0,0,0,0.2);min-width:280px;">
+        <div class="toast-header"
+             style="background:transparent;color:#fff;
+                    border-bottom:1px solid rgba(255,255,255,0.15);border-radius:10px 10px 0 0;">
             <i class="bi bi-bell-fill me-2 text-warning"></i>
             <strong class="me-auto">New Request Alert</strong>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
@@ -661,7 +672,6 @@
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -703,12 +713,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ── Django message toasts ──
-    document.querySelectorAll('.toast').forEach(el => {
+    document.querySelectorAll('.django-toast').forEach(el => {
         new bootstrap.Toast(el, { autohide: true, delay: 15000 }).show();
     });
+
+    // ── Keep django toast container in sync with sidebar toggle ──
+    const hamburger = document.getElementById('sidebarToggle');
+    if (hamburger) {
+        hamburger.addEventListener('click', function () {
+            setTimeout(() => {
+                const container = document.getElementById('djangoToastContainer');
+                if (container) container.style.left = getToastLeft();
+            }, 10);
+        });
+    }
 });
 
-// ── WebSocket (original — kept as is) ──
+// ── WebSocket ──
 try {
     const socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
     socket.onmessage = function(e) {
@@ -786,29 +807,25 @@ function scheduleReload(delay) {
     }, delay);
 }
 
+// ── New ticket toast (dashboard version) — uses shared buildToastStyle ──
 function showNewTicketToast(data) {
     const existing = document.getElementById('newTicketToast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
     toast.id = 'newTicketToast';
-    toast.style.cssText = `
-        position:fixed; bottom:24px; left:24px; z-index:9999;
-        background:linear-gradient(90deg,#1a3a6b,#1565c0);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(21,101,192,0.3);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:320px;
-    `;
+    toast.style.cssText = buildToastStyle('linear-gradient(90deg, #1a3a6b, #1565c0)');
+    toast.style.boxShadow = '0 8px 32px rgba(21,101,192,0.3)';
+
     toast.innerHTML = `
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
             🔔 New Ticket Submitted!
         </div>
-        <div style="opacity:0.85;font-size:0.78rem;">
+        <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
             ${data.latest_requested_by} — ${data.latest_control_no}
             ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
         </div>
-        <div style="margin-top:8px;">
+        <div style="display:flex;gap:6px;">
             <button onclick="window.location.reload()"
                     style="background:rgba(255,255,255,0.2);border:none;color:#fff;
                            padding:4px 12px;border-radius:6px;cursor:pointer;
@@ -831,20 +848,16 @@ function showNewTicketToast(data) {
     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
 }
 
+// ── Super admin action toast — uses shared buildToastStyle ──
 function showSuperAdminActionToast() {
     const existing = document.getElementById('saActionToast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
     toast.id = 'saActionToast';
-    toast.style.cssText = `
-        position:fixed; bottom:24px; left:24px; z-index:9999;
-        background:linear-gradient(90deg,#92400e,#d97706);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(217,119,6,0.35);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:320px;
-    `;
+    toast.style.cssText = buildToastStyle('linear-gradient(90deg, #92400e, #d97706)');
+    toast.style.boxShadow = '0 8px 32px rgba(217,119,6,0.35)';
+
     toast.innerHTML = `
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
             ⚡ Dashboard Updated
@@ -856,9 +869,6 @@ function showSuperAdminActionToast() {
     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 6000);
 }
 
-
 pollDashboardState();
 </script>
-
 {% endblock %}
-
