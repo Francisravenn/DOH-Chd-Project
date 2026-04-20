@@ -6,7 +6,6 @@
 <style>
     .page-content { padding: 1rem !important; }
 
-    /* ── Page title ── */
     .dash-title {
         font-family: 'Montserrat', sans-serif;
         font-size: 1.35rem;
@@ -23,7 +22,6 @@
         margin-bottom: 20px;
     }
 
-    /* ── Stat cards ── */
     .stat-cards {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -71,15 +69,12 @@
         line-height: 1;
         margin: 4px 0 2px;
     }
-    .stat-card.blue  .stat-value { color: #1565c0; }
+    .stat-card.blue   .stat-value { color: #1565c0; }
     .stat-card.yellow .stat-value { color: #d97706; }
-    .stat-card.green .stat-value { color: #198754; }
-    .stat-card.red   .stat-value { color: #dc3545; }
+    .stat-card.green  .stat-value { color: #198754; }
+    .stat-card.red    .stat-value { color: #dc3545; }
 
-    .stat-desc {
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
+    .stat-desc { font-size: 0.8rem; color: #6c757d; }
     .stat-link {
         font-family: 'Montserrat', sans-serif;
         font-size: 0.72rem;
@@ -96,7 +91,6 @@
     .stat-card.red    .stat-link { color: #dc3545; }
     .stat-link:hover { opacity: 0.75; }
 
-    /* ── Tab strip ── */
     .tab-strip {
         display: flex;
         align-items: center;
@@ -143,10 +137,13 @@
         font-family: 'Open Sans', sans-serif;
     }
     .tab-pill:hover { background: rgba(21,101,192,0.07); border-color: #1565c0; color: #1565c0; text-decoration: none; }
-    .tab-pill.active { background: #1565c0; border-color: #1565c0; color: #fff; font-weight: 700; }
-    .tab-pill.active.yellow { background: #d97706; border-color: #d97706; }
-    .tab-pill.active.green  { background: #198754; border-color: #198754; }
-    .tab-pill.active.red    { background: #dc3545; border-color: #dc3545; }
+
+    /* FIX: use !important so colored variants don't lose to .active base rule */
+    .tab-pill.active                { background: #1565c0 !important; border-color: #1565c0 !important; color: #fff !important; font-weight: 700; }
+    .tab-pill.active.yellow         { background: #d97706 !important; border-color: #d97706 !important; color: #fff !important; }
+    .tab-pill.active.green          { background: #198754 !important; border-color: #198754 !important; color: #fff !important; }
+    .tab-pill.active.red            { background: #dc3545 !important; border-color: #dc3545 !important; color: #fff !important; }
+
     .tab-pill .tab-badge {
         font-size: 0.65rem;
         background: rgba(0,0,0,0.12);
@@ -157,7 +154,6 @@
     }
     .tab-pill.active .tab-badge { background: rgba(255,255,255,0.25); }
 
-    /* ── Ticket table card ── */
     .ticket-card {
         background: #fff;
         border: 1px solid #e9ecef;
@@ -167,7 +163,6 @@
         margin-bottom: 20px;
     }
 
-    /* ── Ticket table ── */
     .ticket-tbl {
         width: 100%;
         table-layout: fixed;
@@ -197,8 +192,9 @@
     .ticket-tbl tbody tr:hover { background: #f8f9fc; }
     .ticket-tbl tbody tr.urgent-row { background: rgba(220,53,69,0.04); }
     .ticket-tbl tbody tr.urgent-row:hover { background: rgba(220,53,69,0.08); }
+    .ticket-tbl tbody tr.accepted-row { background: rgba(21,101,192,0.07); }
+    .ticket-tbl tbody tr.accepted-row:hover { background: rgba(21,101,192,0.14); }
 
-    /* ── FIXED: compact, uniform rows ── */
     .ticket-tbl td {
         padding: 6px 12px;
         vertical-align: middle;
@@ -209,7 +205,6 @@
         line-height: 1.3;
     }
 
-    /* Control number */
     .control-no-text {
         font-family: 'Courier New', monospace;
         font-size: 0.84rem;
@@ -228,8 +223,15 @@
         display: block;
         margin-bottom: 1px;
     }
+    .accepted-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: #1565c0;
+        display: block;
+        margin-bottom: 1px;
+    }
 
-    /* Urgency/status pills */
     .urgent-pill {
         display: inline-flex; align-items: center; gap: 3px;
         background: #fee2e2; color: #b91c1c;
@@ -252,14 +254,8 @@
         font-family: 'Montserrat', sans-serif; white-space: nowrap;
     }
 
-    /* Elapsed time */
-    .elapsed-text {
-        font-size: 0.82rem;
-        color: #6c757d;
-        white-space: nowrap;
-    }
+    .elapsed-text { font-size: 0.82rem; color: #6c757d; white-space: nowrap; }
 
-    /* Action buttons */
     .btn-view-det {
         background: #1565c0; color: #fff; border: none;
         border-radius: 20px; font-family: 'Montserrat', sans-serif;
@@ -286,14 +282,10 @@
         white-space: nowrap;
     }
 
-    /* Empty state */
-    .empty-state {
-        text-align: center; padding: 3rem 1rem; color: #adb5bd;
-    }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #adb5bd; }
     .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.6rem; }
     .empty-state p { font-size: 0.88rem; margin: 0; }
 
-    /* ── Recent Activity card ── */
     .activity-card {
         background: #fff;
         border: 1px solid #e9ecef;
@@ -333,11 +325,7 @@
     }
     .btn-view-all:hover { background: #1565c0; color: #fff; }
 
-    .activity-tbl {
-        width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
-    }
+    .activity-tbl { width: 100%; table-layout: fixed; border-collapse: collapse; }
     .activity-tbl thead th {
         background: #fff !important;
         color: #6c757d !important;
@@ -351,10 +339,7 @@
         border-top: none !important;
         white-space: nowrap !important;
     }
-    .activity-tbl tbody tr {
-        border-bottom: 1px solid #f2f4f8;
-        transition: background 0.1s;
-    }
+    .activity-tbl tbody tr { border-bottom: 1px solid #f2f4f8; transition: background 0.1s; }
     .activity-tbl tbody tr:last-child { border-bottom: none; }
     .activity-tbl tbody tr:hover { background: #f8f9fc; }
     .activity-tbl td {
@@ -365,12 +350,7 @@
         border: none !important;
         word-break: break-word;
     }
-    .activity-user {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.84rem;
-        font-weight: 700;
-        color: #1565c0;
-    }
+    .activity-user { font-family: 'Montserrat', sans-serif; font-size: 0.84rem; font-weight: 700; color: #1565c0; }
     .activity-action-badge {
         display: inline-flex; align-items: center; gap: 4px;
         font-family: 'Montserrat', sans-serif;
@@ -387,22 +367,9 @@
     .act-deleted  { background: #fee2e2; color: #b91c1c; }
     .act-created  { background: #f1f5f9; color: #475569; }
     .act-default  { background: #f1f5f9; color: #475569; }
-    .activity-time {
-        font-size: 0.8rem;
-        color: #adb5bd;
-        white-space: nowrap;
-        font-family: 'Courier New', monospace;
-    }
-    .activity-control {
-        font-family: 'Courier New', monospace;
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #1565c0;
-    }
+    .activity-time { font-size: 0.8rem; color: #adb5bd; white-space: nowrap; font-family: 'Courier New', monospace; }
+    .activity-control { font-family: 'Courier New', monospace; font-size: 0.8rem; font-weight: 700; color: #1565c0; }
 
-    /* ══════════════════════════
-       MODALS
-    ══════════════════════════ */
     .tkt-modal-header {
         background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
         border-bottom: 3px solid #f9c900;
@@ -414,193 +381,78 @@
         padding: 10px 24px;
         display: flex; align-items: center; justify-content: space-between;
     }
-    .tkt-status-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.68rem; font-weight: 700;
-        letter-spacing: 0.12em; color: #8a9bb0; text-transform: uppercase;
-    }
-    .tkt-info-section {
-        background: #fff; border-radius: 10px;
-        border: 1px solid #e8f0fa; padding: 18px 20px; height: 100%;
-    }
-    .tkt-section-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.65rem; font-weight: 800; letter-spacing: 0.14em;
-        color: #1565c0; text-transform: uppercase;
-        border-bottom: 2px solid #e8f0fa; padding-bottom: 8px;
-        margin-bottom: 14px; display: block;
-    }
-    .tkt-info-row {
-        display: flex; padding: 7px 0;
-        border-bottom: 1px dashed #f0f4f8;
-        align-items: flex-start; gap: 10px;
-    }
+    .tkt-status-label { font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; color: #8a9bb0; text-transform: uppercase; }
+    .tkt-info-section { background: #fff; border-radius: 10px; border: 1px solid #e8f0fa; padding: 18px 20px; height: 100%; }
+    .tkt-section-label { font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.14em; color: #1565c0; text-transform: uppercase; border-bottom: 2px solid #e8f0fa; padding-bottom: 8px; margin-bottom: 14px; display: block; }
+    .tkt-info-row { display: flex; padding: 7px 0; border-bottom: 1px dashed #f0f4f8; align-items: flex-start; gap: 10px; }
     .tkt-info-row:last-child { border-bottom: none; }
-    .tkt-info-key {
-        font-family: 'Open Sans', sans-serif;
-        font-size: 0.78rem; color: #8a9bb0; font-weight: 600;
-        min-width: 130px; flex-shrink: 0; padding-top: 1px;
-    }
-    .tkt-info-val {
-        font-family: 'Open Sans', sans-serif;
-        font-size: 0.88rem; color: #1a2a3a; font-weight: 500; word-break: break-word;
-    }
-    .tkt-complaint-box {
-        background: #f8fafd; border: 1px solid #e2eaf4;
-        border-left: 4px solid #1565c0; border-radius: 8px;
-        padding: 14px 16px; font-size: 0.92rem; color: #2c3e50;
-        min-height: 80px; white-space: pre-wrap; word-wrap: break-word;
-        line-height: 1.6; font-family: 'Open Sans', sans-serif;
-    }
-    .tkt-urgent-tag {
-        display: inline-flex; align-items: center; gap: 5px;
-        background: #fee2e2; color: #b91c1c;
-        border: 1px solid #fecaca; border-radius: 20px;
-        padding: 4px 12px; font-size: 0.78rem; font-weight: 700;
-        font-family: 'Montserrat', sans-serif;
-    }
-    .tkt-normal-tag {
-        display: inline-flex; align-items: center; gap: 5px;
-        background: #f0f4f8; color: #5a7a9a;
-        border: 1px solid #dde6f0; border-radius: 20px;
-        padding: 4px 12px; font-size: 0.78rem; font-weight: 600;
-        font-family: 'Montserrat', sans-serif;
-    }
+    .tkt-info-key { font-family: 'Open Sans', sans-serif; font-size: 0.78rem; color: #8a9bb0; font-weight: 600; min-width: 130px; flex-shrink: 0; padding-top: 1px; }
+    .tkt-info-val { font-family: 'Open Sans', sans-serif; font-size: 0.88rem; color: #1a2a3a; font-weight: 500; word-break: break-word; }
+    .tkt-complaint-box { background: #f8fafd; border: 1px solid #e2eaf4; border-left: 4px solid #1565c0; border-radius: 8px; padding: 14px 16px; font-size: 0.92rem; color: #2c3e50; min-height: 80px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; font-family: 'Open Sans', sans-serif; }
+    .tkt-urgent-tag { display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+    .tkt-normal-tag { display: inline-flex; align-items: center; gap: 5px; background: #f0f4f8; color: #5a7a9a; border: 1px solid #dde6f0; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; font-family: 'Montserrat', sans-serif; }
     .tkt-assigned-val { color: #1565c0; font-weight: 700; }
-    .tkt-control-chip {
-        font-family: 'Courier New', monospace; font-size: 0.88rem;
-        background: rgba(249,201,0,0.2); color: #f9c900;
-        border-radius: 6px; padding: 2px 10px; font-weight: 700; letter-spacing: 0.05em;
-    }
-    .tkt-status-pill {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.82rem; font-weight: 700;
-        padding: 5px 18px; border-radius: 50px; letter-spacing: 0.05em;
-    }
+    .tkt-control-chip { font-family: 'Courier New', monospace; font-size: 0.88rem; background: rgba(249,201,0,0.2); color: #f9c900; border-radius: 6px; padding: 2px 10px; font-weight: 700; letter-spacing: 0.05em; }
+    .tkt-status-pill { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 700; padding: 5px 18px; border-radius: 50px; letter-spacing: 0.05em; }
     .tkt-modal-footer { background: #f8fafd; border-top: 1px solid #e2eaf4; }
 
-    .update-modal-header {
-        background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%);
-        border-bottom: 3px solid #f9c900; padding: 14px 20px;
-    }
-    .update-modal-header .modal-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem; font-weight: 800; color: #fff;
-    }
-    .assign-modal-header {
-        background: linear-gradient(90deg, #92400e 0%, #d97706 100%);
-        border-bottom: 3px solid #f9c900; padding: 14px 20px;
-    }
-    .assign-modal-header .modal-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem; font-weight: 800; color: #fff;
-    }
-    .confirm-modal-header {
-        background: linear-gradient(90deg, #146c43 0%, #198754 100%);
-        border-bottom: 3px solid #f9c900; padding: 14px 20px;
-    }
-    .confirm-modal-header .modal-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem; font-weight: 800; color: #fff;
-    }
-    .reopen-modal-header {
-        background: linear-gradient(90deg, #92400e 0%, #d97706 100%);
-        border-bottom: 3px solid #f9c900; padding: 14px 20px;
-    }
-    .reopen-modal-header .modal-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.95rem; font-weight: 800; color: #fff;
-    }
+    .update-modal-header { background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%); border-bottom: 3px solid #f9c900; padding: 14px 20px; }
+    .update-modal-header .modal-title { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: #fff; }
+    .assign-modal-header { background: linear-gradient(90deg, #92400e 0%, #d97706 100%); border-bottom: 3px solid #f9c900; padding: 14px 20px; }
+    .assign-modal-header .modal-title { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: #fff; }
+    .confirm-modal-header { background: linear-gradient(90deg, #146c43 0%, #198754 100%); border-bottom: 3px solid #f9c900; padding: 14px 20px; }
+    .confirm-modal-header .modal-title { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: #fff; }
+    .reopen-modal-header { background: linear-gradient(90deg, #92400e 0%, #d97706 100%); border-bottom: 3px solid #f9c900; padding: 14px 20px; }
+    .reopen-modal-header .modal-title { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: #fff; }
 
-    .modal .form-label {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.76rem; font-weight: 700; color: #495057;
-        margin-bottom: 4px; display: block;
-    }
-    .modal .form-control,
-    .modal .form-select {
-        font-size: 0.9rem; border-radius: 7px;
-        border: 1px solid #dee2e6; font-family: 'Open Sans', sans-serif;
-        transition: border-color 0.2s;
-    }
-    .modal .form-control:focus,
-    .modal .form-select:focus {
-        border-color: #1565c0;
-        box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
-    }
+    .modal .form-label { font-family: 'Montserrat', sans-serif; font-size: 0.76rem; font-weight: 700; color: #495057; margin-bottom: 4px; display: block; }
+    .modal .form-control, .modal .form-select { font-size: 0.9rem; border-radius: 7px; border: 1px solid #dee2e6; font-family: 'Open Sans', sans-serif; transition: border-color 0.2s; }
+    .modal .form-control:focus, .modal .form-select:focus { border-color: #1565c0; box-shadow: 0 0 0 3px rgba(21,101,192,0.1); }
 
-    .btn-mfooter-cancel {
-        background: transparent; color: #6c757d;
-        border: 1.5px solid #dee2e6; border-radius: 8px;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 0.8rem; font-weight: 700; padding: 7px 18px;
-        cursor: pointer; transition: all 0.15s;
-    }
+    .btn-mfooter-cancel { background: transparent; color: #6c757d; border: 1.5px solid #dee2e6; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; padding: 7px 18px; cursor: pointer; transition: all 0.15s; }
     .btn-mfooter-cancel:hover { background: #f8f9fa; }
-    .btn-mfooter-blue {
-        background: #1565c0; color: #fff; border: none;
-        border-radius: 8px; font-family: 'Montserrat', sans-serif;
-        font-size: 0.8rem; font-weight: 700; padding: 7px 20px;
-        cursor: pointer; transition: background 0.15s;
-    }
+    .btn-mfooter-blue { background: #1565c0; color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; padding: 7px 20px; cursor: pointer; transition: background 0.15s; }
     .btn-mfooter-blue:hover { background: #1a3a6b; }
-    .btn-mfooter-green {
-        background: #198754; color: #fff; border: none;
-        border-radius: 8px; font-family: 'Montserrat', sans-serif;
-        font-size: 0.8rem; font-weight: 700; padding: 7px 20px;
-        cursor: pointer; transition: background 0.15s;
-    }
+    .btn-mfooter-green { background: #198754; color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; padding: 7px 20px; cursor: pointer; transition: background 0.15s; }
     .btn-mfooter-green:hover { background: #146c43; }
-    .btn-mfooter-warn {
-        background: #d97706; color: #fff; border: none;
-        border-radius: 8px; font-family: 'Montserrat', sans-serif;
-        font-size: 0.8rem; font-weight: 700; padding: 7px 20px;
-        cursor: pointer; transition: background 0.15s;
-    }
+    .btn-mfooter-warn { background: #d97706; color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; padding: 7px 20px; cursor: pointer; transition: background 0.15s; }
     .btn-mfooter-warn:hover { background: #92400e; }
-
-    .ticket-tbl tbody tr.accepted-row { background: rgba(21,101,192,0.07); }
-    .ticket-tbl tbody tr.accepted-row:hover { background: rgba(21,101,192,0.14); }
-    .accepted-label { font-family:'Montserrat',sans-serif; font-size:0.62rem; font-weight:700; color:#1565c0; display:block; margin-bottom:1px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-3">
 
-    <!-- ═══ Title ═══ -->
     <h2 class="dash-title">Super Admin Dashboard</h2>
     <p class="dash-subtitle">Overview of all helpdesk activity and ticket management.</p>
 
-    <!-- ═══ Stat cards ═══ -->
     <div class="stat-cards">
         <div class="stat-card blue">
             <span class="stat-label">New Requests</span>
             <span class="stat-value">{{ new_count }}</span>
             <span class="stat-desc">Pending for review</span>
-            <a href="#" class="stat-link" onclick="switchTab('new')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('new');return false;"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card yellow">
             <span class="stat-label">Assigned / Assisting</span>
             <span class="stat-value">{{ accepted_count }}</span>
             <span class="stat-desc">In progress / Assigned</span>
-            <a href="#" class="stat-link" onclick="switchTab('accepted')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('accepted');return false;"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card green">
             <span class="stat-label">Completed</span>
             <span class="stat-value">{{ completed_count }}</span>
             <span class="stat-desc">Resolved requests</span>
-            <a href="#" class="stat-link" onclick="switchTab('completed')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('completed');return false;"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
         <div class="stat-card red">
             <span class="stat-label">Missing Tasks</span>
             <span class="stat-value">{{ missing_tasks_count|default:0 }}</span>
             <span class="stat-desc">Overdue tickets</span>
-            <a href="{% url 'super_admin_dashboard' %}?tab=missing" class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <a href="#" class="stat-link" onclick="switchTab('missing');return false;"><i class="bi bi-arrow-right-circle"></i> View Details</a>
         </div>
     </div>
 
-    <!-- ═══ Tab strip ═══ -->
     <div class="tab-strip">
         <span class="tab-strip-label">Tickets</span>
         <div class="tab-divider"></div>
@@ -625,8 +477,6 @@
             <span class="tab-badge">{{ missing_tasks_count }}</span>
         </button>
     </div>
-
-    <!-- ═══ TAB PANES ═══ -->
 
     <!-- NEW REQUESTS -->
     <div class="tab-pane-content ticket-card" id="pane-new"
@@ -697,13 +547,7 @@
                 <td style="color:#495057;font-size:0.86rem;">{{ ticket.request_complaint|truncatewords:8 }}</td>
                 <td>{% if ticket.is_urgent %}<span class="urgent-pill"><i class="bi bi-exclamation-triangle-fill"></i> Yes</span>{% else %}<span class="normal-pill">No</span>{% endif %}</td>
                 <td><span class="elapsed-text">{{ ticket.created_at|timesince }} ago</span></td>
-                <td>
-                    {% if ticket.is_manually_modified %}
-                        <span class="modified-pill"><i class="bi bi-pencil-fill"></i> Yes</span>
-                    {% else %}
-                        <span class="normal-pill">No</span>
-                    {% endif %}
-                </td>
+                <td>{% if ticket.is_manually_modified %}<span class="modified-pill"><i class="bi bi-pencil-fill"></i> Yes</span>{% else %}<span class="normal-pill">No</span>{% endif %}</td>
                 <td style="white-space:nowrap;">
                     <button type="button" class="btn-view-det" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.pk }}">
                         <i class="bi bi-eye me-1"></i>View
@@ -795,7 +639,7 @@
         </table>
     </div>
 
-    <!-- ═══ Recent Activity ═══ -->
+    <!-- Recent Activity -->
     <div class="activity-card">
         <div class="activity-card-header">
             <span class="activity-card-title"><i class="bi bi-activity me-2" style="color:#1565c0;"></i>Recent Admin Activity</span>
@@ -816,23 +660,14 @@
                     <td style="color:#adb5bd;font-size:0.8rem;">{{ forloop.counter }}</td>
                     <td><span class="activity-user">{{ log.user.username|default:"System" }}</span></td>
                     <td>
-                        {% if 'login' in log.action|lower %}
-                            <span class="activity-action-badge act-login">{{ log.action|title }}</span>
-                        {% elif 'logout' in log.action|lower %}
-                            <span class="activity-action-badge act-logout">{{ log.action|title }}</span>
-                        {% elif 'accepted' in log.action|lower %}
-                            <span class="activity-action-badge act-accepted">{{ log.action|title }}</span>
-                        {% elif 'assigned' in log.action|lower %}
-                            <span class="activity-action-badge act-assigned">{{ log.action|title }}</span>
-                        {% elif 'assisting' in log.action|lower %}
-                            <span class="activity-action-badge act-assisting">{{ log.action|title }}</span>
-                        {% elif 'completed' in log.action|lower %}
-                            <span class="activity-action-badge act-completed">{{ log.action|title }}</span>
-                        {% elif 'deleted' in log.action|lower %}
-                            <span class="activity-action-badge act-deleted">{{ log.action|title }}</span>
-                        {% else %}
-                            <span class="activity-action-badge act-default">{{ log.action|title }}</span>
-                        {% endif %}
+                        {% if 'login' in log.action|lower %}<span class="activity-action-badge act-login">{{ log.action|title }}</span>
+                        {% elif 'logout' in log.action|lower %}<span class="activity-action-badge act-logout">{{ log.action|title }}</span>
+                        {% elif 'accepted' in log.action|lower %}<span class="activity-action-badge act-accepted">{{ log.action|title }}</span>
+                        {% elif 'assigned' in log.action|lower %}<span class="activity-action-badge act-assigned">{{ log.action|title }}</span>
+                        {% elif 'assisting' in log.action|lower %}<span class="activity-action-badge act-assisting">{{ log.action|title }}</span>
+                        {% elif 'completed' in log.action|lower %}<span class="activity-action-badge act-completed">{{ log.action|title }}</span>
+                        {% elif 'deleted' in log.action|lower %}<span class="activity-action-badge act-deleted">{{ log.action|title }}</span>
+                        {% else %}<span class="activity-action-badge act-default">{{ log.action|title }}</span>{% endif %}
                     </td>
                     <td>
                         <span style="font-size:0.84rem;color:#495057;">{{ log.details|truncatewords:20 }}</span>
@@ -850,9 +685,6 @@
 
 </div>
 
-<!-- ══════════════════════════════════════
-     TICKET DETAIL MODALS — PENDING
-══════════════════════════════════════ -->
 {% for ticket in pending_tickets %}
 <div class="modal fade" id="ticketModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -910,8 +742,8 @@
                     <button type="submit" class="btn-mfooter-green"><i class="bi bi-check-circle me-1"></i>Accept</button>
                 </form>
                 {% endif %}
-                {% if ticket.status == 'accepted' %}
-                <button type="button" class="btn-mfooter-warn" data-bs-toggle="modal" data-bs-target="#assistModal{{ ticket.pk }}" data-bs-dismiss="modal">
+                {% if ticket.status == 'pending' or ticket.status == 'accepted' %}
+                <button type="button" class="btn-action-warn" data-bs-toggle="modal" data-bs-target="#assistModal{{ ticket.pk }}">
                     <i class="bi bi-person-check me-1"></i>Assign
                 </button>
                 {% endif %}
@@ -920,7 +752,6 @@
     </div>
 </div>
 
-<!-- ── Assign modal for pending tickets ── -->
 <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -950,9 +781,6 @@
 </div>
 {% endfor %}
 
-<!-- ══════════════════════════════════════
-     TICKET MODALS — ACCEPTED / ASSISTING
-══════════════════════════════════════ -->
 {% for ticket in accepted_tickets %}
 <div class="modal fade" id="viewModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -1024,7 +852,6 @@
     </div>
 </div>
 
-<!-- Update modal -->
 <div class="modal fade" id="updateModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -1039,10 +866,7 @@
                 <div class="modal-body p-4">
                     {% csrf_token %}<input type="hidden" name="tab" value="accepted">
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Nature of Request / Complaint</label>
-                            <textarea name="request_complaint" class="form-control" rows="4" required>{{ ticket.request_complaint }}</textarea>
-                        </div>
+                        <div class="col-12"><label class="form-label">Nature of Request / Complaint</label><textarea name="request_complaint" class="form-control" rows="4" required>{{ ticket.request_complaint }}</textarea></div>
                         <div class="col-md-6"><label class="form-label">Equipment / Item</label><input type="text" name="equipment" class="form-control" value="{{ ticket.equipment|default:'' }}"></div>
                         <div class="col-md-6"><label class="form-label">Brand</label><input type="text" name="brand" class="form-control" value="{{ ticket.brand|default:'' }}"></div>
                         <div class="col-md-6"><label class="form-label">Model</label><input type="text" name="model" class="form-control" value="{{ ticket.model|default:'' }}"></div>
@@ -1059,7 +883,6 @@
     </div>
 </div>
 
-<!-- ── Assist confirm modal (accepted tab) ── -->
 {% if ticket.status == 'accepted' %}
 <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1090,7 +913,6 @@
 </div>
 {% endif %}
 
-<!-- Complete confirm modal -->
 {% if ticket.status == 'accepted' or ticket.status == 'assisting' %}
 <div class="modal fade" id="completeConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1120,11 +942,6 @@
 {% endif %}
 {% endfor %}
 
-<!-- ══════════════════════════════════════
-     SHARED MODALS
-══════════════════════════════════════ -->
-
-<!-- Re-open Confirm -->
 <div class="modal fade" id="reopenConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -1149,7 +966,6 @@
     </div>
 </div>
 
-<!-- Toast notifications -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1050;max-width:350px;">
     {% if messages %}{% for message in messages %}{% if 'new_ticket' in message.tags %}
     <div class="toast show" role="alert" style="background:#1565c0;color:#fff;border-radius:10px;border:none;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
@@ -1167,174 +983,142 @@
 
 {% block extra_js %}
 <script>
+// ══════════════════════════════════════════════════════
+// FIX: switchTab defined at TOP LEVEL (not inside DOMContentLoaded)
+// so that onclick="switchTab('accepted')" on buttons always works.
+// ══════════════════════════════════════════════════════
+function switchTab(tab) {
+    ['new', 'accepted', 'completed', 'missing'].forEach(function(t) {
+        document.getElementById('pane-' + t).style.display = 'none';
+        document.getElementById('pill-' + t).classList.remove('active');
+    });
+    document.getElementById('pane-' + tab).style.display = 'block';
+    document.getElementById('pill-' + tab).classList.add('active');
+}
+// Also expose as window.switchTab for any callers in super_admin_base.html
+window.switchTab = switchTab;
+
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ── Tab switching ──
-    window.switchTab = function(tab) {
-        ['new','accepted','completed','missing'].forEach(t => {
-            document.getElementById('pane-' + t).style.display = 'none';
-            document.getElementById('pill-' + t).classList.remove('active');
-        });
-        document.getElementById('pane-' + tab).style.display = 'block';
-        document.getElementById('pill-' + tab).classList.add('active');
-    };
-
-    // Activate correct tab on load from URL param
-    const urlTab = new URLSearchParams(window.location.search).get('tab');
-    if (urlTab && ['new','accepted','completed','missing'].includes(urlTab)) {
+    // Activate correct tab from URL param
+    var urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab && ['new','accepted','completed','missing'].indexOf(urlTab) !== -1) {
         switchTab(urlTab);
     }
 
-    // ── Complete confirmation ──
-    document.querySelectorAll('[id^="confirmCompleteBtn"]').forEach(btn => {
+    // Complete confirmation
+    document.querySelectorAll('[id^="confirmCompleteBtn"]').forEach(function(btn) {
         btn.addEventListener('click', function () {
-            const pk = this.id.replace('confirmCompleteBtn', '');
-            const form = document.getElementById('completeForm' + pk);
+            var pk = this.id.replace('confirmCompleteBtn', '');
+            var form = document.getElementById('completeForm' + pk);
             if (form) form.submit();
-            bootstrap.Modal.getInstance(document.getElementById('completeConfirmModal' + pk))?.hide();
+            var modalEl = document.getElementById('completeConfirmModal' + pk);
+            var modal = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+            if (modal) modal.hide();
         });
     });
 
-    // ── Re-open ──
-    document.querySelectorAll('.reopen-btn').forEach(btn => {
+    // Re-open
+    document.querySelectorAll('.reopen-btn').forEach(function(btn) {
         btn.addEventListener('click', function () {
             document.getElementById('reopenTicketNo').textContent = this.dataset.ticketNo;
             document.getElementById('confirmReopenBtn').dataset.formId = this.dataset.formId;
         });
     });
-    document.getElementById('confirmReopenBtn')?.addEventListener('click', function () {
-        const form = document.getElementById(this.dataset.formId);
-        if (form) form.submit();
-        bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'))?.hide();
-    });
+    var confirmReopenBtn = document.getElementById('confirmReopenBtn');
+    if (confirmReopenBtn) {
+        confirmReopenBtn.addEventListener('click', function () {
+            var form = document.getElementById(this.dataset.formId);
+            if (form) form.submit();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'));
+            if (modal) modal.hide();
+        });
+    }
 
-    // ── Toasts ──
-    document.querySelectorAll('.toast').forEach(el => {
+    // Toasts
+    document.querySelectorAll('.toast').forEach(function(el) {
         new bootstrap.Toast(el, { autohide: true, delay: 15000 }).show();
     });
 });
 
-// ── POLLING ──
-let lastPendingCount = {{ new_count | default:0 }};
-let lastControlNo = '';
+// Polling
+var lastPendingCount = {{ new_count|default:0 }};
+var lastControlNo = '';
 
-function pollForUpdates() {
-    fetch('/poll-notifications/')
-        .then(r => r.json())
-        .then(data => {
-            const newBadge = document.querySelector('#pill-new .tab-badge');
-            if (newBadge) newBadge.textContent = data.pending_count;
+// function pollForUpdates() {
+//     fetch('/poll-notifications/')
+//         .then(function(r) { return r.json(); })
+//         .then(function(data) {
+//             var newBadge = document.querySelector('#pill-new .tab-badge');
+//             if (newBadge) newBadge.textContent = data.pending_count;
 
-            if (data.pending_count > lastPendingCount &&
-                data.latest_control_no &&
-                data.latest_control_no !== lastControlNo) {
+//             if (data.pending_count > lastPendingCount &&
+//                 data.latest_control_no &&
+//                 data.latest_control_no !== lastControlNo) {
+//                 lastControlNo = data.latest_control_no;
+//                 showNewTicketToast(data);
+//                 setTimeout(function() { location.reload(); }, 1200);
+//             }
+//             lastPendingCount = data.pending_count;
+//         })
+//         .catch(function() {})
+//         .finally(function() { setTimeout(pollForUpdates, 5000); });
+// }
 
-                lastControlNo = data.latest_control_no;
-                showNewTicketToast(data);
+// function showNewTicketToast(data) {
+//     var toast = document.createElement('div');
+//     toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:linear-gradient(90deg,#1a3a6b,#1565c0);color:#fff;border-radius:12px;padding:14px 20px;box-shadow:0 8px 32px rgba(21,101,192,0.3);font-family:\'Open Sans\',sans-serif;font-size:0.85rem;border-left:4px solid #f9c900;max-width:320px;';
+//     toast.innerHTML = '<div style="font-family:\'Montserrat\',sans-serif;font-weight:700;margin-bottom:4px;">🔔 New Ticket Submitted!</div>'
+//         + '<div style="opacity:0.85;font-size:0.78rem;">' + data.latest_requested_by + ' — ' + data.latest_control_no
+//         + (data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : '') + '</div>'
+//         + '<div style="margin-top:8px;">'
+//         + '<button onclick="window.location.reload()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">View Now</button>'
+//         + '<button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:rgba(255,255,255,0.6);padding:4px 8px;cursor:pointer;font-size:0.75rem;margin-left:4px;">Dismiss</button>'
+//         + '</div>';
+//     document.body.appendChild(toast);
+//     try {
+//         var ctx = new AudioContext(); var osc = ctx.createOscillator(); var gain = ctx.createGain();
+//         osc.connect(gain); gain.connect(ctx.destination);
+//         osc.frequency.value = 520; gain.gain.value = 0.1;
+//         osc.start(); osc.stop(ctx.currentTime + 0.15);
+//     } catch(e) {}
+//     setTimeout(function() { if (toast.parentNode) toast.remove(); }, 10000);
+// }
 
-                setTimeout(() => { location.reload(); }, 1200);
-            }
+// pollForUpdates();
 
-            lastPendingCount = data.pending_count;
-        })
-        .catch(() => {})
-        .finally(() => {
-            setTimeout(pollForUpdates, 5000);
-        });
-}
+var lastSAStateHash = '';
+var isSAReloading = false;
 
-function showNewTicketToast(data) {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position:fixed; bottom:24px; right:24px; z-index:9999;
-        background:linear-gradient(90deg,#1a3a6b,#1565c0);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(21,101,192,0.3);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:320px;
-    `;
-    toast.innerHTML = `
-        <div style="font-family:'Montserrat',sans-serif; font-weight:700; margin-bottom:4px;">
-            🔔 New Ticket Submitted!
-        </div>
-        <div style="opacity:0.85; font-size:0.78rem;">
-            ${data.latest_requested_by} — ${data.latest_control_no}
-            ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
-        </div>
-        <div style="margin-top:8px;">
-            <button onclick="window.location.reload()"
-                    style="background:rgba(255,255,255,0.2);border:none;color:#fff;
-                           padding:4px 12px;border-radius:6px;cursor:pointer;
-                           font-size:0.75rem;font-weight:600;">
-                View Now
-            </button>
-            <button onclick="this.parentElement.parentElement.remove()"
-                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
-                           padding:4px 8px;cursor:pointer;font-size:0.75rem;margin-left:4px;">
-                Dismiss
-            </button>
-        </div>
-    `;
-    document.body.appendChild(toast);
+// function pollSADashboardState() {
+//     if (isSAReloading) return;
+//     fetch('/poll-dashboard-state/')
+//         .then(function(r) { return r.json(); })
+//         .then(function(data) {
+//             if (isSAReloading) return;
+//             var nb = document.querySelector('#pill-new .tab-badge');
+//             var ab = document.querySelector('#pill-accepted .tab-badge');
+//             var cb = document.querySelector('#pill-completed .tab-badge');
+//             var mb = document.querySelector('#pill-missing .tab-badge');
+//             if (nb) nb.textContent = data.pending_count;
+//             if (ab) ab.textContent = data.assisting_count;
+//             if (cb) cb.textContent = data.completed_count;
+//             if (mb) mb.textContent = data.missing_count;
 
-    try {
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 520;
-        gain.gain.value = 0.1;
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
-    } catch(e) {}
+//             if (lastSAStateHash !== '' && data.state_hash !== lastSAStateHash) {
+//                 isSAReloading = true;
+//                 var activePill = document.querySelector('.tab-pill.active');
+//                 var activeTab = activePill ? activePill.id.replace('pill-', '') : 'new';
+//                 var url = new URL(window.location.href);
+//                 url.searchParams.set('tab', activeTab);
+//                 setTimeout(function() { window.location.href = url.toString(); }, 1500);
+//             }
+//             lastSAStateHash = data.state_hash;
+//         })
+//         .catch(function() {})
+//         .finally(function() { if (!isSAReloading) setTimeout(pollSADashboardState, 5000); });
+// }
 
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
-}
-
-pollForUpdates();
-
-// ── Poll for dashboard state changes (completions, assignments, etc.) ──
-let lastSAStateHash = '';
-let isSAReloading = false;
-
-function pollSADashboardState() {
-    if (isSAReloading) return;
-
-    fetch('/poll-dashboard-state/')
-        .then(r => r.json())
-        .then(data => {
-            if (isSAReloading) return;
-
-            // Update tab badges
-            const newBadge       = document.querySelector('#pill-new .tab-badge');
-            const acceptedBadge  = document.querySelector('#pill-accepted .tab-badge');
-            const completedBadge = document.querySelector('#pill-completed .tab-badge');
-            const missingBadge   = document.querySelector('#pill-missing .tab-badge');
-            if (newBadge)       newBadge.textContent       = data.pending_count;
-            if (acceptedBadge)  acceptedBadge.textContent  = data.assisting_count;
-            if (completedBadge) completedBadge.textContent = data.completed_count;
-            if (missingBadge)   missingBadge.textContent   = data.missing_count;
-
-            // Detect state change and reload
-            if (lastSAStateHash !== '' && data.state_hash !== lastSAStateHash) {
-                isSAReloading = true;
-                const activeTab = document.querySelector('.tab-pill.active')?.id?.replace('pill-', '') || 'new';
-                const url = new URL(window.location.href);
-                url.searchParams.set('tab', activeTab);
-                setTimeout(() => { window.location.href = url.toString(); }, 1500);
-            }
-
-            lastSAStateHash = data.state_hash;
-        })
-        .catch(() => {})
-        .finally(() => {
-            if (!isSAReloading) setTimeout(pollSADashboardState, 5000);
-        });
-}
-
-pollSADashboardState();
+// pollSADashboardState();
 </script>
 {% endblock %}
-
-

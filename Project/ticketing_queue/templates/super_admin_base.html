@@ -309,16 +309,16 @@
         <div style="position:relative;display:inline-block;">
             <button id="saNotifBell" onclick="toggleSANotifDropdown()"
                     style="background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);
-                           color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;
-                           position:relative;transition:background 0.2s;font-size:1rem;">
+                        color:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;
+                        position:relative;transition:background 0.2s;font-size:1rem;">
                 <i class="bi bi-bell-fill"></i>
                 <span id="saNotifBadge"
-                      style="display:none;position:absolute;top:-6px;right:-6px;
-                             background:#dc3545;color:#fff;border-radius:50%;
-                             width:18px;height:18px;font-size:0.6rem;font-weight:800;
-                             font-family:'Montserrat',sans-serif;
-                             display:none;align-items:center;justify-content:center;
-                             border:2px solid #1565c0;">0</span>
+                    style="display:none;position:absolute;top:-6px;right:-6px;
+                            background:#dc3545;color:#fff;border-radius:50%;
+                            width:18px;height:18px;font-size:0.6rem;font-weight:800;
+                            font-family:'Montserrat',sans-serif;
+                            display:none;align-items:center;justify-content:center;
+                            border:2px solid #1565c0;">0</span>
             </button>
             <!-- Dropdown -->
             <div id="saNotifDropdown"
@@ -688,6 +688,14 @@ function restoreStoredToast() {
     } catch(e) {}
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    restoreStoredToast();
+    loadSANotifs();          // <-- ADD THIS LINE
+    if (!window.pendingToastsData) window.pendingToastsData = [];
+    pollDashboardState();
+    // ... rest of your code
+});
+
 function scheduleReload(delay) {
     if (isReloading) return;
     isReloading = true;
@@ -726,6 +734,12 @@ function pollDashboardState() {
 
             if (newTicketArrived) {
                 lastControlNo = data.latest_control_no;
+                // Add to bell
+                addSANotif({
+                    control_no: data.latest_control_no,
+                    latest_requested_by: data.latest_requested_by,
+                    latest_is_urgent: data.latest_is_urgent,
+                }, 'new_ticket');
                 window.pendingToastsData.push(data);
                 sessionStorage.setItem('pendingNewTicketToasts', JSON.stringify(window.pendingToastsData));
                 scheduleReload(800);
@@ -918,28 +932,48 @@ setInterval(sendHeartbeat, 60000); // then every 60 seconds
 
 
 // ── Super Admin Notification Bell ──
-let saNotifList = [];
+// ── Super Admin Notification Bell (extended for new tickets) ──
+let saNotifList = [];          // each item: { type, control_no, requested_by, is_urgent, rejected_by?, reason?, timestamp }
 let lastRejectedControlNo = '';
 
-function toggleSANotifDropdown() {
-    const dropdown = document.getElementById('saNotifDropdown');
-    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+// Load from localStorage
+function loadSANotifs() {
+    const stored = localStorage.getItem('saNotifList');
+    if (stored) {
+        try {
+            saNotifList = JSON.parse(stored);
+        } catch(e) {}
+    }
+    renderSANotifList();
+    updateSANotifBadge();
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    const bell = document.getElementById('saNotifBell');
-    const dropdown = document.getElementById('saNotifDropdown');
-    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
+// Save to localStorage
+function saveSANotifs() {
+    localStorage.setItem('saNotifList', JSON.stringify(saNotifList));
+}
+
+function addSANotif(data, type = 'rejected') {
+    // Avoid duplicate for same control_no and type within short time
+    const existing = saNotifList.find(n => n.control_no === data.control_no && n.type === type);
+    if (existing) return;
+
+    const newNotif = {
+        type: type,
+        control_no: data.control_no,
+        timestamp: Date.now(),
+    };
+    if (type === 'rejected') {
+        newNotif.rejected_by = data.rejected_by;
+        newNotif.reason = data.reason;
+    } else if (type === 'new_ticket') {
+        newNotif.requested_by = data.latest_requested_by;
+        newNotif.is_urgent = data.latest_is_urgent;
     }
-});
-
-function addSANotif(data) {
-    // Avoid duplicates
-    if (saNotifList.find(n => n.control_no === data.control_no && n.rejected_by === data.rejected_by)) return;
-
-    saNotifList.push(data);
+    saNotifList.unshift(newNotif); // newest first
+    // Keep max 50 notifications
+    if (saNotifList.length > 50) saNotifList.pop();
+    saveSANotifs();
     renderSANotifList();
     updateSANotifBadge();
 }
@@ -949,7 +983,7 @@ function renderSANotifList() {
     const empty = document.getElementById('saNotifEmpty');
     if (!list) return;
 
-    // Remove old notif items (keep empty state)
+    // Remove existing items
     list.querySelectorAll('.sa-notif-item').forEach(el => el.remove());
 
     if (saNotifList.length === 0) {
@@ -965,49 +999,85 @@ function renderSANotifList() {
             padding:12px 14px;border-bottom:1px solid #f2f4f8;
             background:#fff;transition:background 0.1s;
         `;
-        div.innerHTML = `
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
-                <div style="flex:1;">
-                    <div style="font-family:'Montserrat',sans-serif;font-size:0.75rem;
-                                font-weight:800;color:#dc3545;margin-bottom:3px;">
-                        ❌ ${item.rejected_by} rejected
+        if (item.type === 'rejected') {
+            div.innerHTML = `
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-family:'Montserrat',sans-serif;font-size:0.75rem;
+                                    font-weight:800;color:#dc3545;margin-bottom:3px;">
+                            ❌ ${escapeHtml(item.rejected_by)} rejected
+                        </div>
+                        <div style="font-family:'Courier New',monospace;font-size:0.78rem;
+                                    font-weight:700;color:#1565c0;margin-bottom:4px;">
+                            ${escapeHtml(item.control_no)}
+                        </div>
+                        <div style="font-size:0.75rem;color:#6c757d;font-style:italic;
+                                    background:#f8f9fa;padding:4px 8px;border-radius:4px;
+                                    border-left:3px solid #dc3545;">
+                            "${escapeHtml(item.reason)}"
+                        </div>
                     </div>
-                    <div style="font-family:'Courier New',monospace;font-size:0.78rem;
-                                font-weight:700;color:#1565c0;margin-bottom:4px;">
-                        ${item.control_no}
-                    </div>
-                    <div style="font-size:0.75rem;color:#6c757d;font-style:italic;
-                                background:#f8f9fa;padding:4px 8px;border-radius:4px;
-                                border-left:3px solid #dc3545;">
-                        "${item.reason}"
-                    </div>
+                    <button onclick="removeSANotif(${index})"
+                            style="background:none;border:none;color:#adb5bd;
+                                   cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
-                <button onclick="removeSANotif(${index})"
-                        style="background:none;border:none;color:#adb5bd;
-                               cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div style="margin-top:8px;">
-                <button onclick="reassignTicket('${item.control_no}'); document.getElementById('saNotifDropdown').style.display='none';"
-                        style="background:#1565c0;color:#fff;border:none;
-                            font-family:'Montserrat',sans-serif;font-size:0.68rem;
-                            font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
-                    Reassign Now
-                </button>
-            </div>`;
+                <div style="margin-top:8px;">
+                    <button onclick="reassignTicket('${escapeHtml(item.control_no)}'); document.getElementById('saNotifDropdown').style.display='none';"
+                            style="background:#1565c0;color:#fff;border:none;
+                                font-family:'Montserrat',sans-serif;font-size:0.68rem;
+                                font-weight:700;padding:4px 12px;border-radius:5px;cursor:pointer;">
+                        Reassign Now
+                    </button>
+                </div>`;
+        } else if (item.type === 'new_ticket') {
+            const urgentBadge = item.is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : '';
+            div.innerHTML = `
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-family:'Montserrat',sans-serif;font-size:0.75rem;
+                                    font-weight:800;color:#1565c0;margin-bottom:3px;">
+                            🆕 New Ticket
+                        </div>
+                        <div style="font-family:'Courier New',monospace;font-size:0.78rem;
+                                    font-weight:700;color:#1565c0;margin-bottom:4px;">
+                            ${escapeHtml(item.control_no)} ${urgentBadge}
+                        </div>
+                        <div style="font-size:0.75rem;color:#495057;">
+                            Requested by: ${escapeHtml(item.requested_by)}
+                        </div>
+                    </div>
+                    <button onclick="removeSANotif(${index})"
+                            style="background:none;border:none;color:#adb5bd;
+                                   cursor:pointer;font-size:0.75rem;padding:0;flex-shrink:0;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div style="margin-top:8px;">
+                    <a href="/super/dashboard/?tab=new"
+                       style="background:#1565c0;color:#fff;border:none;
+                              font-family:'Montserrat',sans-serif;font-size:0.68rem;
+                              font-weight:700;padding:4px 12px;border-radius:5px;
+                              cursor:pointer;text-decoration:none;display:inline-block;">
+                        View Now
+                    </a>
+                </div>`;
+        }
         list.appendChild(div);
     });
 }
 
 function removeSANotif(index) {
     saNotifList.splice(index, 1);
+    saveSANotifs();
     renderSANotifList();
     updateSANotifBadge();
 }
 
 function clearSANotifs() {
     saNotifList = [];
+    saveSANotifs();
     renderSANotifList();
     updateSANotifBadge();
     document.getElementById('saNotifDropdown').style.display = 'none';
@@ -1016,14 +1086,31 @@ function clearSANotifs() {
 function updateSANotifBadge() {
     const badge = document.getElementById('saNotifBadge');
     if (!badge) return;
-    if (saNotifList.length > 0) {
-        badge.textContent = saNotifList.length;
+    const count = saNotifList.length;
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
         badge.style.display = 'flex';
     } else {
         badge.style.display = 'none';
     }
 }
-
+function toggleSANotifDropdown() {
+    const dropdown = document.getElementById('saNotifDropdown');
+    if (!dropdown) return;
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+        dropdown.style.display = 'block';
+    } else {
+        dropdown.style.display = 'none';
+    }
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const bell = document.getElementById('saNotifBell');
+    const dropdown = document.getElementById('saNotifDropdown');
+    if (bell && dropdown && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
 // ── Poll for staff rejection notifications ──
 function pollSuperAdminNotifications() {
     fetch('/poll-super-admin-notifications/')
@@ -1031,7 +1118,7 @@ function pollSuperAdminNotifications() {
         .then(data => {
             if (data.rejected && data.control_no !== lastRejectedControlNo) {
                 lastRejectedControlNo = data.control_no;
-                addSANotif(data);
+                addSANotif(data, 'rejected');
                 showRejectionToast(data);
             }
         })
@@ -1131,88 +1218,87 @@ pollAssisting();
 pollSuperAdminNotifications();
 
 // ── New ticket polling — runs on ALL pages ──
-let lastSANewTicketCount = -1;
-let lastSANewControlNo = '';
-let saNewTicketFirstPoll = true;
+// let lastSANewTicketCount = -1;
+// let lastSANewControlNo = '';
+// let saNewTicketFirstPoll = true;
 
-function pollSANewTickets() {
-    fetch('/poll-notifications/')
-        .then(r => r.json())
-        .then(data => {
-            // On first poll, just record current state — don't show toast
-            if (saNewTicketFirstPoll) {
-                saNewTicketFirstPoll = false;
-                lastSANewTicketCount = data.pending_count;
-                lastSANewControlNo = data.latest_control_no;
-                return;
-            }
+// function pollSANewTickets() {
+//     fetch('/poll-notifications/')
+//         .then(r => r.json())
+//         .then(data => {
+//             // On first poll, just record current state — don't show toast
+//             if (saNewTicketFirstPoll) {
+//                 saNewTicketFirstPoll = false;
+//                 lastSANewTicketCount = data.pending_count;
+//                 lastSANewControlNo = data.latest_control_no;
+//                 return;
+//             }
 
-            if (data.pending_count > lastSANewTicketCount &&
-                data.latest_control_no &&
-                data.latest_control_no !== lastSANewControlNo) {
+//             if (data.pending_count > lastSANewTicketCount &&
+//                 data.latest_control_no &&
+//                 data.latest_control_no !== lastSANewControlNo) {
 
-                lastSANewControlNo = data.latest_control_no;
-                showSANewTicketToast(data);
-            }
-            lastSANewTicketCount = data.pending_count;
-        })
-        .catch(() => {})
-        .finally(() => {
-            setTimeout(pollSANewTickets, 5000);
-        });
-}
+//                 lastSANewControlNo = data.latest_control_no;
+//                 showSANewTicketToast(data);
+//             }
+//             lastSANewTicketCount = data.pending_count;
+//         })
+//         .catch(() => {})
+//         .finally(() => {
+//             setTimeout(pollSANewTickets, 5000);
+//         });
+// }
 
-function showSANewTicketToast(data) {
-    const existing = document.getElementById('saNewTicketToast');
-    if (existing) existing.remove();
+// function showSANewTicketToast(data) {
+//     const existing = document.getElementById('saNewTicketToast');
+//     if (existing) existing.remove();
 
-    const toast = document.createElement('div');
-    toast.id = 'saNewTicketToast';
-    toast.style.cssText = `
-        position:fixed; bottom:24px; left:24px; z-index:9999;
-        background:linear-gradient(90deg,#1a3a6b,#1565c0);
-        color:#fff; border-radius:12px; padding:14px 20px;
-        box-shadow:0 8px 32px rgba(21,101,192,0.3);
-        font-family:'Open Sans',sans-serif; font-size:0.85rem;
-        border-left:4px solid #f9c900; max-width:320px;
-    `;
-    toast.innerHTML = `
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
-            🔔 New Ticket Submitted!
-        </div>
-        <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
-            ${data.latest_requested_by} — ${data.latest_control_no}
-            ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
-        </div>
-        <div style="display:flex;gap:6px;">
-            <a href="/super/dashboard/?tab=new"
-               style="background:rgba(255,255,255,0.2);border:none;color:#fff;
-                      padding:4px 12px;border-radius:6px;cursor:pointer;
-                      font-size:0.75rem;font-weight:600;text-decoration:none;">
-                View Now
-            </a>
-            <button onclick="this.parentElement.parentElement.remove()"
-                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
-                           padding:4px 8px;cursor:pointer;font-size:0.75rem;">
-                Dismiss
-            </button>
-        </div>`;
-    document.body.appendChild(toast);
+//     const toast = document.createElement('div');
+//     toast.id = 'saNewTicketToast';
+//     toast.style.cssText = `
+//         position:fixed; bottom:24px; left:24px; z-index:9999;
+//         background:linear-gradient(90deg,#1a3a6b,#1565c0);
+//         color:#fff; border-radius:12px; padding:14px 20px;
+//         box-shadow:0 8px 32px rgba(21,101,192,0.3);
+//         font-family:'Open Sans',sans-serif; font-size:0.85rem;
+//         border-left:4px solid #f9c900; max-width:320px;
+//     `;
+//     toast.innerHTML = `
+//         <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
+//             🔔 New Ticket Submitted!
+//         </div>
+//         <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
+//             ${data.latest_requested_by} — ${data.latest_control_no}
+//             ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
+//         </div>
+//         <div style="display:flex;gap:6px;">
+//             <a href="/super/dashboard/?tab=new"
+//                style="background:rgba(255,255,255,0.2);border:none;color:#fff;
+//                       padding:4px 12px;border-radius:6px;cursor:pointer;
+//                       font-size:0.75rem;font-weight:600;text-decoration:none;">
+//                 View Now
+//             </a>
+//             <button onclick="this.parentElement.parentElement.remove()"
+//                     style="background:transparent;border:none;color:rgba(255,255,255,0.6);
+//                            padding:4px 8px;cursor:pointer;font-size:0.75rem;">
+//                 Dismiss
+//             </button>
+//         </div>`;
+//     document.body.appendChild(toast);
 
-    try {
-        const ctx  = new AudioContext();
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = 520; gain.gain.value = 0.1;
-        osc.start(); osc.stop(ctx.currentTime + 0.15);
-    } catch(e) {}
+//     try {
+//         const ctx  = new AudioContext();
+//         const osc  = ctx.createOscillator();
+//         const gain = ctx.createGain();
+//         osc.connect(gain); gain.connect(ctx.destination);
+//         osc.frequency.value = 520; gain.gain.value = 0.1;
+//         osc.start(); osc.stop(ctx.currentTime + 0.15);
+//     } catch(e) {}
 
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
-}
+//     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
+// }
 
-pollSANewTickets();
-
+// pollSANewTickets();
 </script>
 
 {% block extra_js %}{% endblock %}

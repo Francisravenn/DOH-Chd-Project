@@ -10,7 +10,7 @@
     .dash-subtitle { font-size: 0.88rem; color: #6c757d; margin-bottom: 20px; }
 
     .stat-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
-    .stat-card { background: #fff; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px 22px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; transition: box-shadow 0.15s, transform 0.15s; }
+    .stat-card { background: #fff; border: 1px solid #e9ecef; border-radius: 12px; padding: 20px 22px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; transition: box-shadow 0.15s, transform 0.15s; cursor: pointer; }
     .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
     .stat-card.blue::before { background: #1565c0; }
@@ -37,9 +37,9 @@
     .tab-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.88rem; font-weight: 600; color: #495057; border-radius: 20px; border: 1.5px solid #e9ecef; background: #f8f9fa; transition: all 0.15s; cursor: pointer; white-space: nowrap; font-family: 'Open Sans', sans-serif; }
     .tab-pill:hover { background: rgba(21,101,192,0.07); border-color: #1565c0; color: #1565c0; }
     .tab-pill.active { background: #1565c0; border-color: #1565c0; color: #fff; font-weight: 700; }
-    .tab-pill.active.yellow { background: #d97706; border-color: #d97706; }
-    .tab-pill.active.green { background: #198754; border-color: #198754; }
-    .tab-pill.active.red { background: #dc3545; border-color: #dc3545; }
+    .tab-pill.active.yellow { background: #d97706; border-color: #d97706; color: #fff; }
+    .tab-pill.active.green { background: #198754; border-color: #198754; color: #fff; }
+    .tab-pill.active.red { background: #dc3545; border-color: #dc3545; color: #fff; }
     .tab-pill .tab-badge { font-size: 0.65rem; background: rgba(0,0,0,0.12); color: inherit; padding: 1px 7px; border-radius: 8px; font-weight: 700; }
     .tab-pill.active .tab-badge { background: rgba(255,255,255,0.25); }
 
@@ -51,7 +51,7 @@
     .ticket-tbl tbody tr:hover { background: #f8f9fc; }
     .ticket-tbl tbody tr.urgent-row { background: rgba(220,53,69,0.04); }
     .ticket-tbl tbody tr.urgent-row:hover { background: rgba(220,53,69,0.08); }
-    ..ticket-tbl td { padding: 10px 12px; vertical-align: middle; font-size: 0.88rem; color: #212529; border: none !important; word-break: break-word; }
+    .ticket-tbl td { padding: 10px 12px; vertical-align: middle; font-size: 0.88rem; color: #212529; border: none !important; word-break: break-word; }
 
     .control-no-text { font-family: 'Courier New', monospace; font-size: 0.84rem; font-weight: 700; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
     .urgent-label { font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 700; color: #dc3545; display: block; margin-bottom: 2px; }
@@ -70,7 +70,6 @@
     .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.6rem; }
     .empty-state p { font-size: 0.88rem; margin: 0; }
 
-    /* ── Modals ── */
     .tkt-modal-header { background: linear-gradient(90deg, #1a3a6b 0%, #1565c0 60%, #1e88e5 100%); border-bottom: 3px solid #f9c900; padding: 16px 24px; }
     .tkt-status-bar { background: #f8fafd; border-bottom: 1px solid #e2eaf4; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
     .tkt-status-label { font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; color: #8a9bb0; text-transform: uppercase; }
@@ -110,7 +109,6 @@
     .btn-mfooter-warn { background: #d97706; color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; padding: 7px 20px; cursor: pointer; transition: background 0.15s; }
     .btn-mfooter-warn:hover { background: #92400e; }
 
-    /* ── Accepted-but-unassigned row ── */
     .ticket-tbl tbody tr.accepted-row { background: rgba(21,101,192,0.07); }
     .ticket-tbl tbody tr.accepted-row:hover { background: rgba(21,101,192,0.14); }
     .accepted-label { font-family:'Montserrat',sans-serif; font-size:0.62rem; font-weight:700; color:#1565c0; display:block; margin-bottom:2px; }
@@ -125,29 +123,29 @@
 
     <!-- ═══ Stat cards ═══ -->
     <div class="stat-cards">
-        <div class="stat-card blue">
+        <div class="stat-card blue" onclick="switchTab('new')" style="cursor:pointer;">
             <span class="stat-label">New Requests</span>
             <span class="stat-value">{{ new_count }}</span>
             <span class="stat-desc">Pending for review</span>
-            <a href="#" class="stat-link" onclick="switchTab('new')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <span class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</span>
         </div>
-        <div class="stat-card yellow">
+        <div class="stat-card yellow" onclick="switchTab('accepted')" style="cursor:pointer;">
             <span class="stat-label">In Progress</span>
             <span class="stat-value">{{ assisting_count }}</span>
             <span class="stat-desc">Assigned &amp; being assisted</span>
-            <a href="#" class="stat-link" onclick="switchTab('accepted')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <span class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</span>
         </div>
-        <div class="stat-card green">
+        <div class="stat-card green" onclick="switchTab('completed')" style="cursor:pointer;">
             <span class="stat-label">Completed</span>
             <span class="stat-value">{{ completed_count }}</span>
             <span class="stat-desc">Resolved requests</span>
-            <a href="#" class="stat-link" onclick="switchTab('completed')"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <span class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</span>
         </div>
-        <div class="stat-card red">
+        <div class="stat-card red" onclick="switchTab('missing')" style="cursor:pointer;">
             <span class="stat-label">Missing Tasks</span>
             <span class="stat-value">{{ missing_tasks_count|default:0 }}</span>
             <span class="stat-desc">Overdue tickets</span>
-            <a href="{% url 'staff_dashboard' %}?tab=missing" class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</a>
+            <span class="stat-link"><i class="bi bi-arrow-right-circle"></i> View Details</span>
         </div>
     </div>
 
@@ -155,22 +153,22 @@
     <div class="tab-strip">
         <span class="tab-strip-label">Tickets</span>
         <div class="tab-divider"></div>
-        <button class="tab-pill {% if request.GET.tab == 'new' or not request.GET.tab %}active{% endif %}" id="pill-new" onclick="switchTab('new')">
+        <button type="button" class="tab-pill" id="pill-new" onclick="switchTab('new')">
             <i class="bi bi-clock" style="font-size:0.78rem;"></i> New Requests <span class="tab-badge">{{ new_count }}</span>
         </button>
-        <button class="tab-pill yellow {% if request.GET.tab == 'accepted' %}active yellow{% endif %}" id="pill-accepted" onclick="switchTab('accepted')">
+        <button type="button" class="tab-pill yellow" id="pill-accepted" onclick="switchTab('accepted')">
             <i class="bi bi-headset" style="font-size:0.78rem;"></i> Accepted <span class="tab-badge">{{ assisting_count }}</span>
         </button>
-        <button class="tab-pill green {% if request.GET.tab == 'completed' %}active green{% endif %}" id="pill-completed" onclick="switchTab('completed')">
+        <button type="button" class="tab-pill green" id="pill-completed" onclick="switchTab('completed')">
             <i class="bi bi-patch-check" style="font-size:0.78rem;"></i> Completed <span class="tab-badge">{{ completed_count }}</span>
         </button>
-        <button class="tab-pill red {% if tab == 'missing' %}active red{% endif %}" id="pill-missing" onclick="switchTab('missing')">
+        <button type="button" class="tab-pill red" id="pill-missing" onclick="switchTab('missing')">
             <i class="bi bi-exclamation-triangle" style="font-size:0.78rem;"></i> Missing Tasks <span class="tab-badge">{{ missing_tasks_count }}</span>
         </button>
     </div>
 
     <!-- ═══ NEW REQUESTS ═══ -->
-    <div class="ticket-card" id="pane-new" style="{% if request.GET.tab == 'new' or not request.GET.tab %}display:block{% else %}display:none{% endif %}">
+    <div class="ticket-card" id="pane-new" style="display:none;">
         <table class="ticket-tbl">
             <colgroup>
                 <col style="width:14%"><col style="width:22%"><col style="width:18%">
@@ -208,7 +206,7 @@
     </div>
 
     <!-- ═══ ACCEPTED ═══ -->
-    <div class="ticket-card" id="pane-accepted" style="{% if request.GET.tab == 'accepted' %}display:block{% else %}display:none{% endif %}">
+    <div class="ticket-card" id="pane-accepted" style="display:none;">
         <table class="ticket-tbl">
             <colgroup>
                 <col style="width:13%"><col style="width:20%"><col style="width:16%">
@@ -252,7 +250,7 @@
     </div>
 
     <!-- ═══ COMPLETED ═══ -->
-    <div class="ticket-card" id="pane-completed" style="{% if request.GET.tab == 'completed' %}display:block{% else %}display:none{% endif %}">
+    <div class="ticket-card" id="pane-completed" style="display:none;">
         <table class="ticket-tbl">
             <colgroup>
                 <col style="width:14%"><col style="width:22%"><col style="width:18%">
@@ -282,7 +280,7 @@
     </div>
 
     <!-- ═══ MISSING ═══ -->
-    <div class="ticket-card" id="pane-missing" style="{% if tab == 'missing' %}display:block{% else %}display:none{% endif %}">
+    <div class="ticket-card" id="pane-missing" style="display:none;">
         <table class="ticket-tbl">
             <colgroup>
                 <col style="width:14%"><col style="width:22%"><col style="width:13%">
@@ -406,7 +404,6 @@
     </div>
 </div>
 
-<!-- Assign modal for pending -->
 <div class="modal fade" id="assistModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -515,7 +512,6 @@
     </div>
 </div>
 
-<!-- Update modal -->
 <div class="modal fade" id="updateModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -551,7 +547,6 @@
 </div>
 
 {% if ticket.status == 'accepted' %}
-<!-- Assist confirm modal -->
 <div class="modal fade" id="assistConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -582,7 +577,6 @@
 {% endif %}
 
 {% if ticket.status == 'accepted' or ticket.status == 'assisting' %}
-<!-- Complete confirm modal -->
 <div class="modal fade" id="completeConfirmModal{{ ticket.pk }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -614,8 +608,6 @@
 <!-- ══════════════════════════════════════
      SHARED MODALS
 ══════════════════════════════════════ -->
-
-<!-- Re-open Confirm -->
 <div class="modal fade" id="reopenConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius:12px;overflow:hidden;">
@@ -640,10 +632,6 @@
     </div>
 </div>
 
-<!--
-    Django messages toasts — moved to bottom-LEFT to avoid right panel overlap.
-    Uses the same left offset as all other toasts (sidebar-aware).
--->
 <div id="djangoToastContainer"
      style="position:fixed;bottom:24px;left:calc(var(--sidebar-width) + 16px);
             z-index:99998;max-width:340px;display:flex;flex-direction:column;gap:8px;
@@ -668,279 +656,271 @@
     {% endfor %}
     {% endif %}
 </div>
-<!-- Stacked container for new ticket notifications -->
+
 <div id="stackedToastContainer"
-     style="position:fixed; bottom:24px; left:calc(var(--sidebar-width) + 16px);
-            z-index:99999; display:flex; flex-direction:column; gap:8px;
-            transition:left 0.3s ease; max-width:340px;">
+     style="position:fixed;bottom:24px;left:calc(var(--sidebar-width) + 16px);
+            z-index:99999;display:flex;flex-direction:column;gap:8px;
+            transition:left 0.3s ease;max-width:340px;">
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+/* ── Tab colour map ── */
+var TAB_COLORS = {
+    'new':       [],
+    'accepted':  ['yellow'],
+    'completed': ['green'],
+    'missing':   ['red']
+};
 
-    // ── Tab switching ──
-    window.switchTab = function(tab) {
-        ['new','accepted','completed','missing'].forEach(t => {
-            document.getElementById('pane-' + t).style.display = 'none';
-            document.getElementById('pill-' + t).classList.remove('active');
-        });
-        document.getElementById('pane-' + tab).style.display = 'block';
-        document.getElementById('pill-' + tab).classList.add('active');
-    };
+/* ── Core switchTab — fixes the missing colour-class bug ── */
+window.switchTab = function(tab) {
+    var panes = ['new', 'accepted', 'completed', 'missing'];
 
-    const urlTab = new URLSearchParams(window.location.search).get('tab');
-    if (urlTab && ['new','accepted','completed','missing'].includes(urlTab)) {
-        switchTab(urlTab);
+    panes.forEach(function(t) {
+        var pane = document.getElementById('pane-' + t);
+        var pill = document.getElementById('pill-' + t);
+        if (pane) pane.style.display = 'none';
+        if (pill) pill.classList.remove('active', 'yellow', 'green', 'red');
+    });
+
+    var activePane = document.getElementById('pane-' + tab);
+    var activePill = document.getElementById('pill-' + tab);
+    if (activePane) activePane.style.display = 'block';
+    if (activePill) {
+        activePill.classList.add('active');
+        (TAB_COLORS[tab] || []).forEach(function(cls) { activePill.classList.add(cls); });
     }
 
-    // ── Complete per-ticket ──
-    document.querySelectorAll('[id^="confirmCompleteBtn"]').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const pk = this.id.replace('confirmCompleteBtn', '');
+    var url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.pushState({}, '', url);
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    /* ── Activate tab from URL param, default to 'new' ── */
+    var urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab && ['new','accepted','completed','missing'].indexOf(urlTab) !== -1) {
+        window.switchTab(urlTab);
+    } else {
+        window.switchTab('new');
+    }
+
+    /* ── Per-ticket complete confirm buttons ── */
+    document.querySelectorAll('[id^="confirmCompleteBtn"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pk = this.id.replace('confirmCompleteBtn', '');
             if (!pk) return;
-            document.getElementById('completeForm' + pk)?.submit();
-            bootstrap.Modal.getInstance(document.getElementById('completeConfirmModal' + pk))?.hide();
+            var form = document.getElementById('completeForm' + pk);
+            if (form) form.submit();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('completeConfirmModal' + pk));
+            if (modal) modal.hide();
         });
     });
 
-    // ── Re-open ──
-    document.querySelectorAll('.reopen-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.getElementById('reopenTicketNo').textContent = this.dataset.ticketNo;
-            document.getElementById('confirmReopenBtn').dataset.formId = this.dataset.formId;
+    /* ── Re-open ── */
+    document.querySelectorAll('.reopen-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var no = document.getElementById('reopenTicketNo');
+            if (no) no.textContent = this.dataset.ticketNo;
+            var confirmBtn = document.getElementById('confirmReopenBtn');
+            if (confirmBtn) confirmBtn.dataset.formId = this.dataset.formId;
         });
     });
-    document.getElementById('confirmReopenBtn')?.addEventListener('click', function () {
-        document.getElementById(this.dataset.formId)?.submit();
-        bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'))?.hide();
-    });
+    var reopenConfirm = document.getElementById('confirmReopenBtn');
+    if (reopenConfirm) {
+        reopenConfirm.addEventListener('click', function() {
+            var form = document.getElementById(this.dataset.formId);
+            if (form) form.submit();
+            var modal = bootstrap.Modal.getInstance(document.getElementById('reopenConfirmModal'));
+            if (modal) modal.hide();
+        });
+    }
 
-    // ── Django message toasts ──
-    document.querySelectorAll('.django-toast').forEach(el => {
+    /* ── Django message toasts ── */
+    document.querySelectorAll('.django-toast').forEach(function(el) {
         new bootstrap.Toast(el, { autohide: false }).show();
     });
 
-    // ── Keep django toast container in sync with sidebar toggle ──
-    // ── Keep toast containers in sync with sidebar toggle ──
-    const hamburger = document.getElementById('sidebarToggle');
+    /* ── Keep toast containers in sync with sidebar toggle ── */
+    var hamburger = document.getElementById('sidebarToggle');
     if (hamburger) {
-        hamburger.addEventListener('click', function () {
-            setTimeout(() => {
-                // Update Django toast container
-                const djangoContainer = document.getElementById('djangoToastContainer');
-                if (djangoContainer) djangoContainer.style.left = getToastLeft();
-                // Update stacked toast container
-                const stackedContainer = document.getElementById('stackedToastContainer');
-                if (stackedContainer) stackedContainer.style.left = getToastLeft();
+        hamburger.addEventListener('click', function() {
+            setTimeout(function() {
+                var left = getToastLeft();
+                var djangoContainer = document.getElementById('djangoToastContainer');
+                if (djangoContainer) djangoContainer.style.left = left;
+                var stackedContainer = document.getElementById('stackedToastContainer');
+                if (stackedContainer) stackedContainer.style.left = left;
             }, 10);
         });
     }
+
     restoreStoredToast();
     if (!window.pendingToastsData) window.pendingToastsData = [];
-    const controlToOpen = sessionStorage.getItem('openTicketControlNo');
+
+    /* ── Auto-open ticket modal if stored control number exists ── */
+    var controlToOpen = sessionStorage.getItem('openTicketControlNo');
     if (controlToOpen) {
         sessionStorage.removeItem('openTicketControlNo');
-        const row = Array.from(document.querySelectorAll('.control-no-text')).find(el => el.textContent.trim() === controlToOpen);
+        var row = Array.from(document.querySelectorAll('.control-no-text')).find(function(el) {
+            return el.textContent.trim() === controlToOpen;
+        });
         if (row) {
-            const viewBtn = row.closest('tr')?.querySelector('.btn-view-det');
+            var viewBtn = row.closest('tr') && row.closest('tr').querySelector('.btn-view-det');
             if (viewBtn) {
-                const modalId = viewBtn.getAttribute('data-bs-target');
-                const modalEl = document.querySelector(modalId);
+                var modalId = viewBtn.getAttribute('data-bs-target');
+                var modalEl = document.querySelector(modalId);
                 if (modalEl) new bootstrap.Modal(modalEl).show();
             }
         }
     }
 });
 
-// ── WebSocket ──
+/* ── WebSocket (optional) ── */
 try {
-    const socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
+    var socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/');
     socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
+        var data = JSON.parse(e.data);
         if (data.type === 'new_ticket') {
-            const countEl = document.querySelector('.new-count');
+            var countEl = document.querySelector('.new-count');
             if (countEl) countEl.textContent = data.count;
         }
     };
-    socket.onclose = () => console.warn('WebSocket closed');
+    socket.onclose = function() { console.warn('WebSocket closed'); };
 } catch(e) { console.warn('WebSocket unavailable'); }
 
-// ── UNIFIED POLLING ──
-let lastPendingCount = {{ new_count | default:0 }};
-let lastControlNo    = '';
-let lastStateHash    = '';
-let isReloading      = false;
+/* ── UNIFIED POLLING ── */
+var lastPendingCountDash = {{ new_count|default:0 }};
+var lastControlNoDash    = '';
+var lastStateHashDash    = '';
+var isReloadingDash      = false;
 
 function pollDashboardState() {
-    if (isReloading) return;
+    if (isReloadingDash) return;
 
     fetch('/poll-dashboard-state/')
-        .then(r => r.json())
-        .then(data => {
-            if (isReloading) return;
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (isReloadingDash) return;
 
-            // ── Update tab badges ──
-            const newBadge       = document.querySelector('#pill-new .tab-badge');
-            const acceptedBadge  = document.querySelector('#pill-accepted .tab-badge');
-            const completedBadge = document.querySelector('#pill-completed .tab-badge');
-            const missingBadge   = document.querySelector('#pill-missing .tab-badge');
+            var newBadge       = document.querySelector('#pill-new .tab-badge');
+            var acceptedBadge  = document.querySelector('#pill-accepted .tab-badge');
+            var completedBadge = document.querySelector('#pill-completed .tab-badge');
+            var missingBadge   = document.querySelector('#pill-missing .tab-badge');
             if (newBadge)       newBadge.textContent       = data.pending_count;
             if (acceptedBadge)  acceptedBadge.textContent  = data.assisting_count;
             if (completedBadge) completedBadge.textContent = data.completed_count;
             if (missingBadge)   missingBadge.textContent   = data.missing_count;
 
-            // ── Update stat card values ──
-            const statValues = document.querySelectorAll('.stat-value');
+            var statValues = document.querySelectorAll('.stat-value');
             if (statValues[0]) statValues[0].textContent = data.pending_count;
             if (statValues[1]) statValues[1].textContent = data.assisting_count;
             if (statValues[2]) statValues[2].textContent = data.completed_count;
             if (statValues[3]) statValues[3].textContent = data.missing_count;
 
-            const stateChanged     = lastStateHash !== '' && data.state_hash !== lastStateHash;
-            const newTicketArrived = data.pending_count > lastPendingCount
-                                  && data.latest_control_no
-                                  && data.latest_control_no !== lastControlNo;
+            var stateChanged     = lastStateHashDash !== '' && data.state_hash !== lastStateHashDash;
+            var newTicketArrived = data.pending_count > lastPendingCountDash
+                                && data.latest_control_no
+                                && data.latest_control_no !== lastControlNoDash;
 
-           if (newTicketArrived) {
-                lastControlNo = data.latest_control_no;
-                // Add this new toast to the global pending list
+            if (newTicketArrived) {
+                lastControlNoDash = data.latest_control_no;
                 if (!window.pendingToastsData) window.pendingToastsData = [];
                 window.pendingToastsData.push(data);
-                // Save the entire array to sessionStorage
                 sessionStorage.setItem('pendingNewTicketToasts', JSON.stringify(window.pendingToastsData));
-                scheduleReload(800);
+                scheduleDashReload(800);
             } else if (stateChanged) {
                 showSuperAdminActionToast();
-                scheduleReload(800);
+                scheduleDashReload(800);
             }
 
-            lastPendingCount = data.pending_count;
-            lastStateHash    = data.state_hash;
+            lastPendingCountDash = data.pending_count;
+            lastStateHashDash    = data.state_hash;
         })
-        .catch(() => {})
-        .finally(() => {
-            if (!isReloading) setTimeout(pollDashboardState, 5000);
+        .catch(function() {})
+        .finally(function() {
+            if (!isReloadingDash) setTimeout(pollDashboardState, 5000);
         });
 }
 
-function scheduleReload(delay) {
-    if (isReloading) return;
-    isReloading = true;
-    setTimeout(() => {
-        // Save current pending toasts before reload
+function scheduleDashReload(delay) {
+    if (isReloadingDash) return;
+    isReloadingDash = true;
+    setTimeout(function() {
         if (window.pendingToastsData && window.pendingToastsData.length) {
             sessionStorage.setItem('pendingNewTicketToasts', JSON.stringify(window.pendingToastsData));
         }
-        const activeTab = document.querySelector('.tab-pill.active')?.id?.replace('pill-', '') || 'new';
-        const url = new URL(window.location.href);
+        var activeTab = (document.querySelector('.tab-pill.active') || {}).id;
+        activeTab = activeTab ? activeTab.replace('pill-', '') : 'new';
+        var url = new URL(window.location.href);
         url.searchParams.set('tab', activeTab);
         window.location.href = url.toString();
     }, delay);
 }
 
-// ── New ticket toast (dashboard version) — uses shared buildToastStyle ──
-function showNewTicketToast(data, uniqueId = null) {
-    const toastId = uniqueId || 'newTicketToast_' + Date.now() + '_' + Math.random();
-    // Get the container (create if missing)
-    let container = document.getElementById('stackedToastContainer');
+function showNewTicketToast(data, uniqueId) {
+    var toastId = uniqueId || 'newTicketToast_' + Date.now() + '_' + Math.random();
+    var container = document.getElementById('stackedToastContainer');
     if (!container) {
         container = document.createElement('div');
         container.id = 'stackedToastContainer';
-        container.style.cssText = `position:fixed; bottom:24px; left:${getToastLeft()};
-                                   z-index:99999; display:flex; flex-direction:column;
-                                   gap:8px; transition:left 0.3s ease; max-width:340px;`;
+        container.style.cssText = 'position:fixed;bottom:24px;left:' + getToastLeft() + ';z-index:99999;display:flex;flex-direction:column;gap:8px;transition:left 0.3s ease;max-width:340px;';
         document.body.appendChild(container);
     }
-
-    const toast = document.createElement('div');
+    var toast = document.createElement('div');
     toast.id = toastId;
-    toast.style.cssText = `
-        background: linear-gradient(90deg, #1a3a6b, #1565c0);
-        color: #fff;
-        border-radius: 12px;
-        padding: 14px 20px;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 0.85rem;
-        border-left: 4px solid #f9c900;
-        box-shadow: 0 8px 32px rgba(21,101,192,0.3);
-        width: 100%;
-        box-sizing: border-box;
-    `;
-
-    toast.innerHTML = `
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
-            🔔 New Ticket Submitted!
-        </div>
-        <div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">
-            ${data.latest_requested_by} — ${data.latest_control_no}
-            ${data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : ''}
-        </div>
-        <div style="display:flex;gap:6px;">
-            <button onclick="storeAndReload('${data.latest_control_no}')"
-                    style="background:rgba(255,255,255,0.2);border:none;color:#fff;
-                           padding:4px 12px;border-radius:6px;cursor:pointer;
-                           font-size:0.75rem;font-weight:600;">View Now</button>
-            <button onclick="dismissToast('${toastId}')"
-                    style="background:transparent;border:none;color:rgba(255,255,255,0.6);
-                           padding:4px 8px;cursor:pointer;font-size:0.75rem;">Dismiss</button>
-        </div>`;
+    toast.style.cssText = 'background:linear-gradient(90deg,#1a3a6b,#1565c0);color:#fff;border-radius:12px;padding:14px 20px;font-family:Open Sans,sans-serif;font-size:0.85rem;border-left:4px solid #f9c900;box-shadow:0 8px 32px rgba(21,101,192,0.3);width:100%;box-sizing:border-box;';
+    toast.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-weight:700;margin-bottom:4px;">🔔 New Ticket Submitted!</div>'
+        + '<div style="opacity:0.85;font-size:0.78rem;margin-bottom:8px;">' + (data.latest_requested_by || '') + ' — ' + (data.latest_control_no || '')
+        + (data.latest_is_urgent ? '<span style="background:#c0392b;color:#fff;padding:1px 6px;border-radius:4px;font-size:0.65rem;font-weight:800;margin-left:6px;">URGENT</span>' : '')
+        + '</div><div style="display:flex;gap:6px;">'
+        + '<button onclick="storeAndReload(\'' + (data.latest_control_no || '') + '\')" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:600;">View Now</button>'
+        + '<button onclick="dismissToast(\'' + toastId + '\')" style="background:transparent;border:none;color:rgba(255,255,255,0.6);padding:4px 8px;cursor:pointer;font-size:0.75rem;">Dismiss</button></div>';
     container.appendChild(toast);
-
-    // Beep sound (optional)
     try {
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        var ctx = new AudioContext(); var osc = ctx.createOscillator(); var gain = ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
         osc.frequency.value = 520; gain.gain.value = 0.1;
         osc.start(); osc.stop(ctx.currentTime + 0.15);
     } catch(e) {}
 }
+
 function storeAndReload(controlNo) {
     sessionStorage.setItem('openTicketControlNo', controlNo);
     window.location.reload();
 }
+
 function dismissToast(toastId) {
-    const toast = document.getElementById(toastId);
+    var toast = document.getElementById(toastId);
     if (toast) toast.remove();
-    // Remove this toast's data from the pending array (optional, but keeps sessionStorage clean)
-    if (window.pendingToastsData) {
-        // Since we don't have a direct mapping, we'll just leave the array; it will be cleared on next reload anyway.
-        // For perfect sync, we could store the control_no and filter, but not necessary.
-    }
 }
+
 function restoreStoredToast() {
-    const stored = sessionStorage.getItem('pendingNewTicketToasts');
+    var stored = sessionStorage.getItem('pendingNewTicketToasts');
     if (!stored) return;
     sessionStorage.removeItem('pendingNewTicketToasts');
     try {
-        const toastsArray = JSON.parse(stored);
+        var toastsArray = JSON.parse(stored);
         if (!window.pendingToastsData) window.pendingToastsData = [];
-        toastsArray.forEach(data => {
+        toastsArray.forEach(function(data) {
             window.pendingToastsData.push(data);
             showNewTicketToast(data, 'restored_' + Date.now() + '_' + Math.random());
         });
     } catch(e) {}
 }
-// ── Super admin action toast — uses shared buildToastStyle ──
+
 function showSuperAdminActionToast() {
-    const existing = document.getElementById('saActionToast');
+    var existing = document.getElementById('saActionToast');
     if (existing) existing.remove();
-
-    const toast = document.createElement('div');
+    var toast = document.createElement('div');
     toast.id = 'saActionToast';
-    toast.style.cssText = buildToastStyle('linear-gradient(90deg, #92400e, #d97706)');
+    toast.style.cssText = buildToastStyle('linear-gradient(90deg,#92400e,#d97706)');
     toast.style.boxShadow = '0 8px 32px rgba(217,119,6,0.35)';
-
-    toast.innerHTML = `
-        <div style="font-family:'Montserrat',sans-serif;font-weight:700;margin-bottom:4px;">
-            ⚡ Dashboard Updated
-        </div>
-        <div style="opacity:0.9;font-size:0.78rem;">
-            Super Admin made a change — refreshing your view…
-        </div>`;
+    toast.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-weight:700;margin-bottom:4px;">⚡ Dashboard Updated</div>'
+        + '<div style="opacity:0.9;font-size:0.78rem;">Super Admin made a change — refreshing your view…</div>';
     document.body.appendChild(toast);
 }
 

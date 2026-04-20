@@ -2307,35 +2307,36 @@ def super_admin_assist_ticket(request, pk):
     if request.method == 'POST':
         ticket = get_object_or_404(Ticket, pk=pk)
 
-        if ticket.status != 'accepted':
+        # Only pending or accepted tickets can be assigned
+        if ticket.status not in ('pending', 'accepted'):
             messages.warning(request, f"Cannot assign — ticket {ticket.control_no} status is '{ticket.status}'.")
-            current_tab = request.POST.get('tab', 'new')
-            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={request.POST.get('tab', 'new')}")
 
         assisted_by_id = request.POST.get('assisted_by')
         if not assisted_by_id:
             messages.error(request, "No staff selected.")
-            current_tab = request.POST.get('tab', 'new')
-            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={request.POST.get('tab', 'new')}")
 
         try:
             assisted_user = User.objects.get(id=assisted_by_id)
         except User.DoesNotExist:
             messages.error(request, "Selected staff not found.")
-            current_tab = request.POST.get('tab', 'new')
-            return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+            return redirect(f"{reverse('super_admin_dashboard')}?tab={request.POST.get('tab', 'new')}")
 
-        ticket.status = 'assisting'
+        # Do NOT change status to 'assisting' here
+        if ticket.status == 'pending':
+            ticket.status = 'accepted'   # pending → accepted (staff must still accept)
+        # If already accepted, we just reassign
+
         ticket.assisted_by = assisted_user
-        ticket.assisted_at = timezone.now() 
+        ticket.assisted_at = None        # not yet assisting
         ticket.save()
 
-        messages.success(request, f"Ticket {ticket.control_no} assigned to {assisted_user.username}.")
+        messages.success(request, f"Ticket {ticket.control_no} assigned to {assisted_user.username}. They will be notified.")
 
-        # ── Keep 'assigned to {username}' in details so poll_my_notifications can detect it ──
         AuditLog.objects.update_or_create(
             ticket=ticket,
-            action='assisting ticket',
+            action='assigned to staff',
             defaults={
                 'user': request.user,
                 'details': f'Ticket {ticket.control_no} assigned to {assisted_user.username} by {request.user.username}',
@@ -2343,8 +2344,7 @@ def super_admin_assist_ticket(request, pk):
             }
         )
 
-        current_tab = request.POST.get('tab', 'new')
-        return redirect(f"{reverse('super_admin_dashboard')}?tab={current_tab}")
+        return redirect(f"{reverse('super_admin_dashboard')}?tab={request.POST.get('tab', 'new')}")
 
     return redirect('super_admin_dashboard')
 
@@ -2514,3 +2514,5 @@ def poll_super_admin_notifications(request):
 
 
 superadmin_dashboard
+
+super_admin_assist_ticket
