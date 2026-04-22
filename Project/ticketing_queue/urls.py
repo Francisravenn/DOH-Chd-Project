@@ -44,6 +44,8 @@ urlpatterns = [
     path('accept-assignment/<int:pk>/', views.accept_assignment, name='accept_assignment'),
     path('reject-assignment/<int:pk>/', views.reject_assignment, name='reject_assignment'),
     path('poll-super-admin-notifications/', views.poll_super_admin_notifications, name='poll_super_admin_notifications'),
-
-    
+    path('ticket/follow-up/submit/',           views.submit_follow_up,        name='submit_follow_up'),
+    path('ticket/follow-up/<int:pk>/accept/',  views.accept_follow_up,        name='accept_follow_up'),
+    path('ticket/follow-up/<int:pk>/reject/',  views.reject_follow_up,        name='reject_follow_up'),
+    path('poll-follow-up-notifications/',      views.poll_follow_up_notifications, name='poll_follow_up_notifications'),
 ]

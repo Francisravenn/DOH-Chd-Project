@@ -43,7 +43,7 @@ import json
 from .models import AuditLog, Ticket, User
 from .forms import TicketForm, ActionTakenForm
 from .models import Ticket, ActionTaken, AuditLog, ArchivedTicket 
-
+from .models import TicketFollowUp
 
 # USER SIDE ALL
 
@@ -384,26 +384,27 @@ def admin_dashboard(request):
 
     busy_staff_ids = Ticket.objects.filter(status='assisting').values_list('assisted_by_id', flat=True)
 
-    # Accepted tab now shows only "being assisted" tickets
-    accepted_tickets = get_ordered_qs(all_tickets.filter(status='assisting'))
+    accepted_tickets  = get_ordered_qs(
+        all_tickets.filter(status='assisting')
+    ).prefetch_related('follow_ups')
 
     completed_tickets = get_ordered_qs(
         all_tickets.filter(
             status='completed',
             completed_at__gte=seven_days_ago
         )
-    )
+    ).prefetch_related('follow_ups')
 
     context = {
         # Stat cards
-        'new_count': new_tickets.count(),                   
+        'new_count': new_tickets.count(),
         'assisting_count': all_tickets.filter(status='assisting').count(),
         'completed_count': completed_tickets.count(),
         'missing_tasks_count': missing_tickets.count(),
 
         # Tab querysets
-        'pending_tickets': new_tickets,          
-        'accepted_tickets': accepted_tickets,   
+        'pending_tickets': new_tickets,
+        'accepted_tickets': accepted_tickets,
         'completed_tickets': completed_tickets,
         'missing_tickets': missing_tickets,
 
@@ -925,13 +926,18 @@ def superadmin_dashboard(request):
         'missing_tasks_count': missing_tickets.count(),
 
         'pending_tickets': new_tickets,
-        'accepted_tickets': get_ordered_qs(all_tickets.filter(status='assisting')),
+        
+
         'completed_tickets': get_ordered_qs(
             all_tickets.filter(
                 status='completed',
                 completed_at__gte=seven_days_ago
             )
-        ),
+        ).prefetch_related('follow_ups'),
+        'accepted_tickets': get_ordered_qs(
+            all_tickets.filter(status='assisting')
+        ).prefetch_related('follow_ups'),
+        
         'missing_tickets': missing_tickets,
 
         'assisting_tickets': get_ordered_qs(all_tickets.filter(status='assisting')),
@@ -2513,6 +2519,140 @@ def poll_super_admin_notifications(request):
     return JsonResponse({'rejected': False})
 
 
-superadmin_dashboard
+@require_POST
+def submit_follow_up(request):
+    """User submits a follow-up on a completed ticket."""
+    control_no = request.POST.get('control_no', '').strip()
+    message    = request.POST.get('message', '').strip()
 
-super_admin_assist_ticket
+    if not control_no or not message:
+        return JsonResponse({'success': False, 'error': 'Control number and message are required.'})
+
+    ticket = Ticket.objects.filter(control_no=control_no, status='completed').first()
+    if not ticket:
+        return JsonResponse({'success': False, 'error': 'Ticket not found or not completed.'})
+
+    # Prevent duplicate pending follow-ups
+    if ticket.follow_ups.filter(status='pending').exists():
+        return JsonResponse({'success': False, 'error': 'A follow-up is already pending for this ticket.'})
+
+    follow_up = TicketFollowUp.objects.create(
+        ticket=ticket,
+        message=message,
+    )
+
+    # Change ticket status to signal review needed
+    ticket.status = 'follow_up_pending'
+    ticket.save()
+
+    AuditLog.objects.create(
+        action='follow-up submitted',
+        details=f'Follow-up submitted for ticket {ticket.control_no}',
+        ticket=ticket,
+        ip_address=get_client_ip(request)
+    )
+
+    return JsonResponse({
+        'success':    True,
+        'follow_up_id': follow_up.pk,
+        'message':    'Follow-up submitted successfully. The admin will review your request.',
+    })
+
+
+@login_required
+@require_POST
+def accept_follow_up(request, pk):
+    """Admin accepts a follow-up — ticket reverts to accepted status."""
+    follow_up = get_object_or_404(TicketFollowUp, pk=pk, status='pending')
+    ticket    = follow_up.ticket
+
+    follow_up.status      = 'accepted'
+    follow_up.admin       = request.user
+    follow_up.reviewed_at = timezone.now()
+    follow_up.save()
+
+    # Revert ticket back into the workflow
+    ticket.status      = 'accepted'
+    ticket.assisted_by = None
+    ticket.assisted_at = None
+    ticket.completed_at = None
+    ticket.save()
+
+    AuditLog.objects.create(
+        user=request.user,
+        action='follow-up accepted',
+        details=f'{request.user.username} accepted follow-up for ticket {ticket.control_no} — ticket reopened.',
+        ticket=ticket,
+        ip_address=get_client_ip(request)
+    )
+
+    return JsonResponse({'success': True, 'message': f'Follow-up accepted. Ticket {ticket.control_no} has been reopened.'})
+
+
+@login_required
+@require_POST
+def reject_follow_up(request, pk):
+    """Admin rejects a follow-up — ticket stays completed, reason sent to user."""
+    follow_up = get_object_or_404(TicketFollowUp, pk=pk, status='pending')
+
+    try:
+        data   = json.loads(request.body)
+        reason = data.get('reason', '').strip()
+    except Exception:
+        reason = request.POST.get('reason', '').strip()
+
+    if not reason:
+        return JsonResponse({'success': False, 'error': 'A rejection reason is required.'})
+
+    ticket = follow_up.ticket
+
+    follow_up.status         = 'rejected'
+    follow_up.admin          = request.user
+    follow_up.admin_response = reason
+    follow_up.reviewed_at    = timezone.now()
+    follow_up.save()
+
+    # Ticket stays completed — revert status if it was changed
+    ticket.status = 'completed'
+    ticket.save()
+
+    AuditLog.objects.create(
+        user=request.user,
+        action='follow-up rejected',
+        details=f'{request.user.username} rejected follow-up for ticket {ticket.control_no}. Reason: {reason}',
+        ticket=ticket,
+        ip_address=get_client_ip(request)
+    )
+
+    return JsonResponse({'success': True, 'message': 'Follow-up rejected. The user has been notified.'})
+
+
+def poll_follow_up_notifications(request):
+    """
+    Polled by admin dashboard every few seconds.
+    Returns any follow-ups submitted in the last 60 seconds.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'has_new': False, 'follow_ups': []})
+
+    cutoff    = timezone.now() - timedelta(seconds=60)
+    new_items = TicketFollowUp.objects.filter(
+        status='pending',
+        created_at__gte=cutoff
+    ).select_related('ticket').order_by('-created_at')
+
+    return JsonResponse({
+        'has_new':    new_items.exists(),
+        'count':      new_items.count(),
+        'follow_ups': [
+            {
+                'id':         fu.pk,
+                'control_no': fu.ticket.control_no,
+                'message':    fu.message[:100],
+                'created_at': fu.created_at.strftime('%B %d, %Y %I:%M %p'),
+            }
+            for fu in new_items
+        ],
+    })
+
+

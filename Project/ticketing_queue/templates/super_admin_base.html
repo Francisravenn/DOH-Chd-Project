@@ -1216,7 +1216,31 @@ function reassignTicket(controlNo) {
 
 pollAssisting();
 pollSuperAdminNotifications();
+// ── Poll for follow-up notifications ──
+let lastFollowUpCount = 0;
 
+function pollFollowUpNotifications() {
+    fetch('/poll-follow-up-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.has_new && data.count > lastFollowUpCount) {
+                lastFollowUpCount = data.count;
+                data.follow_ups.forEach(fu => {
+                    const t = document.createElement('div');
+                    t.style.cssText = 'background:linear-gradient(90deg,#1a3a6b,#1565c0);color:#fff;border-radius:12px;padding:14px 20px;font-family:Open Sans,sans-serif;font-size:0.85rem;border-left:4px solid #f9c900;width:100%;box-sizing:border-box;';
+                    t.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-weight:700;margin-bottom:4px;">🔄 Follow-Up Requested</div>'
+                        + '<div style="opacity:0.9;font-size:0.78rem;">Ticket <strong>' + fu.control_no + '</strong> — ' + fu.created_at + '</div>'
+                        + '<div style="font-size:0.75rem;opacity:0.8;margin-top:4px;">' + fu.message + '</div>';
+                    const container = document.getElementById('stackedToastContainer');
+                    if (container) { container.appendChild(t); setTimeout(() => t.remove(), 8000); }
+                });
+            }
+        })
+        .catch(() => {})
+        .finally(() => setTimeout(pollFollowUpNotifications, 10000));
+}
+
+pollFollowUpNotifications();
 // ── New ticket polling — runs on ALL pages ──
 // let lastSANewTicketCount = -1;
 // let lastSANewControlNo = '';

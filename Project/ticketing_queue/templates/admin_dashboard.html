@@ -270,8 +270,17 @@
                     <td style="color:#495057;font-size:0.86rem;">{{ ticket.request_complaint|truncatewords:8 }}</td>
                     <td>{% if ticket.is_urgent %}<span class="urgent-pill"><i class="bi bi-exclamation-triangle-fill"></i> Yes</span>{% else %}<span class="normal-pill">No</span>{% endif %}</td>
                     <td><span class="elapsed-text">{{ ticket.created_at|timesince }} ago</span></td>
-                    <td><span class="btn-completed-badge"><i class="bi bi-patch-check-fill"></i> Completed</span></td>
-                </tr>
+                    <td>
+                        <span class="btn-completed-badge"><i class="bi bi-patch-check-fill"></i> Completed</span>
+                        {% if ticket.has_pending_follow_up %}
+                        <span style="background:#fff3cd;color:#856404;font-family:'Montserrat',sans-serif;
+                                    font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;
+                                    letter-spacing:0.06em;margin-left:4px;display:inline-block;">
+                            🔄 FOLLOW-UP
+                        </span>
+                        {% endif %}
+                    </td>
+                                    </tr>
                 {% empty %}
                 <tr><td colspan="6"><div class="empty-state"><i class="bi bi-check-circle"></i><p>No completed tickets.</p></div></td></tr>
                 {% endfor %}
@@ -925,5 +934,96 @@ function showSuperAdminActionToast() {
 }
 
 pollDashboardState();
+function acceptFollowUp(followUpId, controlNo) {
+    if (!confirm(`Accept follow-up and reopen ticket ${controlNo}?`)) return;
+
+    fetch(`/ticket/follow-up/${followUpId}/accept/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showFollowUpToast('✅ Follow-up accepted — ticket reopened!', '#198754');
+            setTimeout(() => window.location.reload(), 1200);
+        } else {
+            alert(data.error || 'Something went wrong.');
+        }
+    });
+}
+
+function showRejectFollowUpInput(followUpId) {
+    document.getElementById('rejectFollowUpInput' + followUpId).style.display = 'block';
+}
+
+function hideRejectFollowUpInput(followUpId) {
+    document.getElementById('rejectFollowUpInput' + followUpId).style.display = 'none';
+}
+
+function submitRejectFollowUp(followUpId, controlNo) {
+    const reason = document.getElementById('rejectFollowUpReason' + followUpId).value.trim();
+    if (!reason) {
+        alert('Please enter a rejection reason.');
+        return;
+    }
+
+    fetch(`/ticket/follow-up/${followUpId}/reject/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken':     getCsrfToken(),
+            'Content-Type':    'application/json',
+            'X-Requested-With':'XMLHttpRequest'
+        },
+        body: JSON.stringify({ reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showFollowUpToast('❌ Follow-up rejected — user notified.', '#d97706');
+            setTimeout(() => window.location.reload(), 1200);
+        } else {
+            alert(data.error || 'Something went wrong.');
+        }
+    });
+}
+
+function showFollowUpToast(message, color) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position:fixed;bottom:24px;left:calc(var(--sidebar-width) + 16px);
+        z-index:99999;background:${color};color:#fff;border-radius:12px;
+        padding:14px 22px;font-family:'Open Sans',sans-serif;font-size:0.88rem;
+        border-left:4px solid #f9c900;box-shadow:0 8px 32px rgba(0,0,0,0.2);
+        font-weight:600;max-width:360px;`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// Poll for new follow-ups every 10 seconds (add to existing polling)
+let lastFollowUpCount = 0;
+
+function pollFollowUpNotifications() {
+    fetch('/poll-follow-up-notifications/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.has_new && data.count > lastFollowUpCount) {
+                lastFollowUpCount = data.count;
+                data.follow_ups.forEach(fu => {
+                    showFollowUpToast(
+                        `🔄 Follow-up requested on ${fu.control_no}`,
+                        '#1565c0'
+                    );
+                });
+            }
+        })
+        .catch(() => {})
+        .finally(() => setTimeout(pollFollowUpNotifications, 10000));
+}
+
+pollFollowUpNotifications();
 </script>
 {% endblock %}

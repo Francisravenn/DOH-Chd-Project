@@ -583,7 +583,16 @@
                 <td style="color:#495057;font-size:0.86rem;">{{ ticket.request_complaint|truncatewords:8 }}</td>
                 <td>{% if ticket.is_urgent %}<span class="urgent-pill"><i class="bi bi-exclamation-triangle-fill"></i> Yes</span>{% else %}<span class="normal-pill">No</span>{% endif %}</td>
                 <td><span class="elapsed-text">{{ ticket.created_at|timesince }} ago</span></td>
-                <td><span class="btn-completed-badge"><i class="bi bi-patch-check-fill"></i> Completed</span></td>
+                <td>
+                    <span class="btn-completed-badge"><i class="bi bi-patch-check-fill"></i> Completed</span>
+                    {% if ticket.has_pending_follow_up %}
+                    <span style="background:#fff3cd;color:#856404;font-family:'Montserrat',sans-serif;
+                                font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;
+                                letter-spacing:0.06em;margin-left:4px;display:inline-block;">
+                        🔄 FOLLOW-UP
+                    </span>
+                    {% endif %}
+                </td>
             </tr>
             {% empty %}
             <tr><td colspan="6"><div class="empty-state"><i class="bi bi-check-circle"></i><p>No completed tickets.</p></div></td></tr>
@@ -827,6 +836,87 @@
                             <div class="tkt-complaint-box">{{ ticket.request_complaint }}</div>
                         </div>
                     </div>
+
+                    {% if ticket.follow_ups.all %}
+                    <div class="col-12">
+                        <div class="tkt-info-section">
+                            <span class="tkt-section-label">
+                                <i class="bi bi-arrow-repeat me-1"></i> Follow-Up Activity
+                            </span>
+                            {% for fu in ticket.follow_ups.all %}
+                            <div style="border:1px solid #e8f0fa;border-radius:10px;margin-bottom:12px;overflow:hidden;">
+                                <div style="background:#f0f4f8;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0e7ef;">
+                                    <span style="font-family:'Open Sans',sans-serif;font-size:0.78rem;color:#5a7a9a;">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ fu.created_at|date:"M d, Y g:i A" }}
+                                    </span>
+                                    {% if fu.status == 'pending' %}
+                                        <span style="background:#fff3cd;color:#856404;font-family:'Montserrat',sans-serif;font-size:0.62rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.06em;">
+                                            ⏳ PENDING REVIEW
+                                        </span>
+                                    {% elif fu.status == 'accepted' %}
+                                        <span style="background:#d4edda;color:#155724;font-family:'Montserrat',sans-serif;font-size:0.62rem;font-weight:800;padding:3px 10px;border-radius:20px;">
+                                            ✅ ACCEPTED
+                                        </span>
+                                    {% elif fu.status == 'rejected' %}
+                                        <span style="background:#f8d7da;color:#721c24;font-family:'Montserrat',sans-serif;font-size:0.62rem;font-weight:800;padding:3px 10px;border-radius:20px;">
+                                            ❌ REJECTED
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div style="padding:12px 16px;">
+                                    <div style="font-family:'Montserrat',sans-serif;font-size:0.65rem;font-weight:800;color:#8a9ab5;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">User Message</div>
+                                    <div style="background:#f8fafd;border-left:3px solid #1565c0;border-radius:4px;padding:10px 14px;font-family:'Open Sans',sans-serif;font-size:0.85rem;color:#2c3e50;line-height:1.6;">
+                                        {{ fu.message }}
+                                    </div>
+                                </div>
+                                {% if fu.status == 'rejected' and fu.admin_response %}
+                                <div style="padding:0 16px 12px;">
+                                    <div style="font-family:'Montserrat',sans-serif;font-size:0.65rem;font-weight:800;color:#8a9ab5;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Admin Response</div>
+                                    <div style="background:#fff8f0;border-left:3px solid #d97706;border-radius:4px;padding:10px 14px;font-family:'Open Sans',sans-serif;font-size:0.85rem;color:#856404;line-height:1.6;">
+                                        {{ fu.admin_response }}
+                                    </div>
+                                    <div style="font-family:'Open Sans',sans-serif;font-size:0.72rem;color:#adb5bd;margin-top:6px;">
+                                        Reviewed by {{ fu.admin.username|title }} on {{ fu.reviewed_at|date:"M d, Y g:i A" }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if fu.status == 'pending' %}
+                                <div style="padding:10px 16px 14px;display:flex;gap:8px;">
+                                    <button onclick="acceptFollowUp({{ fu.pk }}, '{{ ticket.control_no }}')"
+                                            style="padding:7px 18px;border-radius:7px;border:none;background:linear-gradient(90deg,#146c43,#198754);color:#fff;font-family:'Montserrat',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Accept &amp; Reopen
+                                    </button>
+                                    <button onclick="showRejectFollowUpInput({{ fu.pk }})"
+                                            style="padding:7px 18px;border-radius:7px;border:1.5px solid #dc3545;background:transparent;color:#dc3545;font-family:'Montserrat',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">
+                                        <i class="bi bi-x-circle me-1"></i> Reject
+                                    </button>
+                                </div>
+                                <div id="rejectFollowUpInput{{ fu.pk }}" style="display:none;padding:0 16px 14px;">
+                                    <textarea id="rejectFollowUpReason{{ fu.pk }}"
+                                              placeholder="Enter reason for rejection..."
+                                              rows="3"
+                                              style="width:100%;border:1.5px solid #dee2e6;border-radius:7px;padding:8px 12px;font-family:'Open Sans',sans-serif;font-size:0.82rem;resize:none;box-sizing:border-box;outline:none;"
+                                              onfocus="this.style.borderColor='#dc3545'"
+                                              onblur="this.style.borderColor='#dee2e6'"></textarea>
+                                    <div style="display:flex;gap:8px;margin-top:8px;">
+                                        <button onclick="submitRejectFollowUp({{ fu.pk }}, '{{ ticket.control_no }}')"
+                                                style="padding:6px 16px;border-radius:7px;border:none;background:#dc3545;color:#fff;font-family:'Montserrat',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;">
+                                            Confirm Rejection
+                                        </button>
+                                        <button onclick="hideRejectFollowUpInput({{ fu.pk }})"
+                                                style="padding:6px 14px;border-radius:7px;border:1.5px solid #dee2e6;background:transparent;color:#6c757d;font-family:'Montserrat',sans-serif;font-size:0.75rem;cursor:pointer;">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
                 </div>
             </div>
             <div class="modal-footer tkt-modal-footer">
@@ -1120,5 +1210,52 @@ var isSAReloading = false;
 // }
 
 // pollSADashboardState();
+function acceptFollowUp(followUpId, controlNo) {
+    if (!confirm('Accept this follow-up and reopen ticket ' + controlNo + '?')) return;
+    fetch('/ticket/follow-up/' + followUpId + '/accept/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            var t = document.createElement('div');
+            t.style.cssText = 'background:linear-gradient(90deg,#146c43,#198754);color:#fff;border-radius:12px;padding:14px 20px;font-family:Open Sans,sans-serif;font-size:0.85rem;border-left:4px solid #f9c900;width:100%;box-sizing:border-box;';
+            t.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-weight:700;margin-bottom:4px;">✅ Follow-up Accepted</div><div style="opacity:0.9;font-size:0.78rem;">Ticket ' + controlNo + ' has been reopened.</div>';
+            var container = document.getElementById('stackedToastContainer');
+            if (container) { container.appendChild(t); setTimeout(() => t.remove(), 5000); }
+            setTimeout(() => window.location.reload(), 1200);
+        } else { alert(data.error || 'Something went wrong.'); }
+    });
+}
+
+function showRejectFollowUpInput(followUpId) {
+    document.getElementById('rejectFollowUpInput' + followUpId).style.display = 'block';
+}
+
+function hideRejectFollowUpInput(followUpId) {
+    document.getElementById('rejectFollowUpInput' + followUpId).style.display = 'none';
+}
+
+function submitRejectFollowUp(followUpId, controlNo) {
+    var reason = document.getElementById('rejectFollowUpReason' + followUpId).value.trim();
+    if (!reason) { alert('Please enter a rejection reason.'); return; }
+    fetch('/ticket/follow-up/' + followUpId + '/reject/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            var t = document.createElement('div');
+            t.style.cssText = 'background:linear-gradient(90deg,#92400e,#d97706);color:#fff;border-radius:12px;padding:14px 20px;font-family:Open Sans,sans-serif;font-size:0.85rem;border-left:4px solid #f9c900;width:100%;box-sizing:border-box;';
+            t.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-weight:700;margin-bottom:4px;">❌ Follow-up Rejected</div><div style="opacity:0.9;font-size:0.78rem;">Ticket ' + controlNo + ' remains completed.</div>';
+            var container = document.getElementById('stackedToastContainer');
+            if (container) { container.appendChild(t); setTimeout(() => t.remove(), 5000); }
+            setTimeout(() => window.location.reload(), 1200);
+        } else { alert(data.error || 'Something went wrong.'); }
+    });
+}
 </script>
 {% endblock %}

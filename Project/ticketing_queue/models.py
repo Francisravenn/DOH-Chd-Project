@@ -36,6 +36,7 @@ class Ticket(models.Model):
         ('accepted', 'Accepted'),
         ('assisting', 'Assisting'),
         ('completed', 'Completed'),
+        ('follow_up_pending','Follow-Up Pending'), 
     )
 
     control_no = models.CharField(max_length=50, unique=True, blank=True)
@@ -78,7 +79,8 @@ class Ticket(models.Model):
     is_being_assisted = models.BooleanField(default=False, editable=False)
 
     is_manually_modified = models.BooleanField(default=False)  
-
+    def has_pending_follow_up(self):
+        return self.follow_ups.filter(status='pending').exists()
     def elapsed_time(self):
         delta = timezone.now() - self.created_at
         hours = delta.seconds // 3600
@@ -266,3 +268,26 @@ class AdminOnlineStatus(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.last_seen}"
+    
+class TicketFollowUp(models.Model):
+    STATUS_CHOICES = [
+        ('pending',  'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    ticket         = models.ForeignKey('Ticket', on_delete=models.CASCADE, related_name='follow_ups')
+    message        = models.TextField()
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin          = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_follow_ups')
+    admin_response = models.TextField(blank=True, null=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    reviewed_at    = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"FollowUp#{self.pk} on {self.ticket.control_no} [{self.status}]"
+    
+   
